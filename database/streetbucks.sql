@@ -1,0 +1,48 @@
+BEGIN;
+
+DROP TABLE IF EXISTS checks;
+CREATE TABLE checks (
+	id SERIAL PRIMARY KEY,
+	staff_id VARCHAR NOT NULL,
+	date VARCHAR NOT NULL,
+	datetime VARCHAR NOT NULL,
+	FOREIGN KEY (staff_id) REFERENCES staffs(rfid)
+);
+
+DROP TABLE IF EXISTS menus;
+CREATE TABLE menus (
+	id SERIAL PRIMARY KEY,
+	name VARCHAR NOT NULL,
+	price DOUBLE PRECISION NOT NULL,
+	type VARCHAR NOT NULL,
+	filename VARCHAR NOT NULL
+);
+
+DROP TABLE IF EXISTS receipt_menus;
+CREATE TABLE receipt_menus (
+	id SERIAL PRIMARY KEY,
+	receipt_id INTEGER NOT NULL,
+	menu_id INTEGER NOT NULL,
+	quantity INTEGER NOT NULL,
+	total_price DOUBLE PRECISION NOT NULL,
+	FOREIGN KEY (menu_id) REFERENCES menus(id),
+	FOREIGN KEY (receipt_id) REFERENCES receipts(id)
+);
+
+DROP TABLE IF EXISTS receipts;
+CREATE TABLE receipts (
+	id SERIAL PRIMARY KEY,
+	timestamp BIGINT NOT NULL,
+	total_price DOUBLE PRECISION NOT NULL
+);
+
+DROP TABLE IF EXISTS staffs;
+CREATE TABLE staffs (
+	rfid VARCHAR PRIMARY KEY,
+	firstname VARCHAR NOT NULL,
+	lastname VARCHAR NOT NULL,
+	password VARCHAR NOT NULL,
+	is_admin BOOLEAN NOT NULL
+);
+
+COMMIT;
