@@ -9,76 +9,81 @@ datasource db {
 }
 
 model Attendance {
-  uuid      String      @id @default(uuid())
-  staff     Staff     @relation(fields: [staffId], references: [uuid])
-  staffId   String
-  dateTime  DateTime  @default(now())
+  uuid     String   @id @default(uuid())
+  staff    Staff    @relation(fields: [staffId], references: [uuid])
+  staffId  String
+  dateTime DateTime @default(now())
 }
 
 model Staff {
-  uuid        String        @id @default(uuid())
-  branch      Branch        @relation(fields: [branchId], references: [uuid])
+  uuid        String       @id @default(uuid())
+  branch      Branch       @relation(fields: [branchId], references: [uuid])
   branchId    String
   firstName   String
   lastName    String
-  password    String        @db.VarChar(60)
-  isManager   Boolean       @default(false)
-  isAdmin     Boolean       @default(false)
+  password    String       @db.VarChar(60)
+  isManager   Boolean      @default(false)
+  isAdmin     Boolean      @default(false)
   attendances Attendance[]
 }
 
 model Branch {
-  uuid      String      @id @default(uuid())
-  manager   Staff       @relation(fields: [managerId], references: [uuid])
-  managerId String
+  uuid  String  @id @default(uuid())
+  Staff Staff[]
+  Stock Stock[]
 }
 
 model Stock {
-  branch    Branch    @relation(fields: [branchId], references: [uuid])
-  branchId  String
-  recipe    Recipe    @relation(fields: [recipeId], references: [uuid])
-  recipeId  String
-  quantity  Int
+  branch   Branch @relation(fields: [branchId], references: [uuid])
+  branchId String
+  recipe   Recipe @relation(fields: [recipeId], references: [uuid])
+  recipeId String
+  quantity Int
 
   @@id([branchId, recipeId])
 }
 
 model Recipe {
-  uuid      String    @id @default(uuid())
-  name      String    @unique
-  price     Float     @db.Float8
+  uuid       String       @id @default(uuid())
+  name       String       @unique
+  price      Float        @db.DoublePrecision
+  Stock      Stock[]
+  MenuRecipe MenuRecipe[]
 }
 
 model MenuRecipe {
-  menu      Menu      @relation(fields: [menuId], references: [uuid])
-  menuId    String
-  recipe    Recipe    @relation(fields: [recipeId], references: [uuid])
-  recipeId  String
-  amount    Int
+  menu     Menu   @relation(fields: [menuId], references: [uuid])
+  menuId   String
+  recipe   Recipe @relation(fields: [recipeId], references: [uuid])
+  recipeId String
+  amount   Int
 
   @@id([menuId, recipeId])
 }
 
 model Menu {
-  uuid      String      @id @default(uuid())
-  name      String      @unique
-  price     Float       @db.Float8
-  type      String
-  fileName  String
+  uuid       String       @id @default(uuid())
+  name       String       @unique
+  price      Float        @db.DoublePrecision
+  type       String
+  fileName   String
+  MenuRecipe MenuRecipe[]
+  OrderMenu  OrderMenu[]
 }
 
 model OrderMenu {
-  order       Order     @relation(fields: [orderId], references: [uuid])
-  orderId     String
-  menu        Menu      @relation(fields: [menuId], references: [uuid])
-  menuId      String
-  quantity    Int
+  order    Order  @relation(fields: [orderId], references: [uuid])
+  orderId  String
+  menu     Menu   @relation(fields: [menuId], references: [uuid])
+  menuId   String
+  quantity Int
 
   @@id([orderId, menuId])
 }
 
 model Order {
-  uuid        String    @id @default(uuid())
-  timestamp   Int     @db.BigInt
-  totalPrice  Float   @db.Float8
+  uuid       String      @id @default(uuid())
+  timestamp  BigInt      @db.BigInt
+  totalPrice Float       @db.DoublePrecision
+  OrderMenu  OrderMenu[]
 }
