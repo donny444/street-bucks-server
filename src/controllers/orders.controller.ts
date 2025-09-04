@@ -1,13 +1,13 @@
-import { Controller, Get, Post, Param, Req, Res } from '@nestjs/common';
-import { Request, Response, } from 'express';
-import { AppService } from '../app.service';
+import { Controller, Get, Post, Param, Req, Res } from "@nestjs/common";
+import { Request, Response } from "express";
+import { AppService } from "../app.service";
 
 @Controller("orders")
 export class OrdersController {
   constructor(private readonly appService: AppService) {}
 
   @Post()
-  makeAnOrder(@Req() req: Request, @Res() res: Response): Response {
+  MakeOrder(@Req() req: Request, @Res() res: Response): Response {
     try {
       const orderId = 0;
       return res.json({
@@ -21,7 +21,7 @@ export class OrdersController {
   }
 
   @Get()
-  getTodayOrders(@Req() req: Request, @Res() res: Response): Response {
+  TodayOrders(@Req() req: Request, @Res() res: Response): Response {
     try {
       const todayOrders = [];
       return res.json({
@@ -35,7 +35,7 @@ export class OrdersController {
   }
 
   @Get(":id")
-  getSpecificOrder(@Param() params: any, @Res() res: Response): Response {
+  SpecificOrder(@Param() params: any, @Res() res: Response): Response {
     try {
       const order = {};
       return res.json({

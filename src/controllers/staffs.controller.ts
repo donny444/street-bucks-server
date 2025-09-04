@@ -1,21 +1,34 @@
-import { Body, Controller, Delete, Get, HttpCode, Post, Put, Param, Res } from '@nestjs/common';
-import { Response } from 'express';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Post,
+  Put,
+  Param,
+  Res,
+} from "@nestjs/common";
+import { Response } from "express";
 
-import { AppService } from '../app.service';
-import StaffDataDto from '../dtos/staff_data.dto';
+import { AppService } from "../app.service";
+import StaffDataDto from "../dtos/staff_data.dto";
 
 @Controller("staffs")
 export class StaffsController {
   constructor(private readonly appService: AppService) {}
 
   @Post()
-  RegisterStaff(@Body() staffData: StaffDataDto, @Res() res: Response): Response {
+  RegisterStaff(
+    @Body() staffData: StaffDataDto,
+    @Res() res: Response
+  ): Response {
     try {
       const { firstName = "", lastName = "", password = "" } = staffData;
 
       if (!firstName || !lastName || !password) {
         return res.status(400).json({
-          message: "First name, last name, and password are required."
+          message: "First name, last name, and password are required.",
         });
       }
 
@@ -29,9 +42,15 @@ export class StaffsController {
   }
 
   @Post(":id")
-  CheckInStaff(@Param() params: any, @Body("status") status: boolean, @Res() res: Response): Response {
+  CheckInStaff(
+    @Param() params: any,
+    @Body("status") status: boolean,
+    @Res() res: Response
+  ): Response {
     try {
-      return res.json({ message: `Staff: ${params.id} check status: ${status}` });
+      return res.json({
+        message: `Staff: ${params.id} check status: ${status}`,
+      });
     } catch (err) {
       console.error("Error checking in staff:", err);
       return res.status(500).json({ error: "Failed to check in staff." });
@@ -39,9 +58,11 @@ export class StaffsController {
   }
 
   @Get(":id")
-  GetStaffInfo(@Param() params: any, @Res() res: Response): Response {
+  StaffInfo(@Param() params: any, @Res() res: Response): Response {
     try {
-      return res.json({ message: `See the specific information of staff: ${params.id}` });
+      return res.json({
+        message: `See the specific information of staff: ${params.id}`,
+      });
     } catch (err) {
       console.error("Error retrieving staff info:", err);
       return res.status(500).json({ error: "Failed to retrieve staff info." });
@@ -49,12 +70,18 @@ export class StaffsController {
   }
 
   @Put(":id")
-  EditStaffInfo(@Param("id") id: string, @Body() staffData: StaffDataDto, @Res() res: Response): Response {
+  EditStaff(
+    @Param("id") id: string,
+    @Body() staffData: StaffDataDto,
+    @Res() res: Response
+  ): Response {
     try {
       console.log(staffData.firstName);
       console.log(staffData.lastName);
       console.log(staffData.password);
-      return res.json({ message: `Manipulate the information of staff: ${id}` });
+      return res.json({
+        message: `Manipulate the information of staff: ${id}`,
+      });
     } catch (err) {
       console.error("Error editing staff info:", err);
       return res.status(500).json({ error: "Failed to edit staff info." });
@@ -63,9 +90,11 @@ export class StaffsController {
 
   @Delete(":id")
   @HttpCode(204)
-  DeleteAStaff(@Param() params: any, @Res() res: Response): Response {
+  RemoveStaff(@Param() params: any, @Res() res: Response): Response {
     try {
-      return res.json({ message: `Delete all information of staff: ${params.id}` });
+      return res.json({
+        message: `Delete all information of staff: ${params.id}`,
+      });
     } catch (err) {
       console.error("Error deleting staff:", err);
       return res.status(500).json({ error: "Failed to delete staff." });
