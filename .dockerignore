@@ -1,0 +1,15 @@
+.git
+dist
+node_modules
+.gitignore
+.dockerignore
+Dockerfile
+eslint.config.mjs
+.prettierrc
+tsconfig.build.json
+nest-cli.json
+src/tests/
+README.md
+database/
+prisma/migrations/
+package-lock.json
