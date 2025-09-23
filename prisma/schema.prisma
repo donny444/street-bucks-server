@@ -46,7 +46,6 @@ model Stock {
 model Recipe {
   id         BigInt          @id @default(autoincrement()) @db.BigInt
   name       String       @unique
-  price      Float        @db.DoublePrecision
   Stock      Stock[]
   MenuRecipe MenuRecipe[]
 }
