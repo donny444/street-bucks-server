@@ -17,8 +17,8 @@ model Attendance {
 
 model Staff {
   uuid        String       @id @default(uuid())
-  branch      Branch       @relation(fields: [branchId], references: [uuid])
-  branchId    String
+  branch      Branch       @relation(fields: [branchId], references: [id])
+  branchId    BigInt
   firstName   String
   lastName    String
   password    String       @db.VarChar(60)
@@ -28,23 +28,23 @@ model Staff {
 }
 
 model Branch {
-  uuid  String  @id @default(uuid())
+  id    BigInt     @id @default(autoincrement()) @db.BigInt
   Staff Staff[]
   Stock Stock[]
 }
 
 model Stock {
-  branch   Branch @relation(fields: [branchId], references: [uuid])
-  branchId String
-  recipe   Recipe @relation(fields: [recipeId], references: [uuid])
-  recipeId String
+  branch   Branch @relation(fields: [branchId], references: [id])
+  branchId BigInt
+  recipe   Recipe @relation(fields: [recipeId], references: [id])
+  recipeId BigInt
   quantity Int
 
   @@id([branchId, recipeId])
 }
 
 model Recipe {
-  uuid       String       @id @default(uuid())
+  id         BigInt          @id @default(autoincrement()) @db.BigInt
   name       String       @unique
   price      Float        @db.DoublePrecision
   Stock      Stock[]
@@ -52,17 +52,17 @@ model Recipe {
 }
 
 model MenuRecipe {
-  menu     Menu   @relation(fields: [menuId], references: [uuid])
-  menuId   String
-  recipe   Recipe @relation(fields: [recipeId], references: [uuid])
-  recipeId String
+  menu     Menu   @relation(fields: [menuId], references: [id])
+  menuId   BigInt
+  recipe   Recipe @relation(fields: [recipeId], references: [id])
+  recipeId BigInt
   amount   Int
 
   @@id([menuId, recipeId])
 }
 
 model Menu {
-  uuid       String       @id @default(uuid())
+  id         BigInt          @id @default(autoincrement()) @db.BigInt
   name       String       @unique
   price      Float        @db.DoublePrecision
   type       String
@@ -74,8 +74,8 @@ model Menu {
 model OrderMenu {
   order    Order  @relation(fields: [orderId], references: [uuid])
   orderId  String
-  menu     Menu   @relation(fields: [menuId], references: [uuid])
-  menuId   String
+  menu     Menu   @relation(fields: [menuId], references: [id])
+  menuId   BigInt
   quantity Int
 
   @@id([orderId, menuId])
