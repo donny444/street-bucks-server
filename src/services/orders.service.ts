@@ -3,22 +3,22 @@ import { PrismaClient } from "../../prisma/client";
 import OrderItemDto from "../dtos/order_item.dto";
 
 @Injectable()
-export class OrdersService {
+export class OrderService {
   constructor(private prisma: PrismaClient) {}
 
   async InsertOrder(orderItems: OrderItemDto[]) {
     const order = await this.prisma.$transaction(async (prisma) => {
       const menusPrice = await prisma.menu.findMany({
-        select: { uuid: true, price: true },
+        select: { id: true, price: true },
         where: {
-          uuid: { in: orderItems.map((item) => item.menuId) },
+          id: { in: orderItems.map((item) => item.menuId) },
         },
       });
       const newOrder = await prisma.order.create({
         data: {
           timestamp: new Date().getTime(),
           totalPrice: orderItems.reduce((acc, item) => {
-            const menu = menusPrice.find((menu) => menu.uuid === item.menuId);
+            const menu = menusPrice.find((menu) => menu.id === item.menuId);
             return acc + (menu ? menu.price * item.quantity : 0);
           }, 0),
         },
@@ -34,6 +34,27 @@ export class OrdersService {
     });
 
     return order;
+  }
+
+  async GetTodayOrders() {
+    const startOfDay = new Date().setHours(0, 0, 0, 0);
+    const endOfDay = new Date().setHours(23, 59, 59, 999);
+
+    const orders = await this.prisma.order.findMany({
+      where: {
+        timestamp: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+      select: {
+        uuid: true,
+        timestamp: true,
+        totalPrice: true,
+      },
+    });
+
+    return orders;
   }
 
   async GetSpecificOrder(orderId: string) {
