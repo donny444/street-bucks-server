@@ -1,16 +1,21 @@
 import { Controller, Get, Res } from "@nestjs/common";
 import { Response } from "express";
 
-import { AppService } from "../app.service";
+import { InsightService } from "../services/insights.service";
 
 @Controller("insights")
-export class InsightsController {
-  constructor(private readonly appService: AppService) {}
+export class InsightController {
+  constructor(private readonly insightService: InsightService) {}
 
   @Get("sales-today")
-  SalesToday(@Res() res: Response): Response {
+  async SalesToday(@Res() res: Response): Promise<Response> {
     try {
-      return res.json({ message: "See today's menu sales." });
+      const salesToday = await this.insightService.GetSalesToday();
+
+      return res.json({
+        message: "See today's menu sales.",
+        insight: salesToday,
+      });
     } catch (err) {
       console.error("Error retrieving today's sales:", err);
       return res
@@ -20,10 +25,13 @@ export class InsightsController {
   }
 
   @Get("sales-this-week")
-  SalesThisWeek(@Res() res: Response): Response {
+  async SalesThisWeek(@Res() res: Response): Promise<Response> {
     try {
+      const salesThisWeek = await this.insightService.GetSalesThisWeek();
+
       return res.json({
         message: "See counts of sales for every day in this week.",
+        insight: salesThisWeek,
       });
     } catch (err) {
       console.error("Error retrieving this week's sales:", err);
@@ -34,10 +42,13 @@ export class InsightsController {
   }
 
   @Get("sales-this-month")
-  SalesThisMonth(@Res() res: Response): Response {
+  async SalesThisMonth(@Res() res: Response): Promise<Response> {
     try {
+      const salesThisMonth = await this.insightService.GetSalesThisMonth();
+
       return res.json({
         message: "See counts of sales for every day in this month.",
+        insight: salesThisMonth,
       });
     } catch (err) {
       console.error("Error retrieving this month's sales:", err);

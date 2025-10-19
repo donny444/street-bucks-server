@@ -11,18 +11,18 @@ import {
 } from "@nestjs/common";
 import { Response } from "express";
 
-import { AppService } from "../app.service";
-import StaffDataDto from "../dtos/staff_data.dto";
+import { StaffService } from "../services/staffs.service";
+import StaffDto from "../dtos/staff.dto";
 
 @Controller("staffs")
-export class StaffsController {
-  constructor(private readonly appService: AppService) {}
+export class StaffController {
+  constructor(private readonly staffsService: StaffService) {}
 
   @Post()
-  RegisterStaff(
-    @Body() staffData: StaffDataDto,
+  async RegisterStaff(
+    @Body() staffData: StaffDto,
     @Res() res: Response
-  ): Response {
+  ): Promise<Response> {
     try {
       const { firstName = "", lastName = "", password = "" } = staffData;
 
@@ -31,6 +31,13 @@ export class StaffsController {
           message: "First name, last name, and password are required.",
         });
       }
+
+      const existingStaff = await this.staffsService.GetStaff(staffData);
+      if (existingStaff) {
+        return res.status(409).json({ message: "Staff already exists." });
+      }
+
+      await this.staffsService.InsertStaff(staffData);
 
       return res.json({
         message: "Staff registered successfully.",
@@ -41,15 +48,26 @@ export class StaffsController {
     }
   }
 
-  @Post(":id")
-  CheckInStaff(
-    @Param() params: any,
+  @Post(":uuid")
+  async CheckInStaff(
+    @Param("uuid") uuid: string,
     @Body("status") status: boolean,
     @Res() res: Response
-  ): Response {
+  ): Promise<Response> {
     try {
+      const existingStaff = await this.staffsService.GetStaff({ uuid: uuid });
+      if (!existingStaff) {
+        return res.status(404).json({ message: "Staff not found." });
+      }
+
+      if (status) {
+        await this.staffsService.InsertAttendance({ uuid: uuid });
+      } else {
+        await this.staffsService.RemoveAttendance({ uuid: uuid });
+      }
+
       return res.json({
-        message: `Staff: ${params.id} check status: ${status}`,
+        message: `Staff: ${uuid} check status: ${status}`,
       });
     } catch (err) {
       console.error("Error checking in staff:", err);
@@ -57,11 +75,19 @@ export class StaffsController {
     }
   }
 
-  @Get(":id")
-  StaffInfo(@Param() params: any, @Res() res: Response): Response {
+  @Get(":uuid")
+  async StaffInfo(
+    @Param("uuid") uuid: string,
+    @Res() res: Response
+  ): Promise<Response> {
     try {
+      const staff = await this.staffsService.GetStaff({ uuid: uuid });
+      if (!staff) {
+        return res.status(404).json({ message: "Staff not found." });
+      }
+
       return res.json({
-        message: `See the specific information of staff: ${params.id}`,
+        message: `See the specific information of staff: ${uuid}`,
       });
     } catch (err) {
       console.error("Error retrieving staff info:", err);
@@ -69,18 +95,34 @@ export class StaffsController {
     }
   }
 
-  @Put(":id")
-  EditStaff(
-    @Param("id") id: string,
-    @Body() staffData: StaffDataDto,
+  @Put()
+  async EditStaff(
+    @Body() staffData: StaffDto,
     @Res() res: Response
-  ): Response {
+  ): Promise<Response> {
     try {
-      console.log(staffData.firstName);
-      console.log(staffData.lastName);
-      console.log(staffData.password);
+      const {
+        uuid = "",
+        firstName = "",
+        lastName = "",
+        password = "",
+      } = staffData;
+
+      if (!uuid || !firstName || !lastName || !password) {
+        return res.status(400).json({
+          message: "UUID, first name, last name, and password are required.",
+        });
+      }
+
+      const existingStaff = await this.staffsService.GetStaff({ uuid: uuid });
+      if (!existingStaff) {
+        return res.status(404).json({ message: "Staff not found." });
+      }
+
+      await this.staffsService.UpdateStaff(staffData);
+
       return res.json({
-        message: `Manipulate the information of staff: ${id}`,
+        message: `Manipulate the information of staff: ${uuid}`,
       });
     } catch (err) {
       console.error("Error editing staff info:", err);
@@ -88,12 +130,22 @@ export class StaffsController {
     }
   }
 
-  @Delete(":id")
+  @Delete(":uuid")
   @HttpCode(204)
-  RemoveStaff(@Param() params: any, @Res() res: Response): Response {
+  async RemoveStaff(
+    @Param("uuid") uuid: string,
+    @Res() res: Response
+  ): Promise<Response> {
     try {
+      const staff = await this.staffsService.GetStaff({ uuid: uuid });
+      if (!staff) {
+        return res.status(404).json({ message: "Staff not found." });
+      }
+
+      await this.staffsService.DeleteStaff({ uuid: uuid });
+
       return res.json({
-        message: `Delete all information of staff: ${params.id}`,
+        message: `Delete all information of staff: ${uuid}`,
       });
     } catch (err) {
       console.error("Error deleting staff:", err);

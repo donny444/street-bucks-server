@@ -1,16 +1,22 @@
 import { Controller, Get, Param, Res } from "@nestjs/common";
 import { Response } from "express";
 
-import { AppService } from "../app.service";
+import { MenuService } from "../services/menus.service";
+// import MenuDto from "../dtos/menu.dto";
 
 @Controller("menus")
-export class MenusController {
-  constructor(private readonly appService: AppService) {}
+export class MenuController {
+  constructor(private readonly menuService: MenuService) {}
 
   @Get("hot")
-  HotMenus(@Res() res: Response): Response {
+  async HotMenus(@Res() res: Response): Promise<Response> {
     try {
-      return res.json({ message: "Returns all available hot beverages" });
+      const hotMenus = await this.menuService.GetHotMenus();
+
+      return res.json({
+        message: "Returns all available hot beverages",
+        menus: hotMenus,
+      });
     } catch (err) {
       console.error("Error retrieving hot menus:", err);
       return res
@@ -20,9 +26,14 @@ export class MenusController {
   }
 
   @Get("iced")
-  IcedMenus(@Res() res: Response): Response {
+  async IcedMenus(@Res() res: Response): Promise<Response> {
     try {
-      return res.json({ message: "Returns all available iced beverages" });
+      const icedMenus = await this.menuService.GetIcedMenus();
+
+      return res.json({
+        message: "Returns all available iced beverages",
+        menus: icedMenus,
+      });
     } catch (err) {
       console.error("Error retrieving iced menus:", err);
       return res
@@ -32,9 +43,14 @@ export class MenusController {
   }
 
   @Get("cake")
-  CakeMenus(@Res() res: Response): Response {
+  async CakeMenus(@Res() res: Response): Promise<Response> {
     try {
-      return res.json({ message: "Returns all available cake menus" });
+      const cakeMenus = await this.menuService.GetCakeMenus();
+
+      return res.json({
+        message: "Returns all available cake menus",
+        menus: cakeMenus,
+      });
     } catch (err) {
       console.error("Error retrieving cake menus:", err);
       return res.status(500).json({ error: "Failed to retrieve cake menus." });
@@ -42,9 +58,20 @@ export class MenusController {
   }
 
   @Get(":id")
-  SpecificMenu(@Param("id") id: string, @Res() res: Response): Response {
+  async SpecificMenu(
+    @Param("id") id: bigint,
+    @Res() res: Response
+  ): Promise<Response> {
     try {
-      return res.json({ message: `Returns the menu: ${id}` });
+      const specificMenu = await this.menuService.GetSpecificMenu(id);
+      if (!specificMenu) {
+        return res.status(404).json({ error: "Menu not found." });
+      }
+
+      return res.json({
+        message: `Returns the menu: ${id}`,
+        menu: specificMenu,
+      });
     } catch (err) {
       console.error("Error retrieving specific menu:", err);
       return res
