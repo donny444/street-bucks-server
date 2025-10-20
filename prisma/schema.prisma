@@ -9,14 +9,14 @@ datasource db {
 }
 
 model Attendance {
-  uuid     String   @id @default(uuid())
+  uuid     String   @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   staff    Staff    @relation(fields: [staffId], references: [uuid])
   staffId  String
   dateTime DateTime @default(now())
 }
 
 model Staff {
-  uuid        String       @id @default(uuid())
+  uuid        String       @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
   branch      Branch       @relation(fields: [branchId], references: [id])
   branchId    BigInt
   firstName   String
@@ -81,8 +81,8 @@ model OrderMenu {
 }
 
 model Order {
-  uuid       String      @id @default(uuid())
-  timestamp  BigInt      @db.BigInt
+  uuid       String      @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  timestamp  BigInt      @db.BigInt @default(dbgenerated("(extract(epoch from now())*1000)::bigint"))
   totalPrice Float       @db.DoublePrecision
   OrderMenu  OrderMenu[]
 }
