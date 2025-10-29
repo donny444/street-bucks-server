@@ -5,7 +5,16 @@ import { PrismaClient } from "../../prisma/client";
 export class InsightService {
   constructor(private prisma: PrismaClient) {}
 
-  async GetSalesToday() {
+  // helper to convert bigint fields to JSON-safe values
+  // private serializeOrders(orders: any[]) {
+  //   return orders.map((o) => ({
+  //     ...o,
+  //     timestamp:
+  //       typeof o.timestamp === "bigint" ? Number(o.timestamp) : o.timestamp,
+  //   }));
+  // }
+
+  async GetSalesToday(): Promise<number> {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
     const startTimestamp = startOfDay.getTime();
@@ -13,7 +22,7 @@ export class InsightService {
     endOfDay.setHours(23, 59, 59, 999);
     const endTimestamp = endOfDay.getTime();
 
-    const salesToday = await this.prisma.order.findMany({
+    const salesToday = await this.prisma.order.count({
       where: {
         timestamp: {
           gte: startTimestamp,
@@ -23,9 +32,10 @@ export class InsightService {
     });
 
     return salesToday;
+    // return this.serializeOrders(salesToday);
   }
 
-  async GetSalesThisWeek() {
+  async GetSalesThisWeek(): Promise<number> {
     const now = new Date();
     const firstDayOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
     firstDayOfWeek.setHours(0, 0, 0, 0);
@@ -35,7 +45,7 @@ export class InsightService {
     lastDayOfWeek.setHours(23, 59, 59, 999);
     const endTimestamp = lastDayOfWeek.getTime();
 
-    const salesThisWeek = await this.prisma.order.findMany({
+    const salesThisWeek = await this.prisma.order.count({
       where: {
         timestamp: {
           gte: startTimestamp,
@@ -45,9 +55,10 @@ export class InsightService {
     });
 
     return salesThisWeek;
+    // return this.serializeOrders(salesThisWeek);
   }
 
-  async GetSalesThisMonth() {
+  async GetSalesThisMonth(): Promise<number> {
     const now = new Date();
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     firstDayOfMonth.setHours(0, 0, 0, 0);
@@ -56,7 +67,7 @@ export class InsightService {
     lastDayOfMonth.setHours(23, 59, 59, 999);
     const endTimestamp = lastDayOfMonth.getTime();
 
-    const salesThisMonth = await this.prisma.order.findMany({
+    const salesThisMonth = await this.prisma.order.count({
       where: {
         timestamp: {
           gte: startTimestamp,
@@ -66,5 +77,6 @@ export class InsightService {
     });
 
     return salesThisMonth;
+    // return this.serializeOrders(salesThisMonth);
   }
 }

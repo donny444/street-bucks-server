@@ -1,7 +1,7 @@
 import { Controller, Get, Res } from "@nestjs/common";
 import { Response } from "express";
 
-import { InsightService } from "../services/insights.service";
+import { InsightService } from "../services/insight.service";
 
 @Controller("insights")
 export class InsightController {
