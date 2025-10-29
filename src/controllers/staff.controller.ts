@@ -11,8 +11,12 @@ import {
 } from "@nestjs/common";
 import { Response } from "express";
 
-import { StaffService } from "../services/staffs.service";
-import StaffDto from "../dtos/staff.dto";
+import { StaffService } from "../services/staff.service";
+import type { Prisma } from "../../prisma/client";
+
+type StaffIdentifier = Required<Pick<Prisma.StaffWhereUniqueInput, "uuid">>;
+type StaffCreateRequest = Prisma.StaffUncheckedCreateInput;
+type StaffUpdateRequest = Prisma.StaffUncheckedUpdateInput & StaffIdentifier;
 
 @Controller("staffs")
 export class StaffController {
@@ -20,11 +24,11 @@ export class StaffController {
 
   @Post()
   async RegisterStaff(
-    @Body() staffData: StaffDto,
+    @Body() staffData: StaffCreateRequest,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const { firstName = "", lastName = "", password = "" } = staffData;
+      const { firstName, lastName, password, uuid } = staffData;
 
       if (!firstName || !lastName || !password) {
         return res.status(400).json({
@@ -32,7 +36,9 @@ export class StaffController {
         });
       }
 
-      const existingStaff = await this.staffsService.GetStaff(staffData);
+      const existingStaff = uuid
+        ? await this.staffsService.GetStaff({ uuid })
+        : null;
       if (existingStaff) {
         return res.status(409).json({ message: "Staff already exists." });
       }
@@ -55,15 +61,15 @@ export class StaffController {
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const existingStaff = await this.staffsService.GetStaff({ uuid: uuid });
+      const existingStaff = await this.staffsService.GetStaff({ uuid });
       if (!existingStaff) {
         return res.status(404).json({ message: "Staff not found." });
       }
 
       if (status) {
-        await this.staffsService.InsertAttendance({ uuid: uuid });
+        await this.staffsService.InsertAttendance({ uuid });
       } else {
-        await this.staffsService.RemoveAttendance({ uuid: uuid });
+        await this.staffsService.RemoveAttendance({ uuid });
       }
 
       return res.json({
@@ -81,7 +87,7 @@ export class StaffController {
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const staff = await this.staffsService.GetStaff({ uuid: uuid });
+      const staff = await this.staffsService.GetStaff({ uuid });
       if (!staff) {
         return res.status(404).json({ message: "Staff not found." });
       }
@@ -97,16 +103,12 @@ export class StaffController {
 
   @Put()
   async EditStaff(
-    @Body() staffData: StaffDto,
+    @Body() staffData: StaffUpdateRequest,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const {
-        uuid = "",
-        firstName = "",
-        lastName = "",
-        password = "",
-      } = staffData;
+      const { uuid, ...updateFields } = staffData;
+      const { firstName, lastName, password } = staffData;
 
       if (!uuid || !firstName || !lastName || !password) {
         return res.status(400).json({
@@ -114,12 +116,15 @@ export class StaffController {
         });
       }
 
-      const existingStaff = await this.staffsService.GetStaff({ uuid: uuid });
+      const existingStaff = await this.staffsService.GetStaff({ uuid });
       if (!existingStaff) {
         return res.status(404).json({ message: "Staff not found." });
       }
 
-      await this.staffsService.UpdateStaff(staffData);
+      await this.staffsService.UpdateStaff({
+        where: { uuid },
+        data: updateFields,
+      });
 
       return res.json({
         message: `Manipulate the information of staff: ${uuid}`,
@@ -137,12 +142,12 @@ export class StaffController {
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const staff = await this.staffsService.GetStaff({ uuid: uuid });
+      const staff = await this.staffsService.GetStaff({ uuid });
       if (!staff) {
         return res.status(404).json({ message: "Staff not found." });
       }
 
-      await this.staffsService.DeleteStaff({ uuid: uuid });
+      await this.staffsService.DeleteStaff({ uuid });
 
       return res.json({
         message: `Delete all information of staff: ${uuid}`,
