@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Res } from "@nestjs/common";
 import { Response } from "express";
 
-import { MenuService } from "../services/menus.service";
+import { MenuService } from "../services/menu.service";
 // import MenuDto from "../dtos/menu.dto";
 
 @Controller("menus")
