@@ -9,28 +9,33 @@ datasource db {
 }
 
 model Attendance {
-  uuid     String   @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
-  staff    Staff    @relation(fields: [staffId], references: [uuid])
-  staffId  String
-  dateTime DateTime @default(now())
+  uuid      String   @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  user      User    @relation(fields: [userId], references: [uuid])
+  userId    String
+  dateTime  DateTime @default(now())
 }
 
-model Staff {
-  uuid        String       @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
-  branch      Branch       @relation(fields: [branchId], references: [id])
-  branchId    BigInt
-  firstName   String
-  lastName    String
-  password    String       @db.VarChar(60)
-  isManager   Boolean      @default(false)
-  isAdmin     Boolean      @default(false)
-  attendances Attendance[]
+model User {
+  uuid          String        @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  branch        Branch        @relation(fields: [branchId], references: [id])
+  branchId      BigInt
+  firstName     String
+  lastName      String
+  password      String        @db.VarChar(60)
+  role          Role          @default(STAFF)
+  attendances   Attendance[]
+}
+
+enum Role {
+  STAFF           @map("staff")
+  MANAGER         @map("manager")
+  ADMINISTRATOR   @map("administrator")
 }
 
 model Branch {
-  id    BigInt     @id @default(autoincrement()) @db.BigInt
-  Staff Staff[]
-  Stock Stock[]
+  id      BigInt     @id @default(autoincrement()) @db.BigInt
+  User    User[]
+  Stock   Stock[]
 }
 
 model Stock {
