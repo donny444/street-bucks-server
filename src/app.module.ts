@@ -3,8 +3,8 @@ import { MenuController } from "./controllers/menu.controller";
 import { MenuService } from "./services/menu.service";
 import { OrderController } from "./controllers/order.controller";
 import { OrderService } from "./services/order.service";
-import { StaffController } from "./controllers/staff.controller";
-import { StaffService } from "./services/staff.service";
+import { UserController } from "./controllers/user.controller";
+import { UserService } from "./services/user.service";
 import { InsightController } from "./controllers/insight.controller";
 import { InsightService } from "./services/insight.service";
 import { PrismaClient } from "../prisma/client";
@@ -14,14 +14,14 @@ import { PrismaClient } from "../prisma/client";
   controllers: [
     MenuController,
     OrderController,
-    StaffController,
+    UserController,
     InsightController,
   ],
   providers: [
     PrismaClient,
     MenuService,
     OrderService,
-    StaffService,
+    UserService,
     InsightService,
   ],
 })
