@@ -8,6 +8,40 @@ import { MenuService } from "../services/menu.service";
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
 
+  private convertMenuIdsToNumber(
+    menus: { id: bigint; name: string; price: number; fileName: string }[]
+  ): { id: number; name: string; price: number; fileName: string }[] {
+    return menus.map(({ id, ...rest }) => {
+      const num = Number(id);
+      if (!Number.isSafeInteger(num)) {
+        console.warn(
+          `Menu id ${id.toString()} exceeds Number.MAX_SAFE_INTEGER; precision may be lost.`
+        );
+      }
+      return { id: num, ...rest };
+    });
+  }
+
+  private convertMenuIdToNumber(menu: {
+    id: bigint;
+    name: string;
+    price: number;
+    fileName: string;
+  }): { id: number; name: string; price: number; fileName: string } {
+    const num = Number(menu.id);
+    if (!Number.isSafeInteger(num)) {
+      console.warn(
+        `Menu id ${menu.id.toString()} exceeds Number.MAX_SAFE_INTEGER; precision may be lost.`
+      );
+    }
+    return {
+      id: num,
+      name: menu.name,
+      price: menu.price,
+      fileName: menu.fileName,
+    };
+  }
+
   @Get("hot")
   async HotMenus(@Res() res: Response): Promise<Response> {
     try {
@@ -15,7 +49,7 @@ export class MenuController {
 
       return res.json({
         message: "Returns all available hot beverages",
-        menus: hotMenus,
+        menus: this.convertMenuIdsToNumber(hotMenus),
       });
     } catch (err) {
       console.error("Error retrieving hot menus:", err);
@@ -32,7 +66,7 @@ export class MenuController {
 
       return res.json({
         message: "Returns all available iced beverages",
-        menus: icedMenus,
+        menus: this.convertMenuIdsToNumber(icedMenus),
       });
     } catch (err) {
       console.error("Error retrieving iced menus:", err);
@@ -42,18 +76,20 @@ export class MenuController {
     }
   }
 
-  @Get("cake")
-  async CakeMenus(@Res() res: Response): Promise<Response> {
+  @Get("bakery")
+  async BakeryMenus(@Res() res: Response): Promise<Response> {
     try {
-      const cakeMenus = await this.menuService.GetCakeMenus();
+      const bakeryMenus = await this.menuService.GetBakeryMenus();
 
       return res.json({
-        message: "Returns all available cake menus",
-        menus: cakeMenus,
+        message: "Returns all available bakery menus",
+        menus: this.convertMenuIdsToNumber(bakeryMenus),
       });
     } catch (err) {
-      console.error("Error retrieving cake menus:", err);
-      return res.status(500).json({ error: "Failed to retrieve cake menus." });
+      console.error("Error retrieving bakery menus:", err);
+      return res
+        .status(500)
+        .json({ error: "Failed to retrieve bakery menus." });
     }
   }
 
@@ -65,12 +101,14 @@ export class MenuController {
     try {
       const specificMenu = await this.menuService.GetSpecificMenu(id);
       if (!specificMenu) {
-        return res.status(404).json({ error: "Menu not found." });
+        return res.status(404).json({
+          error: `Menu id #${id} not found. Please review your :id route parameter`,
+        });
       }
 
       return res.json({
         message: `Returns the menu: ${id}`,
-        menu: specificMenu,
+        menu: this.convertMenuIdToNumber(specificMenu),
       });
     } catch (err) {
       console.error("Error retrieving specific menu:", err);
