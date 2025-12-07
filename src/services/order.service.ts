@@ -1,33 +1,53 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaClient } from "../../prisma/client";
-import OrderItemDto from "../dtos/order_item.dto";
+import { PrismaClient, Prisma } from "../../prisma/client";
+
+import OrderedMenuDto from "../dtos/ordered_menu.dto";
+import MenuPriceDto from "../dtos/menu_price.dto";
 
 @Injectable()
 export class OrderService {
   constructor(private prisma: PrismaClient) {}
 
-  async InsertOrder(orderItems: OrderItemDto[]) {
+  private serializeMenuIds(menuIds: (number | bigint)[]): number[] {
+    return menuIds.map((menuId) => Number(menuId));
+  }
+
+  private accumalatePrice(
+    orderedMenus: OrderedMenuDto[],
+    menuPrices: MenuPriceDto[]
+  ): number {
+    return orderedMenus.reduce((acc, orderedMenu) => {
+      const matchedMenu = menuPrices.find(
+        (eachMenu) => eachMenu.id === orderedMenu.menuId
+      );
+      return acc + (matchedMenu ? matchedMenu.price * orderedMenu.quantity : 0);
+    }, 0);
+  }
+
+  async InsertOrder(orderedMenus: OrderedMenuDto[]) {
+    const serializedMenuIds = this.serializeMenuIds(
+      orderedMenus.map((item) => item.menuId)
+    );
+
     const order = await this.prisma.$transaction(async (prisma) => {
-      const menusPrice = await prisma.menu.findMany({
+      const menuPrices = await prisma.menu.findMany({
         select: { id: true, price: true },
         where: {
-          id: { in: orderItems.map((item) => item.menuId) },
+          id: { in: serializedMenuIds },
         },
       });
+      const accumulatedPrice = this.accumalatePrice(orderedMenus, menuPrices);
       const newOrder = await prisma.order.create({
         data: {
           timestamp: new Date().getTime(),
-          totalPrice: orderItems.reduce((acc, item) => {
-            const menu = menusPrice.find((menu) => menu.id === item.menuId);
-            return acc + (menu ? menu.price * item.quantity : 0);
-          }, 0),
+          totalPrice: accumulatedPrice,
         },
       });
       await prisma.orderMenu.createMany({
-        data: orderItems.map((item) => ({
+        data: orderedMenus.map((orderedMenu) => ({
           orderId: newOrder.uuid,
-          menuId: item.menuId,
-          quantity: item.quantity,
+          menuId: orderedMenu.menuId,
+          quantity: orderedMenu.quantity,
         })),
       });
       return newOrder;
