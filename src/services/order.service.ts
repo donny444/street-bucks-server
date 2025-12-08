@@ -77,10 +77,24 @@ export class OrderService {
     return orders;
   }
 
-  async GetSpecificOrder(orderId: string) {
+  async GetSpecificOrder(where: Prisma.OrderWhereUniqueInput) {
     const order = await this.prisma.order.findUnique({
-      where: { uuid: orderId },
-      include: { OrderMenu: true },
+      select: {
+        uuid: true,
+        totalPrice: true,
+        OrderMenu: {
+          select: {
+            quantity: true,
+            Menu: {
+              select: {
+                name: true,
+                price: true,
+              },
+            },
+          },
+        },
+      },
+      where: where,
     });
 
     return order;
