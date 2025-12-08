@@ -1,16 +1,26 @@
-import { Body, Controller, Get, Post, Param, Req, Res } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  Param,
+  Req,
+  Res,
+} from "@nestjs/common";
 import { Request, Response } from "express";
 
 import { OrderService } from "../services/order.service";
-import OrderItemDto from "../dtos/order_item.dto";
+import OrderedMenuDto from "../dtos/ordered_menu.dto";
 
 @Controller("orders")
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post()
+  @HttpCode(201)
   async MakeOrder(
-    @Body() cartItems: OrderItemDto[],
+    @Body() cartItems: OrderedMenuDto[],
     @Res() res: Response
   ): Promise<Response> {
     try {
@@ -49,11 +59,15 @@ export class OrderController {
 
   @Get(":uuid")
   async SpecificOrder(
-    @Param("uuid") uuid: string,
+    @Param("uuid") uuid: string | undefined,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const order = await this.orderService.GetSpecificOrder(uuid);
+      if (!uuid) {
+        return res.status(400).json({ error: "Order UUID is required." });
+      }
+
+      const order = await this.orderService.GetSpecificOrder({ uuid });
       if (!order) {
         return res.json({ message: "Order not found." });
       }
