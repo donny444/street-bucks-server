@@ -12,41 +12,40 @@ import {
 import { Response } from "express";
 
 import { UserService } from "../services/user.service";
-import type { Prisma } from "../../prisma/client";
 
-type UserIdentifier = Required<Pick<Prisma.UserWhereUniqueInput, "uuid">>;
-type UserCreateRequest = Prisma.UserUncheckedCreateInput;
-type UserUpdateRequest = Prisma.UserUncheckedUpdateInput & UserIdentifier;
+import { RegisterDto, UserEditDto } from "../dtos/user.dto";
 
 @Controller("users")
 export class UserController {
-  constructor(private readonly usersService: UserService) {}
+  constructor(private readonly userService: UserService) {}
 
   @Post()
+  @HttpCode(201)
   async RegisterUser(
-    @Body() userData: UserCreateRequest,
+    @Body() userData: RegisterDto,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const { firstName, lastName, password, uuid } = userData;
+      const { firstName, lastName, password, branchId = 1 } = userData;
 
-      if (!firstName || !lastName || !password) {
+      if (!firstName || !lastName || !password || !branchId) {
         return res.status(400).json({
-          message: "First name, last name, and password are required.",
+          message:
+            "First name, last name, password, and branchId are required.",
         });
       }
 
-      const existingUser = uuid
-        ? await this.usersService.GetUser({ uuid })
-        : null;
-      if (existingUser) {
-        return res.status(409).json({ message: "User already exists." });
-      }
+      // const existingUser = uuid
+      //   ? await this.userService.GetUser({ uuid })
+      //   : null;
+      // if (existingUser) {
+      //   return res.status(409).json({ message: "User already exists." });
+      // }
 
-      await this.usersService.InsertUser(userData);
+      await this.userService.InsertUser(userData);
 
       return res.json({
-        message: "User registered successfully.",
+        message: "User registered to the system successfully.",
       });
     } catch (err) {
       console.error("Error registering user:", err);
@@ -55,25 +54,21 @@ export class UserController {
   }
 
   @Post(":uuid")
-  async CheckInUser(
+  @HttpCode(201)
+  async AttendUser(
     @Param("uuid") uuid: string,
-    @Body("status") status: boolean,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const existingUser = await this.usersService.GetUser({ uuid });
+      const existingUser = await this.userService.GetUser({ uuid });
       if (!existingUser) {
         return res.status(404).json({ message: "User not found." });
       }
 
-      if (status) {
-        await this.usersService.InsertAttendance({ uuid });
-      } else {
-        await this.usersService.RemoveAttendance({ uuid });
-      }
+      await this.userService.ToggleAttendance({ uuid });
 
       return res.json({
-        message: `User: ${uuid} check status: ${status}`,
+        message: `User: ${uuid} attendance status for today has been switched`,
       });
     } catch (err) {
       console.error("Error checking in user:", err);
@@ -87,13 +82,14 @@ export class UserController {
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const user = await this.usersService.GetUser({ uuid });
+      const user = await this.userService.GetUser({ uuid });
       if (!user) {
         return res.status(404).json({ message: "User not found." });
       }
 
       return res.json({
         message: `See the specific information of user: ${uuid}`,
+        user,
       });
     } catch (err) {
       console.error("Error retrieving user info:", err);
@@ -103,31 +99,37 @@ export class UserController {
 
   @Put()
   async EditUser(
-    @Body() userData: UserUpdateRequest,
+    @Body() userData: UserEditDto,
     @Res() res: Response
   ): Promise<Response> {
     try {
       const { uuid, ...updateFields } = userData;
       const { firstName, lastName, password } = userData;
 
-      if (!uuid || !firstName || !lastName || !password) {
+      if (
+        uuid === "" ||
+        firstName === "" ||
+        lastName === "" ||
+        password === ""
+      ) {
         return res.status(400).json({
-          message: "UUID, first name, last name, and password are required.",
+          message:
+            "UUID, first name, last name, and password must not be empty strings.",
         });
       }
 
-      const existingUser = await this.usersService.GetUser({ uuid });
+      const existingUser = await this.userService.GetUser({ uuid });
       if (!existingUser) {
         return res.status(404).json({ message: "User not found." });
       }
 
-      await this.usersService.UpdateUser({
+      await this.userService.UpdateUser({
         where: { uuid },
         data: updateFields,
       });
 
       return res.json({
-        message: `Manipulate the information of user: ${uuid}`,
+        message: `Updated the information of the user: ${uuid}`,
       });
     } catch (err) {
       console.error("Error editing user info:", err);
@@ -142,15 +144,15 @@ export class UserController {
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const user = await this.usersService.GetUser({ uuid });
+      const user = await this.userService.GetUser({ uuid });
       if (!user) {
         return res.status(404).json({ message: "User not found." });
       }
 
-      await this.usersService.DeleteUser({ uuid });
+      await this.userService.DeleteUser({ uuid });
 
       return res.json({
-        message: `Delete all information of user: ${uuid}`,
+        message: `Delete all information of the user: ${uuid}`,
       });
     } catch (err) {
       console.error("Error deleting user:", err);

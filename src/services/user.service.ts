@@ -1,24 +1,23 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaClient, Prisma } from "../../prisma/client";
-import { start } from "repl";
 
 @Injectable()
 export class UserService {
-  constructor(
-    private prisma: PrismaClient,
-    private startOfDay = new Date().setHours(0, 0, 0, 0),
-    private startToday = new Date(startOfDay),
-    private endOfDay = new Date().setHours(23, 59, 59, 999),
-    private endToday = new Date(endOfDay),
-  ) {}
+  constructor(private prisma: PrismaClient) {}
 
   async InsertUser(data: Prisma.UserUncheckedCreateInput) {
     return this.prisma.user.create({
-      data,
+      data: {
+        ...data,
+        branchId: data.branchId || 1, // workaround
+        role: "STAFF",
+      },
     });
   }
 
-  async InsertAttendance(where: Prisma.UserWhereUniqueInput) {
+  async ToggleAttendance(where: Prisma.UserWhereUniqueInput) {
+    const startOfDay = new Date(new Date().setHours(0, 0, 0, 0));
+    const endOfDay = new Date(new Date().setHours(23, 59, 59, 999));
     const userUuid = where.uuid;
     if (!userUuid) {
       throw new Error("User uuid is required to record attendance.");
@@ -28,33 +27,25 @@ export class UserService {
       where: {
         userId: userUuid,
         dateTime: {
-          in: [this.startToday, this.endToday],
+          in: [startOfDay, endOfDay],
         },
       },
     });
+
     if (existedAttendance) {
-      throw new Error("Attendance for today already recorded.");
-    }
-
-    return this.prisma.attendance.create({
-      data: { userId: userUuid },
-    });
-  }
-
-  async RemoveAttendance(where: Prisma.UserWhereUniqueInput) {
-    const userUuid = where.uuid;
-    if (!userUuid) {
-      throw new Error("User uuid is required to remove attendance.");
-    }
-
-    return this.prisma.attendance.deleteMany({
-      where: {
-        userId: userUuid,
-        dateTime: {
-          in: [this.startToday, this.endToday]
+      return this.prisma.attendance.deleteMany({
+        where: {
+          userId: existedAttendance.uuid,
+          dateTime: {
+            in: [startOfDay, endOfDay],
+          },
         },
-      },
-    });
+      });
+    } else {
+      return this.prisma.attendance.create({
+        data: { userId: userUuid },
+      });
+    }
   }
 
   async GetUser(where: Prisma.UserWhereUniqueInput) {
