@@ -145,7 +145,7 @@ export class InsightController {
       const salesMap: Map<string, number[]> = new Map([]);
 
       salesInYear.forEach((sale) => {
-        const date = new Date(sale.order.timestamp as number);
+        const date = new Date(sale.order.timestamp);
         const month = date.getMonth(); // 0-11
         if (!salesMap.has(sale.menu.type)) {
           salesMap.set(sale.menu.type, countArr);

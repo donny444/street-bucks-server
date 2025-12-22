@@ -14,6 +14,7 @@ import { Response } from "express";
 import { UserService } from "../services/user.service";
 
 import { RegisterDto, UserEditDto } from "../dtos/user.dto";
+import { $Enums } from "prisma/client";
 
 @Controller("users")
 export class UserController {
@@ -103,19 +104,33 @@ export class UserController {
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const { uuid, ...updateFields } = userData;
-      const { firstName, lastName, password } = userData;
+      const { uuid, firstName, lastName, password, role } = userData;
+      const userInfo = {
+        firstName,
+        lastName,
+        password,
+        role,
+      };
 
-      if (
-        uuid === "" ||
-        firstName === "" ||
-        lastName === "" ||
-        password === ""
-      ) {
+      if (!userData.uuid) {
+        return res.status(400).json({ message: "UUID of a user is required." });
+      }
+
+      if (firstName === "" || lastName === "" || password === "") {
         return res.status(400).json({
           message:
-            "UUID, first name, last name, and password must not be empty strings.",
+            "firstname, lastname, and password must not be empty strings.",
         });
+      }
+
+      if (role) {
+        const validRoles = [$Enums.Role.STAFF, $Enums.Role.MANAGER];
+        if (!validRoles.includes(role)) {
+          return res.status(400).json({
+            message:
+              "You either select the user role to be a staff or a manager.",
+          });
+        }
       }
 
       const existingUser = await this.userService.GetUser({ uuid });
@@ -125,7 +140,7 @@ export class UserController {
 
       await this.userService.UpdateUser({
         where: { uuid },
-        data: updateFields,
+        data: userInfo,
       });
 
       return res.json({
@@ -138,7 +153,7 @@ export class UserController {
   }
 
   @Delete(":uuid")
-  @HttpCode(204)
+  @HttpCode(200)
   async RemoveUser(
     @Param("uuid") uuid: string,
     @Res() res: Response

@@ -95,8 +95,8 @@ export class MenuController {
 
   @Get(":id")
   async SpecificMenu(
-    @Param("id") id: bigint,
-    @Res() res: Response
+    @Res() res: Response,
+    @Param("id") id: bigint
   ): Promise<Response> {
     try {
       const specificMenu = await this.menuService.GetSpecificMenu(id);

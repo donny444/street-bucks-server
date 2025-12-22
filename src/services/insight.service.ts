@@ -1,6 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaClient } from "../../prisma/client";
 
+import { TopMenusByQuantityDto, SaleByCategoryDto } from "../dtos/insight.dto";
+
 @Injectable()
 export class InsightService {
   constructor(private prisma: PrismaClient) {}
@@ -42,7 +44,7 @@ export class InsightService {
     // return this.serializeOrders(salesToday);
   }
 
-  async GetTopMenus(): Promise<any[]> {
+  async GetTopMenus(): Promise<TopMenusByQuantityDto[]> {
     const topSold = await this.prisma.orderMenu.groupBy({
       by: ["menuId"],
       _sum: { quantity: true },
@@ -113,7 +115,7 @@ export class InsightService {
     // return this.serializeOrders(salesThisMonth);
   }
 
-  async GetSalesInYear(): Promise<any[]> {
+  async GetSalesInYear(): Promise<SaleByCategoryDto[]> {
     const now = new Date();
     const firstDayOfYear = new Date(now.getFullYear(), 0, 1);
     firstDayOfYear.setHours(0, 0, 0, 0);

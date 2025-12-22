@@ -33,18 +33,18 @@ export class MenuService {
     return icedMenus;
   }
 
-  async GetCakeMenus() {
-    const cakeMenus = await this.prisma.menu.findMany({
+  async GetBakeryMenus() {
+    const bakeryMenus = await this.prisma.menu.findMany({
       select: {
         id: true,
         name: true,
         price: true,
         fileName: true,
       },
-      where: { type: "cake" },
+      where: { type: "bakery" },
     });
 
-    return cakeMenus;
+    return bakeryMenus;
   }
 
   async GetSpecificMenu(id: bigint) {

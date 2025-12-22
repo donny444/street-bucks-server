@@ -11,7 +11,7 @@ import {
 import { Request, Response } from "express";
 
 import { OrderService } from "../services/order.service";
-import OrderedMenuDto from "../dtos/ordered_menu.dto";
+import { OrderedMenuDto } from "../dtos/order.dto";
 
 @Controller("orders")
 export class OrderController {

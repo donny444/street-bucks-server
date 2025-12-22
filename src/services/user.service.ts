@@ -1,14 +1,28 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaClient, Prisma } from "../../prisma/client";
 
+import * as bcrypt from "bcryptjs";
+
+import { UserInfoDto } from "../dtos/user.dto";
+
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaClient) {}
 
+  serializeBranchId(userInfo: UserInfoDto): UserInfoDto {
+    return {
+      ...userInfo,
+      branchId: Number(userInfo.branchId),
+    };
+  }
+
   async InsertUser(data: Prisma.UserUncheckedCreateInput) {
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+
     return this.prisma.user.create({
       data: {
         ...data,
+        password: hashedPassword,
         branchId: data.branchId || 1, // workaround
         role: "STAFF",
       },
@@ -27,7 +41,8 @@ export class UserService {
       where: {
         userId: userUuid,
         dateTime: {
-          in: [startOfDay, endOfDay],
+          gte: startOfDay,
+          lte: endOfDay,
         },
       },
     });
@@ -35,9 +50,10 @@ export class UserService {
     if (existedAttendance) {
       return this.prisma.attendance.deleteMany({
         where: {
-          userId: existedAttendance.uuid,
+          userId: existedAttendance.userId,
           dateTime: {
-            in: [startOfDay, endOfDay],
+            gte: startOfDay,
+            lte: endOfDay,
           },
         },
       });
@@ -49,7 +65,7 @@ export class UserService {
   }
 
   async GetUser(where: Prisma.UserWhereUniqueInput) {
-    return this.prisma.user.findUnique({
+    const userInfo = await this.prisma.user.findUnique({
       select: {
         firstName: true,
         lastName: true,
@@ -57,6 +73,13 @@ export class UserService {
       },
       where,
     });
+    if (!userInfo) {
+      return null;
+    }
+
+    const serializedUserInfo = this.serializeBranchId(userInfo);
+
+    return serializedUserInfo;
   }
 
   async UpdateUser(params: {

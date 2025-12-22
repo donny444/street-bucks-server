@@ -1,18 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaClient, Prisma } from "../../prisma/client";
 
-import OrderedMenuDto from "../dtos/ordered_menu.dto";
-import MenuPriceDto from "../dtos/menu_price.dto";
+import { OrderedMenuDto, MenuPriceDto, OrderDto } from "../dtos/order.dto";
 
 @Injectable()
 export class OrderService {
   constructor(private prisma: PrismaClient) {}
 
-  private serializeMenuIds(menuIds: (number | bigint)[]): number[] {
-    return menuIds.map((menuId) => Number(menuId));
-  }
-
-  private accumalatePrice(
+  private accumulatePrice(
     orderedMenus: OrderedMenuDto[],
     menuPrices: MenuPriceDto[]
   ): number {
@@ -24,19 +19,28 @@ export class OrderService {
     }, 0);
   }
 
+  private normalizeMenus(orderedMenus: OrderedMenuDto[]): OrderedMenuDto[] {
+    return orderedMenus.map((item) => ({
+      menuId: BigInt(item.menuId),
+      quantity: item.quantity,
+    }));
+  }
+
   async InsertOrder(orderedMenus: OrderedMenuDto[]) {
-    const serializedMenuIds = this.serializeMenuIds(
-      orderedMenus.map((item) => item.menuId)
-    );
+    const normalizedMenus = this.normalizeMenus(orderedMenus);
+    const extractedMenuIds = orderedMenus.map((item) => item.menuId);
 
     const order = await this.prisma.$transaction(async (prisma) => {
       const menuPrices = await prisma.menu.findMany({
         select: { id: true, price: true },
         where: {
-          id: { in: serializedMenuIds },
+          id: { in: extractedMenuIds },
         },
       });
-      const accumulatedPrice = this.accumalatePrice(orderedMenus, menuPrices);
+      const accumulatedPrice = this.accumulatePrice(
+        normalizedMenus,
+        menuPrices
+      );
       const newOrder = await prisma.order.create({
         data: {
           timestamp: new Date().getTime(),
@@ -44,10 +48,10 @@ export class OrderService {
         },
       });
       await prisma.orderMenu.createMany({
-        data: orderedMenus.map((orderedMenu) => ({
+        data: normalizedMenus.map((normalizedMenu) => ({
           orderId: newOrder.uuid,
-          menuId: orderedMenu.menuId,
-          quantity: orderedMenu.quantity,
+          menuId: normalizedMenu.menuId,
+          quantity: normalizedMenu.quantity,
         })),
       });
       return newOrder;
@@ -74,7 +78,13 @@ export class OrderService {
       },
     });
 
-    return orders;
+    const serializedOrders = orders.map((order) => ({
+      uuid: order.uuid,
+      timestamp: Number(order.timestamp),
+      totalPrice: order.totalPrice,
+    }));
+
+    return serializedOrders;
   }
 
   async GetSpecificOrder(where: Prisma.OrderWhereUniqueInput) {
@@ -85,7 +95,7 @@ export class OrderService {
         OrderMenu: {
           select: {
             quantity: true,
-            Menu: {
+            menu: {
               select: {
                 name: true,
                 price: true,
