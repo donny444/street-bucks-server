@@ -1,4 +1,4 @@
-import { $Enums } from "prisma/client";
+import { $Enums } from "../../prisma/client";
 
 export type RegisterDto = {
   firstName: string;
@@ -7,12 +7,16 @@ export type RegisterDto = {
   branchId: number | bigint;
 };
 
-export type UserEditDto = {
-  uuid: string;
+export type EditUserDto = {
   firstName: string;
   lastName: string;
   password: string;
   role: typeof $Enums.Role.STAFF | typeof $Enums.Role.MANAGER;
+  auth: AuthDto;
+};
+
+export type RemoveUserDto = {
+  auth: AuthDto;
 };
 
 export type UserInfoDto = {
@@ -21,8 +25,8 @@ export type UserInfoDto = {
   branchId: number | bigint;
 };
 
-// export type AuthDto = {
-//   firstName: string;
-//   lastName: string;
-//   password: string;
-// }; will be applied in middleware implementation
+export type AuthDto = {
+  firstName: string;
+  lastName: string;
+  password: string;
+};

@@ -13,7 +13,7 @@ import { Response } from "express";
 
 import { UserService } from "../services/user.service";
 
-import { RegisterDto, UserEditDto } from "../dtos/user.dto";
+import { RegisterDto, EditUserDto } from "../dtos/user.dto";
 import { $Enums } from "prisma/client";
 
 @Controller("users")
@@ -41,7 +41,7 @@ export class UserController {
       //   : null;
       // if (existingUser) {
       //   return res.status(409).json({ message: "User already exists." });
-      // }
+      // } planning to switch id of users from uuid to email
 
       await this.userService.InsertUser(userData);
 
@@ -98,13 +98,14 @@ export class UserController {
     }
   }
 
-  @Put()
+  @Put(":uuid")
   async EditUser(
-    @Body() userData: UserEditDto,
+    @Param("uuid") uuid: string,
+    @Body() userData: EditUserDto,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const { uuid, firstName, lastName, password, role } = userData;
+      const { firstName, lastName, password, role } = userData;
       const userInfo = {
         firstName,
         lastName,
@@ -112,7 +113,7 @@ export class UserController {
         role,
       };
 
-      if (!userData.uuid) {
+      if (!uuid) {
         return res.status(400).json({ message: "UUID of a user is required." });
       }
 
@@ -153,7 +154,6 @@ export class UserController {
   }
 
   @Delete(":uuid")
-  @HttpCode(200)
   async RemoveUser(
     @Param("uuid") uuid: string,
     @Res() res: Response
