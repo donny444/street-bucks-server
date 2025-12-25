@@ -10,13 +10,13 @@ datasource db {
 
 model Attendance {
   uuid      String   @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
-  user      User    @relation(fields: [userId], references: [uuid])
+  user      User     @relation(fields: [userId], references: [email])
   userId    String
   dateTime  DateTime @default(now())
 }
 
 model User {
-  uuid          String        @id @db.Uuid @default(dbgenerated("gen_random_uuid()"))
+  email         String        @id
   branch        Branch        @relation(fields: [branchId], references: [id])
   branchId      BigInt
   firstName     String
