@@ -33,8 +33,8 @@ enum Role {
 }
 
 model Branch {
-  id          BigInt     @id @default(autoincrement()) @db.BigInt
-  password    String
+  id          BigInt    @id @default(autoincrement()) @db.BigInt
+  password    String    @db.VarChar(60)  
   User        User[]
   Stock       Stock[]
 }
