@@ -20,6 +20,11 @@ import { $Enums } from "prisma/client";
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  validateEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
   @Post()
   @HttpCode(201)
   async RegisterUser(
@@ -27,21 +32,28 @@ export class UserController {
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const { firstName, lastName, password, branchId = 1 } = userData;
+      const { email, password, firstName, lastName, branchId = 1 } = userData;
 
-      if (!firstName || !lastName || !password || !branchId) {
+      if (!email || !firstName || !lastName || !password || !branchId) {
         return res.status(400).json({
-          message:
-            "First name, last name, password, and branchId are required.",
+          message: "Every user credential is required.",
         });
       }
 
-      // const existingUser = uuid
-      //   ? await this.userService.GetUser({ uuid })
-      //   : null;
-      // if (existingUser) {
-      //   return res.status(409).json({ message: "User already exists." });
-      // } planning to switch id of users from uuid to email
+      const validEmail = this.validateEmail(email);
+      if (!validEmail) {
+        return res.status(400).json({
+          message:
+            "The email provided is not in valid format to register a new user.",
+        });
+      }
+
+      const existingUser = await this.userService.FindUser({ email });
+      if (existingUser) {
+        return res
+          .status(409)
+          .json({ message: "User with the email provided already exists." });
+      }
 
       await this.userService.InsertUser(userData);
 
@@ -54,22 +66,32 @@ export class UserController {
     }
   }
 
-  @Post(":uuid")
+  @Post(":email")
   @HttpCode(201)
   async AttendUser(
-    @Param("uuid") uuid: string,
+    @Param("email") email: string,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const existingUser = await this.userService.GetUser({ uuid });
-      if (!existingUser) {
-        return res.status(404).json({ message: "User not found." });
+      const validEmail = this.validateEmail(email);
+      if (!validEmail) {
+        return res.status(400).json({
+          message:
+            "The email provided is not in valid format to record an attendance.",
+        });
       }
 
-      await this.userService.ToggleAttendance({ uuid });
+      const existingUser = await this.userService.FindUser({ email });
+      if (!existingUser) {
+        return res
+          .status(404)
+          .json({ message: "User not found with the provided email." });
+      }
+
+      await this.userService.ToggleAttendance({ email });
 
       return res.json({
-        message: `User: ${uuid} attendance status for today has been switched`,
+        message: `User: ${email} attendance status for today has been switched`,
       });
     } catch (err) {
       console.error("Error checking in user:", err);
@@ -77,20 +99,30 @@ export class UserController {
     }
   }
 
-  @Get(":uuid")
+  @Get(":email")
   async UserInfo(
-    @Param("uuid") uuid: string,
+    @Param("email") email: string,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const user = await this.userService.GetUser({ uuid });
-      if (!user) {
-        return res.status(404).json({ message: "User not found." });
+      const validEmail = this.validateEmail(email);
+      if (!validEmail) {
+        return res.status(400).json({
+          message:
+            "The email provided is not in valid format to receive the information of the user.",
+        });
+      }
+
+      const userInfo = await this.userService.FindUser({ email });
+      if (!userInfo) {
+        return res
+          .status(404)
+          .json({ message: "User not found with the provided email." });
       }
 
       return res.json({
-        message: `See the specific information of user: ${uuid}`,
-        user,
+        message: `See the specific information of user: ${email}`,
+        userInfo,
       });
     } catch (err) {
       console.error("Error retrieving user info:", err);
@@ -98,25 +130,21 @@ export class UserController {
     }
   }
 
-  @Put(":uuid")
+  @Put(":email")
   async EditUser(
-    @Param("uuid") uuid: string,
+    @Param("email") email: string,
     @Body() userData: EditUserDto,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const { firstName, lastName, password, role } = userData;
-      const userInfo = {
-        firstName,
-        lastName,
-        password,
-        role,
-      };
-
-      if (!uuid) {
-        return res.status(400).json({ message: "UUID of a user is required." });
+      const validEmail = this.validateEmail(email);
+      if (!validEmail) {
+        return res
+          .status(400)
+          .json({ message: "User email is required to edit a specific user." });
       }
 
+      const { firstName, lastName, password, role } = userData;
       if (firstName === "" || lastName === "" || password === "") {
         return res.status(400).json({
           message:
@@ -134,18 +162,26 @@ export class UserController {
         }
       }
 
-      const existingUser = await this.userService.GetUser({ uuid });
+      const existingUser = await this.userService.FindUser({ email });
       if (!existingUser) {
         return res.status(404).json({ message: "User not found." });
       }
 
+      const newUserData = {
+        email,
+        firstName,
+        lastName,
+        password,
+        role,
+      };
+
       await this.userService.UpdateUser({
-        where: { uuid },
-        data: userInfo,
+        where: { email },
+        data: newUserData,
       });
 
       return res.json({
-        message: `Updated the information of the user: ${uuid}`,
+        message: `Updated the information of the user: ${email}`,
       });
     } catch (err) {
       console.error("Error editing user info:", err);
@@ -153,21 +189,28 @@ export class UserController {
     }
   }
 
-  @Delete(":uuid")
+  @Delete(":email")
   async RemoveUser(
-    @Param("uuid") uuid: string,
+    @Param("email") email: string,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const user = await this.userService.GetUser({ uuid });
+      const validEmail = this.validateEmail(email);
+      if (!validEmail) {
+        return res
+          .status(400)
+          .json({ message: "User email is required to remove specific user." });
+      }
+
+      const user = await this.userService.FindUser({ email });
       if (!user) {
         return res.status(404).json({ message: "User not found." });
       }
 
-      await this.userService.DeleteUser({ uuid });
+      await this.userService.DeleteUser({ email });
 
       return res.json({
-        message: `Delete all information of the user: ${uuid}`,
+        message: `Removed the user: ${email} from the database`,
       });
     } catch (err) {
       console.error("Error deleting user:", err);

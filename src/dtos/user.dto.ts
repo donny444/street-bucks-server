@@ -1,22 +1,23 @@
 import { $Enums } from "../../prisma/client";
 
 export type RegisterDto = {
+  email: string;
+  password: string;
   firstName: string;
   lastName: string;
-  password: string;
   branchId: number | bigint;
 };
 
 export type EditUserDto = {
+  password: string;
   firstName: string;
   lastName: string;
-  password: string;
   role: typeof $Enums.Role.STAFF | typeof $Enums.Role.MANAGER;
-  auth: AuthDto;
+  editor: AuthDto;
 };
 
 export type RemoveUserDto = {
-  auth: AuthDto;
+  editor: AuthDto;
 };
 
 export type UserInfoDto = {
@@ -26,7 +27,6 @@ export type UserInfoDto = {
 };
 
 export type AuthDto = {
-  firstName: string;
-  lastName: string;
+  email: string;
   password: string;
 };

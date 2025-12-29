@@ -32,14 +32,12 @@ export class UserService {
   async ToggleAttendance(where: Prisma.UserWhereUniqueInput) {
     const startOfDay = new Date(new Date().setHours(0, 0, 0, 0));
     const endOfDay = new Date(new Date().setHours(23, 59, 59, 999));
-    const userUuid = where.uuid;
-    if (!userUuid) {
-      throw new Error("User uuid is required to record attendance.");
-    }
+
+    const userEmail = where.email as string;
 
     const existedAttendance = await this.prisma.attendance.findFirst({
       where: {
-        userId: userUuid,
+        userId: userEmail,
         dateTime: {
           gte: startOfDay,
           lte: endOfDay,
@@ -59,12 +57,12 @@ export class UserService {
       });
     } else {
       return this.prisma.attendance.create({
-        data: { userId: userUuid },
+        data: { userId: userEmail },
       });
     }
   }
 
-  async GetUser(where: Prisma.UserWhereUniqueInput) {
+  async FindUser(where: Prisma.UserWhereUniqueInput) {
     const userInfo = await this.prisma.user.findUnique({
       select: {
         firstName: true,
@@ -96,14 +94,10 @@ export class UserService {
     const user = await this.prisma.$transaction(async (prisma) => {
       await prisma.attendance.deleteMany({
         where: {
-          userId: where.uuid,
+          userId: where.email,
         },
       });
-      await prisma.user.delete({
-        where: {
-          uuid: where.uuid,
-        },
-      });
+      await prisma.user.delete({ where });
     });
 
     return user;

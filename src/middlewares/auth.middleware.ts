@@ -7,39 +7,46 @@ import { EditUserDto, RemoveUserDto, AuthDto } from "../dtos/user.dto";
 @Injectable()
 export class AuthenticateUser implements NestMiddleware {
   constructor(private readonly prisma: PrismaClient) {}
+
   async use(
-    req: Request<any, any, AuthDto>,
+    req: Request<{ email: string }, any, AuthDto>,
     res: Response,
     next: NextFunction
   ) {
-    const { firstName, lastName, password } = req.body;
+    const { email } = req.params;
+    const { password } = req.body;
 
-    if (!firstName || !lastName || !password) {
+    if (!email || !password) {
       return res.status(400).json({
-        message: "First name, last name, and password are required.",
+        message: "Email and password of staff are required.",
       });
     }
 
     try {
-      const user = await this.prisma.user.findFirst({
+      const user = await this.prisma.user.findUnique({
         select: {
           password: true,
         },
         where: {
-          firstName,
-          lastName,
+          email,
         },
       });
+      if (!user) {
+        return res
+          .status(404)
+          .json({ message: "User not found with the provided email." });
+      }
 
-      const correctPassword =
-        user && (await bcrypt.compare(password, user.password));
+      const correctPassword = await bcrypt.compare(password, user.password);
       if (!correctPassword) {
-        return res.status(401).json({ message: "Invalid credentials." });
+        return res
+          .status(401)
+          .json({ message: "Incorrect password for staff." });
       }
 
       return next();
-    } catch (error) {
-      console.error("Error in `AuthenticateUser` middleware:", error);
+    } catch (err) {
+      console.error("Error in `AuthenticateUser` middleware:", err);
       return res.status(500).json({ message: "Failed to authenticate user." });
     }
   }
@@ -52,33 +59,38 @@ export class AuthorizeUser implements NestMiddleware {
     res: Response,
     next: NextFunction
   ) {
-    const { firstName, lastName, password } = req.body["auth"];
+    const { email, password } = req.body.editor;
 
-    if (!firstName || !lastName || !password) {
+    if (!email || !password) {
       return res.status(400).json({
-        message: "First name, last name, and password are required.",
+        message: "Email and password of editor are required.",
       });
     }
 
     try {
-      const user = await this.prisma.user.findFirst({
+      const editor = await this.prisma.user.findUnique({
         select: {
           role: true,
           password: true,
         },
         where: {
-          firstName,
-          lastName,
+          email,
         },
       });
-
-      const correctPassword =
-        user && (await bcrypt.compare(password, user.password));
-      if (!correctPassword) {
-        return res.status(401).json({ message: "Invalid credentials." });
+      if (!editor) {
+        return res
+          .status(404)
+          .json({ message: "Editor not found with the provided email." });
       }
 
-      if (user.role !== $Enums.Role.MANAGER) {
+      const correctPassword = await bcrypt.compare(password, editor.password);
+      if (!correctPassword) {
+        return res
+          .status(401)
+          .json({ message: "Incorrect password for editor." });
+      }
+
+      if (editor.role !== $Enums.Role.MANAGER) {
         return res
           .status(401)
           .json({ message: "Only managers are authorized" });
