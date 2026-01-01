@@ -1,8 +1,8 @@
-import { Controller, Get, Param, Res } from "@nestjs/common";
+import { Body, Controller, Get, Param, Put, Res } from "@nestjs/common";
 import { Response } from "express";
 
 import { MenuService } from "../services/menu.service";
-// import MenuDto from "../dtos/menu.dto";
+import { EditMenuDto } from "../dtos/menu.dto";
 
 @Controller("menus")
 export class MenuController {
@@ -115,6 +115,47 @@ export class MenuController {
       return res
         .status(500)
         .json({ error: "Failed to retrieve specific menu." });
+    }
+  }
+
+  @Put(":id")
+  async EditMenu(
+    @Param("id") id: bigint,
+    @Body() editMenu: EditMenuDto,
+    @Res() res: Response
+  ): Promise<Response> {
+    try {
+      if (!editMenu) {
+        return res
+          .status(400)
+          .json({ message: "No menu information provided for updating." });
+      }
+
+      const specificMenu = await this.menuService.GetSpecificMenu(id);
+      if (!specificMenu) {
+        return res.status(404).json({
+          message: `Menu id #${id} not found. Please review your :id route parameter`,
+        });
+      }
+
+      const updatedMenu = await this.menuService.UpdateMenu({
+        data: editMenu,
+        where: { id: id },
+      });
+      if (!updatedMenu) {
+        return res
+          .status(500)
+          .json({ message: "Failed to edit the menu information." });
+      }
+
+      return res.json({
+        message: `The menu id #${id} has been updated successfully.`,
+      });
+    } catch (err) {
+      console.error("Error occurred in `EditMenu`:", err);
+      return res
+        .status(500)
+        .json({ message: "Failed to edit the menu information." });
     }
   }
 }

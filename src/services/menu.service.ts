@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaClient } from "../../prisma/client";
+import { PrismaClient, Prisma } from "../../prisma/client";
 
 @Injectable()
 export class MenuService {
@@ -57,5 +57,15 @@ export class MenuService {
     });
 
     return specificMenu;
+  }
+
+  async UpdateMenu(params: {
+    data: Prisma.MenuUncheckedUpdateInput;
+    where: Prisma.MenuWhereUniqueInput;
+  }): Promise<Prisma.Prisma__MenuClient<Prisma.MenuUncheckedUpdateInput>> {
+    return this.prisma.menu.update({
+      data: params.data,
+      where: params.where,
+    });
   }
 }
