@@ -23,7 +23,7 @@ export class InsightService {
     }));
   }
 
-  async GetSalesToday(): Promise<number> {
+  async GetSalesToday(branchId: number): Promise<number> {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
     const startTimestamp = startOfDay.getTime();
@@ -37,6 +37,7 @@ export class InsightService {
           gte: startTimestamp,
           lte: endTimestamp,
         },
+        branchId: BigInt(branchId),
       },
     });
 
@@ -44,12 +45,17 @@ export class InsightService {
     // return this.serializeOrders(salesToday);
   }
 
-  async GetTopMenus(): Promise<TopMenusByQuantityDto[]> {
+  async GetTopMenus(branchId: number): Promise<TopMenusByQuantityDto[]> {
     const topSold = await this.prisma.orderMenu.groupBy({
       by: ["menuId"],
       _sum: { quantity: true },
       orderBy: [{ _sum: { quantity: "desc" } }],
       take: 5,
+      where: {
+        order: {
+          branchId: BigInt(branchId),
+        },
+      },
     });
 
     const menus = await this.prisma.menu.findMany({
@@ -68,7 +74,7 @@ export class InsightService {
     return topMenus;
   }
 
-  async GetSalesInWeek(): Promise<{ timestamp: number }[]> {
+  async GetSalesInWeek(branchId: number): Promise<{ timestamp: number }[]> {
     const now = new Date();
     const firstDayOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
     firstDayOfWeek.setHours(0, 0, 0, 0);
@@ -85,6 +91,7 @@ export class InsightService {
           gte: startTimestamp,
           lte: endTimestamp,
         },
+        branchId: BigInt(branchId),
       },
     });
 
@@ -92,7 +99,7 @@ export class InsightService {
     // return this.serializeOrders(salesThisWeek);
   }
 
-  async GetSalesInMonth(): Promise<{ timestamp: number }[]> {
+  async GetSalesInMonth(branchId: number): Promise<{ timestamp: number }[]> {
     const now = new Date();
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     firstDayOfMonth.setHours(0, 0, 0, 0);
@@ -108,6 +115,7 @@ export class InsightService {
           gte: startTimestamp,
           lte: endTimestamp,
         },
+        branchId: BigInt(branchId),
       },
     });
 
@@ -115,7 +123,7 @@ export class InsightService {
     // return this.serializeOrders(salesThisMonth);
   }
 
-  async GetSalesInYear(): Promise<SaleByCategoryDto[]> {
+  async GetSalesInYear(branchId: number): Promise<SaleByCategoryDto[]> {
     const now = new Date();
     const firstDayOfYear = new Date(now.getFullYear(), 0, 1);
     firstDayOfYear.setHours(0, 0, 0, 0);
@@ -139,6 +147,7 @@ export class InsightService {
             gte: startTimestamp,
             lte: endTimestamp,
           },
+          branchId: BigInt(branchId),
         },
       },
     });

@@ -1,7 +1,9 @@
-import { Controller, Get, HttpCode, Res } from "@nestjs/common";
+import { Controller, Get, Headers, HttpCode, Res } from "@nestjs/common";
 import { Response } from "express";
 
 import { InsightService } from "../services/insight.service";
+
+import { BranchPayloadDto } from "../dtos/branch.dto";
 
 @Controller("insights")
 export class InsightController {
@@ -9,9 +11,23 @@ export class InsightController {
 
   @HttpCode(200)
   @Get("sales-today")
-  async SalesToday(@Res() res: Response): Promise<Response> {
+  async SalesToday(
+    @Headers("Branch-Payload") branchPayload: string,
+    @Res() res: Response
+  ): Promise<Response> {
     try {
-      const salesToday = await this.insightService.GetSalesToday();
+      const parsedBranchPayload = JSON.parse(
+        branchPayload || "{}"
+      ) as BranchPayloadDto;
+      if (!parsedBranchPayload) {
+        return res
+          .status(500)
+          .json({ error: "Failed to fetch specific order." });
+      }
+
+      const { branchId } = parsedBranchPayload;
+
+      const salesToday = await this.insightService.GetSalesToday(branchId);
 
       return res.json({
         message: "See today's menu sales.",
@@ -27,9 +43,23 @@ export class InsightController {
 
   @HttpCode(200)
   @Get("top-menus")
-  async TopMenus(@Res() res: Response): Promise<Response> {
+  async TopMenus(
+    @Headers("Branch-Payload") branchPayload: string,
+    @Res() res: Response
+  ): Promise<Response> {
     try {
-      const topMenus = await this.insightService.GetTopMenus();
+      const parsedBranchPayload = JSON.parse(
+        branchPayload || "{}"
+      ) as BranchPayloadDto;
+      if (!parsedBranchPayload) {
+        return res
+          .status(500)
+          .json({ error: "Failed to fetch specific order." });
+      }
+
+      const { branchId } = parsedBranchPayload;
+
+      const topMenus = await this.insightService.GetTopMenus(branchId);
       if (topMenus.length < 1) {
         return res.json({
           message:
@@ -56,9 +86,23 @@ export class InsightController {
 
   @HttpCode(200)
   @Get("sales-in-week")
-  async SalesInWeek(@Res() res: Response): Promise<Response> {
+  async SalesInWeek(
+    @Headers("Branch-Payload") branchPayload: string,
+    @Res() res: Response
+  ): Promise<Response> {
     try {
-      const salesInWeek = await this.insightService.GetSalesInWeek();
+      const parsedBranchPayload = JSON.parse(
+        branchPayload || "{}"
+      ) as BranchPayloadDto;
+      if (!parsedBranchPayload) {
+        return res
+          .status(500)
+          .json({ error: "Failed to fetch specific order." });
+      }
+
+      const { branchId } = parsedBranchPayload;
+
+      const salesInWeek = await this.insightService.GetSalesInWeek(branchId);
 
       const counts: Map<string, number> = new Map();
 
@@ -96,9 +140,23 @@ export class InsightController {
 
   @HttpCode(200)
   @Get("sales-in-month")
-  async SalesInMonth(@Res() res: Response): Promise<Response> {
+  async SalesInMonth(
+    @Headers("Branch-Payload") branchPayload: string,
+    @Res() res: Response
+  ): Promise<Response> {
     try {
-      const salesInMonth = await this.insightService.GetSalesInMonth();
+      const parsedBranchPayload = JSON.parse(
+        branchPayload || "{}"
+      ) as BranchPayloadDto;
+      if (!parsedBranchPayload) {
+        return res
+          .status(500)
+          .json({ error: "Failed to fetch specific order." });
+      }
+
+      const { branchId } = parsedBranchPayload;
+
+      const salesInMonth = await this.insightService.GetSalesInMonth(branchId);
 
       const countMap: Map<string, number> = new Map();
 
@@ -136,9 +194,23 @@ export class InsightController {
 
   @HttpCode(200)
   @Get("sales-in-year")
-  async SalesInYear(@Res() res: Response): Promise<Response> {
+  async SalesInYear(
+    @Headers("Branch-Payload") branchPayload: string,
+    @Res() res: Response
+  ): Promise<Response> {
     try {
-      const salesInYear = await this.insightService.GetSalesInYear();
+      const parsedBranchPayload = JSON.parse(
+        branchPayload || "{}"
+      ) as BranchPayloadDto;
+      if (!parsedBranchPayload) {
+        return res
+          .status(500)
+          .json({ error: "Failed to fetch specific order." });
+      }
+
+      const { branchId } = parsedBranchPayload;
+
+      const salesInYear = await this.insightService.GetSalesInYear(branchId);
 
       const countArr: number[] = new Array(12).fill(0) as number[];
 

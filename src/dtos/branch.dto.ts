@@ -7,3 +7,7 @@ export type BranchInfoDto = {
   id: bigint | number;
   password: string;
 };
+
+export type BranchPayloadDto = {
+  branchId: number;
+};

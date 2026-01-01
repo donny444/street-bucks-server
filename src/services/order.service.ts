@@ -26,7 +26,10 @@ export class OrderService {
     }));
   }
 
-  async InsertOrder(orderedMenus: OrderedMenuDto[]) {
+  async InsertOrder(
+    orderedMenus: OrderedMenuDto[],
+    branchId: number
+  ): Promise<OrderDto> {
     const normalizedMenus = this.normalizeMenus(orderedMenus);
     const extractedMenuIds = orderedMenus.map((item) => item.menuId);
 
@@ -43,6 +46,7 @@ export class OrderService {
       );
       const newOrder = await prisma.order.create({
         data: {
+          branchId: BigInt(branchId),
           timestamp: new Date().getTime(),
           totalPrice: accumulatedPrice,
         },
@@ -60,7 +64,7 @@ export class OrderService {
     return order;
   }
 
-  async GetTodayOrders() {
+  async GetTodayOrders(branchId: number) {
     const startOfDay = new Date().setHours(0, 0, 0, 0);
     const endOfDay = new Date().setHours(23, 59, 59, 999);
 
@@ -70,6 +74,7 @@ export class OrderService {
           gte: startOfDay,
           lte: endOfDay,
         },
+        branchId: BigInt(branchId),
       },
       select: {
         uuid: true,

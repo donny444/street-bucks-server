@@ -2,6 +2,7 @@ import { Injectable, NestMiddleware } from "@nestjs/common";
 import { Request, Response, NextFunction } from "express";
 import { verify as jwtVerify } from "jsonwebtoken";
 import { PrismaClient } from "../../prisma/client";
+import { BranchPayloadDto } from "../dtos/branch.dto";
 
 @Injectable()
 export class AuthorizeBranch implements NestMiddleware {
@@ -23,7 +24,7 @@ export class AuthorizeBranch implements NestMiddleware {
         return res.status(500).json({ error: "Failed to authorize branch." });
       }
 
-      const decoded = jwtVerify(branchToken, jwtSecret) as { branchId: number };
+      const decoded = jwtVerify(branchToken, jwtSecret) as BranchPayloadDto;
 
       const branch = await this.prisma.branch.findUnique({
         where: { id: decoded.branchId },
@@ -33,6 +34,8 @@ export class AuthorizeBranch implements NestMiddleware {
           .status(404)
           .json({ message: "Branch not found with the provided token." });
       }
+
+      req.headers["Branch-Payload"] = JSON.stringify(decoded);
 
       return next();
     } catch (err) {
