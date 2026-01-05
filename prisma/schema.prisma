@@ -43,16 +43,16 @@ model Branch {
 model Stock {
   branch   Branch @relation(fields: [branchId], references: [id])
   branchId BigInt
-  recipe   Recipe @relation(fields: [recipeId], references: [id])
-  recipeId BigInt
+  recipe   Recipe @relation(fields: [recipeId], references: [name])
+  recipeId String
   quantity Int
 
   @@id([branchId, recipeId])
 }
 
 model Recipe {
-  id         BigInt       @id @default(autoincrement()) @db.BigInt
-  name       String       @unique
+  name       String       @id
+  imagePath  String       @unique
   Stock      Stock[]
   MenuRecipe MenuRecipe[]
 }
@@ -60,8 +60,8 @@ model Recipe {
 model MenuRecipe {
   menu     Menu   @relation(fields: [menuId], references: [id])
   menuId   BigInt
-  recipe   Recipe @relation(fields: [recipeId], references: [id])
-  recipeId BigInt
+  recipe   Recipe @relation(fields: [recipeId], references: [name])
+  recipeId String
   amount   Int
 
   @@id([menuId, recipeId])
