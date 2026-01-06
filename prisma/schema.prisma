@@ -51,15 +51,15 @@ model Stock {
 }
 
 model Recipe {
-  name       String       @id
+  name       String       @id @db.Citext
   imagePath  String       @unique
   Stock      Stock[]
   MenuRecipe MenuRecipe[]
 }
 
 model MenuRecipe {
-  menu     Menu   @relation(fields: [menuId], references: [id])
-  menuId   BigInt
+  menu     Menu   @relation(fields: [menuId], references: [name])
+  menuId   String
   recipe   Recipe @relation(fields: [recipeId], references: [name])
   recipeId String
   amount   Int
@@ -68,11 +68,10 @@ model MenuRecipe {
 }
 
 model Menu {
-  id         BigInt       @id @default(autoincrement()) @db.BigInt
-  name       String       @unique
+  name       String       @id @db.Citext
   price      Float        @db.DoublePrecision
   type       String
-  fileName   String
+  imagePath   String
   MenuRecipe MenuRecipe[]
   OrderMenu  OrderMenu[]
 }
@@ -80,8 +79,8 @@ model Menu {
 model OrderMenu {
   order    Order  @relation(fields: [orderId], references: [uuid])
   orderId  String
-  menu     Menu   @relation(fields: [menuId], references: [id])
-  menuId   BigInt
+  menu     Menu   @relation(fields: [menuId], references: [name])
+  menuId   String
   quantity Int
 
   @@id([orderId, menuId])
