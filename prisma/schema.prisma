@@ -70,10 +70,16 @@ model MenuRecipe {
 model Menu {
   name       String       @id @db.Citext
   price      Float        @db.DoublePrecision
-  type       String
-  imagePath   String
+  category    Category
+  imagePath   String      @unique
   MenuRecipe MenuRecipe[]
   OrderMenu  OrderMenu[]
+}
+
+enum Category {
+  HOT       @map("hot")
+  COLD      @map("cold")
+  BAKERY    @map("bakery")
 }
 
 model OrderMenu {
