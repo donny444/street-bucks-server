@@ -35,9 +35,9 @@ enum Role {
 model Branch {
   id       BigInt  @id @default(autoincrement()) @db.BigInt
   password String  @db.VarChar(60)
-  User     User[]
-  Stock    Stock[]
-  Order    Order[]
+  user     User[]
+  stock    Stock[]
+  order    Order[]
 }
 
 model Stock {
@@ -53,11 +53,11 @@ model Stock {
 model Recipe {
   name       String       @id @db.Citext
   imagePath  String       @unique
-  Stock      Stock[]
-  MenuRecipe MenuRecipe[]
+  stock      Stock[]
+  ingredient Ingredient[]
 }
 
-model MenuRecipe {
+model Ingredient {
   menu     Menu   @relation(fields: [menuId], references: [name])
   menuId   String
   recipe   Recipe @relation(fields: [recipeId], references: [name])
@@ -73,8 +73,8 @@ model Menu {
   price      Float        @db.DoublePrecision
   category    Category
   imagePath   String      @unique
-  MenuRecipe MenuRecipe[]
-  OrderMenu  OrderMenu[]
+  ingredient Ingredient[]
+  entry  Entry[]
 }
 
 enum Category {
@@ -83,7 +83,7 @@ enum Category {
   BAKERY    @map("bakery")
 }
 
-model OrderMenu {
+model Entry {
   order    Order  @relation(fields: [orderId], references: [uuid])
   orderId  String
   menu     Menu   @relation(fields: [menuId], references: [name])
@@ -99,5 +99,5 @@ model Order {
   branchId   BigInt
   timestamp  BigInt      @default(dbgenerated("(extract(epoch from now())*1000)::bigint")) @db.BigInt
   totalPrice Float       @db.DoublePrecision
-  OrderMenu  OrderMenu[]
+  entry  Entry[]
 }
