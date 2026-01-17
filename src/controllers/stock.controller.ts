@@ -29,13 +29,15 @@ export class StockController {
       const { branchId } = parsedBranchPayload;
 
       const updatedQuantity = await this.stockService.UpdateQuantity({
+        data: {
+          quantity: editQuantity.quantity,
+        },
         where: {
           branchId_recipeId: {
-            branchId: branchId,
+            branchId: BigInt(branchId),
             recipeId: editQuantity.recipeId,
           },
         },
-        data: editQuantity,
       });
       if (!updatedQuantity) {
         return res

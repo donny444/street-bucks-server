@@ -1,4 +1,4 @@
 export type EditQuantityDto = {
-  recipeId: number;
+  recipeId: string;
   quantity: number;
 };
