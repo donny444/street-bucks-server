@@ -3,11 +3,12 @@ export type SignInDto = {
   password: string;
 };
 
-export type BranchInfoDto = {
-  id: bigint | number;
-  password: string;
-};
+export type SerializedBranchId = number;
 
 export type BranchPayloadDto = {
   branchId: number;
+};
+
+export type CreateBranchDto = {
+  password: string;
 };

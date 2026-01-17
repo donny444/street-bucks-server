@@ -1,26 +1,26 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  Post,
-  Put,
-  Param,
-  Res,
-} from "@nestjs/common";
+import { Body, Controller, HttpCode, Post, Res } from "@nestjs/common";
 import { Response } from "express";
+
+import { Branch } from "../../prisma/client";
 
 import * as bcrypt from "bcryptjs";
 import { sign as jwtSign } from "jsonwebtoken";
 
 import { BranchService } from "../services/branch.service";
 
-import { SignInDto } from "../dtos/branch.dto";
+import {
+  SignInDto,
+  SerializedBranchId,
+  CreateBranchDto,
+} from "../dtos/branch.dto";
 
 @Controller("branches")
 export class BranchController {
   constructor(private readonly branchService: BranchService) {}
+
+  serializeBranchId(branch: Branch): SerializedBranchId {
+    return Number(branch.id);
+  }
 
   @Post("signin")
   @HttpCode(200)
@@ -42,6 +42,11 @@ export class BranchController {
         return res
           .status(404)
           .json({ message: "No branch exists with the provided ID" });
+      }
+      if (branchInfo instanceof Error) {
+        return res
+          .status(500)
+          .json({ error: "Failed to sign in to a branch." });
       }
 
       const correctPassword = await bcrypt.compare(
@@ -67,7 +72,42 @@ export class BranchController {
       return res.json({ message: "Branch signed in successfully.", token });
     } catch (err) {
       console.error("Error signing in branch:", err);
-      return res.status(500).json({ error: "Failed to sign in branch." });
+      return res.status(500).json({ error: "Failed to sign in to a branch." });
+    }
+  }
+
+  @Post()
+  async CreateBranch(
+    @Body() branchData: CreateBranchDto,
+    @Res() res: Response
+  ): Promise<Response> {
+    const { password } = branchData;
+    if (!password) {
+      return res
+        .status(400)
+        .json({ message: "Password is required to create a branch." });
+    }
+
+    try {
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const newBranch = await this.branchService.InsertBranch({
+        password: hashedPassword,
+      });
+      if (newBranch instanceof Error) {
+        return res
+          .status(500)
+          .json({ error: "Failed to create a new branch." });
+      }
+
+      const serializedBranchId = this.serializeBranchId(newBranch);
+
+      return res.status(201).json({
+        message: `Branch created successfully with the id: #${serializedBranchId}.`,
+      });
+    } catch (err) {
+      console.error("Error creating new branch:", err);
+      return res.status(500).json({ error: "Failed to create a new branch." });
     }
   }
 }
