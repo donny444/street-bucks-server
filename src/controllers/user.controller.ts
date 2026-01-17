@@ -55,14 +55,21 @@ export class UserController {
           .json({ message: "User with the email provided already exists." });
       }
 
-      await this.userService.InsertUser(userData);
+      const newUser = await this.userService.InsertUser(userData);
+      if (!newUser || newUser instanceof Error) {
+        return res
+          .status(500)
+          .json({ message: "Failed to register the new user." });
+      }
 
       return res.json({
         message: "User registered to the system successfully.",
       });
     } catch (err) {
       console.error("Error registering user:", err);
-      return res.status(500).json({ error: "Failed to register user." });
+      return res
+        .status(500)
+        .json({ error: "Failed to register the new user." });
     }
   }
 
@@ -175,10 +182,15 @@ export class UserController {
         role,
       };
 
-      await this.userService.UpdateUser({
+      const updatedUser = await this.userService.UpdateUser({
         where: { email },
         data: newUserData,
       });
+      if (!updatedUser) {
+        return res
+          .status(500)
+          .json({ message: "Failed to update the user information." });
+      }
 
       return res.json({
         message: `Updated the information of the user: ${email}`,
