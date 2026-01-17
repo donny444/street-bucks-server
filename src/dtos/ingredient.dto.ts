@@ -1,5 +1,5 @@
 export class EditIngredientDto {
-  menuId: number;
-  recipeId: number;
+  menuId: string;
+  recipeId: string;
   amount: number;
 }

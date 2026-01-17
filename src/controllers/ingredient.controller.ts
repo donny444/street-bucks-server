@@ -15,26 +15,29 @@ export class IngredientController {
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const updatedIngredients = await this.ingredientService.UpdateIngredients(
-        {
-          where: [
-            ...editIngredients.map((ingredient) => ({
-              menuId_recipeId: {
-                menuId: BigInt(ingredient.menuId),
-                recipeId: BigInt(ingredient.recipeId),
-              },
-            })),
-          ],
-          data: [
-            ...editIngredients.map((ingredient) => ({
-              amount: ingredient.amount,
-            })),
-          ],
-        }
-      );
-
-      if (updatedIngredients.length !== editIngredients.length) {
-        throw new Error("Transaction in `UpdateIngredients` did not complete.");
+      const updatedIngredients = await this.ingredientService.UpdateAmount({
+        data: [
+          ...editIngredients.map((ingredient) => ({
+            amount: ingredient.amount,
+          })),
+        ],
+        where: [
+          ...editIngredients.map((ingredient) => ({
+            menuId_recipeId: {
+              menuId: ingredient.menuId,
+              recipeId: ingredient.recipeId,
+            },
+          })),
+        ],
+      });
+      if (!updatedIngredients || updatedIngredients instanceof Error) {
+        console.error(
+          "Transaction in `UpdateIngredients` did not complete:",
+          updatedIngredients
+        );
+        return res
+          .status(500)
+          .json({ message: "Failed to edit amount of ingredients." });
       }
 
       return res.json({

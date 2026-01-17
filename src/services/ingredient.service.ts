@@ -1,27 +1,27 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaClient, Prisma, MenuRecipe } from "../../prisma/client";
+import { PrismaClient, Prisma, Ingredient } from "../../prisma/client";
 
 @Injectable()
 export class IngredientService {
   constructor(private prisma: PrismaClient) {}
 
-  async UpdateIngredients(params: {
-    data: Prisma.MenuRecipeUpdateInput[];
-    where: Prisma.MenuRecipeWhereUniqueInput[];
-  }): Promise<MenuRecipe[]> {
+  async UpdateAmount(params: {
+    data: Prisma.IngredientUpdateInput[];
+    where: Prisma.IngredientWhereUniqueInput[];
+  }): Promise<Ingredient[] | Error> {
     try {
       return await this.prisma.$transaction(async (prisma) => {
         const updatePromises = params.where.map((where, index) => {
-          return prisma.menuRecipe.update({
-            where: where,
+          return prisma.ingredient.update({
             data: params.data[index],
+            where: where,
           });
         });
         return Promise.all(updatePromises);
       });
     } catch (err) {
       console.error("The transaction to update ingredients failed:", err);
-      throw err;
+      return Error(err as string);
     }
   }
 }
