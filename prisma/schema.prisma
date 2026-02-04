@@ -79,7 +79,7 @@ model Menu {
 
 enum Category {
   HOT         @map("hot")
-  COLD        @map("cold")
+  ICED        @map("iced")
   BAKERY      @map("bakery")
 }
 
