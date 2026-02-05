@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaClient, Prisma } from "../../prisma/client";
+import { PrismaClient, Prisma, Category } from "../prisma/client";
 
 @Injectable()
 export class MenuService {
@@ -8,12 +8,11 @@ export class MenuService {
   async GetHotMenus() {
     const hotMenus = await this.prisma.menu.findMany({
       select: {
-        id: true,
         name: true,
         price: true,
-        fileName: true,
+        imagePath: true,
       },
-      where: { type: "hot" },
+      where: { category: Category.HOT },
     });
 
     return hotMenus;
@@ -22,12 +21,11 @@ export class MenuService {
   async GetIcedMenus() {
     const icedMenus = await this.prisma.menu.findMany({
       select: {
-        id: true,
         name: true,
         price: true,
-        fileName: true,
+        imagePath: true,
       },
-      where: { type: "iced" },
+      where: { category: Category.ICED },
     });
 
     return icedMenus;
@@ -36,23 +34,22 @@ export class MenuService {
   async GetBakeryMenus() {
     const bakeryMenus = await this.prisma.menu.findMany({
       select: {
-        id: true,
         name: true,
         price: true,
-        fileName: true,
+        imagePath: true,
       },
-      where: { type: "bakery" },
+      where: { category: Category.BAKERY },
     });
 
     return bakeryMenus;
   }
 
-  async GetSpecificMenu(id: bigint) {
+  async GetSpecificMenu(name: string) {
     const specificMenu = await this.prisma.menu.findUnique({
-      where: { id: id },
+      where: { name },
       include: {
-        MenuRecipe: false,
-        OrderMenu: false,
+        ingredient: false,
+        entry: false,
       },
     });
 

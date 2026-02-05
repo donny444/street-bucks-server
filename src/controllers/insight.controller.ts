@@ -219,10 +219,10 @@ export class InsightController {
       salesInYear.forEach((sale) => {
         const date = new Date(sale.order.timestamp);
         const month = date.getMonth(); // 0-11
-        if (!salesMap.has(sale.menu.type)) {
-          salesMap.set(sale.menu.type, countArr);
+        if (!salesMap.has(sale.menu.category)) {
+          salesMap.set(sale.menu.category, countArr);
         }
-        salesMap.get(sale.menu.type)![month]++;
+        salesMap.get(sale.menu.category)![month]++;
       });
 
       const salesByType = Array.from(salesMap, ([label, data]) => ({

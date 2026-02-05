@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaClient } from "../../prisma/client";
+import { PrismaClient } from "../prisma/client";
 
 import { TopMenusByQuantityDto, SaleByCategoryDto } from "../dtos/insight.dto";
 
@@ -46,7 +46,7 @@ export class InsightService {
   }
 
   async GetTopMenus(branchId: number): Promise<TopMenusByQuantityDto[]> {
-    const topSold = await this.prisma.orderMenu.groupBy({
+    const topSold = await this.prisma.entry.groupBy({
       by: ["menuId"],
       _sum: { quantity: true },
       orderBy: [{ _sum: { quantity: "desc" } }],
@@ -59,13 +59,14 @@ export class InsightService {
     });
 
     const menus = await this.prisma.menu.findMany({
-      where: { id: { in: topSold.map((item) => item.menuId) } },
-      select: { id: true, name: true },
+      where: { name: { in: topSold.map((item) => item.menuId) } },
+      select: { name: true },
     });
 
     const topMenus = topSold
       .map((m) => ({
-        menuName: menus.find((menu) => menu.id === m.menuId)?.name ?? "Unnamed",
+        menuName:
+          menus.find((menu) => menu.name === m.menuId)?.name ?? "Unnamed",
         totalQuantity: m._sum.quantity ?? 0,
       }))
       .sort((a, b) => b.totalQuantity - a.totalQuantity)
@@ -132,13 +133,13 @@ export class InsightService {
     lastDayOfYear.setHours(23, 59, 59, 999);
     const endTimestamp = lastDayOfYear.getTime();
 
-    const salesInYear = await this.prisma.orderMenu.findMany({
+    const salesInYear = await this.prisma.entry.findMany({
       select: {
         order: {
           select: { timestamp: true },
         },
         menu: {
-          select: { type: true },
+          select: { category: true },
         },
       },
       where: {

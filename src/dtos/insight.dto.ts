@@ -8,6 +8,6 @@ export type SaleByCategoryDto = {
     timestamp: number;
   };
   menu: {
-    type: string;
+    category: string;
   };
 };

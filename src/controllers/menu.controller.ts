@@ -8,40 +8,6 @@ import { EditMenuDto } from "../dtos/menu.dto";
 export class MenuController {
   constructor(private readonly menuService: MenuService) {}
 
-  private convertMenuIdsToNumber(
-    menus: { id: bigint; name: string; price: number; fileName: string }[]
-  ): { id: number; name: string; price: number; fileName: string }[] {
-    return menus.map(({ id, ...rest }) => {
-      const num = Number(id);
-      if (!Number.isSafeInteger(num)) {
-        console.warn(
-          `Menu id ${id.toString()} exceeds Number.MAX_SAFE_INTEGER; precision may be lost.`
-        );
-      }
-      return { id: num, ...rest };
-    });
-  }
-
-  private convertMenuIdToNumber(menu: {
-    id: bigint;
-    name: string;
-    price: number;
-    fileName: string;
-  }): { id: number; name: string; price: number; fileName: string } {
-    const num = Number(menu.id);
-    if (!Number.isSafeInteger(num)) {
-      console.warn(
-        `Menu id ${menu.id.toString()} exceeds Number.MAX_SAFE_INTEGER; precision may be lost.`
-      );
-    }
-    return {
-      id: num,
-      name: menu.name,
-      price: menu.price,
-      fileName: menu.fileName,
-    };
-  }
-
   @Get("hot")
   async HotMenus(@Res() res: Response): Promise<Response> {
     try {
@@ -49,7 +15,7 @@ export class MenuController {
 
       return res.json({
         message: "Returns all available hot beverages",
-        menus: this.convertMenuIdsToNumber(hotMenus),
+        menus: hotMenus,
       });
     } catch (err) {
       console.error("Error retrieving hot menus:", err);
@@ -66,7 +32,7 @@ export class MenuController {
 
       return res.json({
         message: "Returns all available iced beverages",
-        menus: this.convertMenuIdsToNumber(icedMenus),
+        menus: icedMenus,
       });
     } catch (err) {
       console.error("Error retrieving iced menus:", err);
@@ -83,7 +49,7 @@ export class MenuController {
 
       return res.json({
         message: "Returns all available bakery menus",
-        menus: this.convertMenuIdsToNumber(bakeryMenus),
+        menus: bakeryMenus,
       });
     } catch (err) {
       console.error("Error retrieving bakery menus:", err);
@@ -93,22 +59,22 @@ export class MenuController {
     }
   }
 
-  @Get(":id")
+  @Get(":name")
   async SpecificMenu(
     @Res() res: Response,
-    @Param("id") id: bigint
+    @Param("name") name: string
   ): Promise<Response> {
     try {
-      const specificMenu = await this.menuService.GetSpecificMenu(id);
+      const specificMenu = await this.menuService.GetSpecificMenu(name);
       if (!specificMenu) {
         return res.status(404).json({
-          error: `Menu id #${id} not found. Please review your :id route parameter`,
+          error: `Menu: #${name} not found. Please the name of menu in route parameter`,
         });
       }
 
       return res.json({
-        message: `Returns the menu: ${id}`,
-        menu: this.convertMenuIdToNumber(specificMenu),
+        message: `Returns the menu: ${name}`,
+        menu: specificMenu,
       });
     } catch (err) {
       console.error("Error retrieving specific menu:", err);
@@ -118,9 +84,9 @@ export class MenuController {
     }
   }
 
-  @Put(":id")
+  @Put(":name")
   async EditMenu(
-    @Param("id") id: bigint,
+    @Param("name") name: string,
     @Body() editMenu: EditMenuDto,
     @Res() res: Response
   ): Promise<Response> {
@@ -131,16 +97,16 @@ export class MenuController {
           .json({ message: "No menu information provided for updating." });
       }
 
-      const specificMenu = await this.menuService.GetSpecificMenu(id);
+      const specificMenu = await this.menuService.GetSpecificMenu(name);
       if (!specificMenu) {
         return res.status(404).json({
-          message: `Menu id #${id} not found. Please review your :id route parameter`,
+          message: `Menu: #${name} not found. Please review the name of menu in route parameter`,
         });
       }
 
       const updatedMenu = await this.menuService.UpdateMenu({
         data: editMenu,
-        where: { id: id },
+        where: { name },
       });
       if (!updatedMenu) {
         return res
@@ -149,7 +115,7 @@ export class MenuController {
       }
 
       return res.json({
-        message: `The menu id #${id} has been updated successfully.`,
+        message: `The menu: #${name} has been updated successfully.`,
       });
     } catch (err) {
       console.error("Error occurred in `EditMenu`:", err);
