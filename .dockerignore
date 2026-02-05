@@ -10,6 +10,5 @@ tsconfig.build.json
 nest-cli.json
 src/tests/
 README.md
-database/
 prisma/migrations/
 package-lock.json
