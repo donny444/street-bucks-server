@@ -14,7 +14,7 @@ import { Response } from "express";
 import { UserService } from "../services/user.service";
 
 import { RegisterDto, EditUserDto } from "../dtos/user.dto";
-import { $Enums } from "prisma/client";
+import { $Enums } from "../../prisma/client";
 
 @Controller("users")
 export class UserController {

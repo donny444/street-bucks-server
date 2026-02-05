@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaClient } from "../prisma/client";
+import { PrismaClient } from "../../prisma/client";
 
 import { TopMenusByQuantityDto, SaleByCategoryDto } from "../dtos/insight.dto";
 

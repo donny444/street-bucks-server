@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaClient, Prisma, Category } from "../prisma/client";
+import { PrismaClient, Prisma, Category } from "../../prisma/client";
 
 @Injectable()
 export class MenuService {

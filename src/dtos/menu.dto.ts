@@ -1,5 +1,5 @@
 import { AuthDto } from "./user.dto";
-import { Category } from "../prisma/client";
+import { Category } from "../../prisma/client";
 
 export class EditMenuDto {
   name!: string;
