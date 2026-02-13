@@ -1,715 +1,1083 @@
 openapi: 3.0.3
 info:
-	title: Street Bucks API
-	version: 1.0.0
-	description: >-
-		OpenAPI specification for the Street Bucks NestJS backend. It documents
-		the available endpoints exposed by the menu, order, user, and insight controllers.
+  title: Street Bucks API
+  version: 1.0.0
+  description: >-
+    OpenAPI specification for the Street Bucks NestJS backend. It documents
+    the available endpoints exposed by the menu, order, user, insight, branch, stock, and recipe controllers.
 servers:
-	- url: http://localhost:8085
-		description: Local development server
+  - url: http://localhost:8085
+    description: Local development server
 tags:
-	- name: Insights
-		description: Insight and analytics endpoints.
-	- name: Menus
-		description: Menu catalogue endpoints.
-	- name: Orders
-		description: Order management endpoints.
-	- name: Users
-		description: User administration and attendance endpoints.
+  - name: Branches
+    description: Branch authentication and management endpoints.
+  - name: Insights
+    description: Insight and analytics endpoints. Requires branch authorization.
+  - name: Menus
+    description: Menu catalogue endpoints.
+  - name: Orders
+    description: Order management endpoints. Requires branch authorization.
+  - name: Recipes
+    description: Recipe management endpoints.
+  - name: Stocks
+    description: Stock/inventory management endpoints. Requires branch authorization.
+  - name: Users
+    description: User administration and attendance endpoints.
 paths:
-	/insights/sales-today:
-		get:
-			tags:
-				- Insights
-			summary: Retrieve the number of orders placed today
-			operationId: getSalesToday
-			responses:
-				'200':
-					description: Sales count for today
-					content:
-						application/json:
-							schema:
-								$ref: '#/components/schemas/InsightSalesTodayResponse'
-				'500':
-					$ref: '#/components/responses/InternalServerError'
-	/insights/top-menus:
-		get:
-			tags:
-				- Insights
-			summary: Retrieve insight about top selling menu items
-			operationId: getTopMenus
-			responses:
-				'200':
-					description: Top sold menus
-					content:
-						application/json:
-							schema:
-								$ref: '#/components/schemas/InsightTopMenusResponse'
-				'500':
-					$ref: '#/components/responses/InternalServerError'
-	/insights/sales-in-week:
-		get:
-			tags:
-				- Insights
-			summary: Retrieve sales counts grouped by day for the current week
-			operationId: getSalesInWeek
-			responses:
-				'200':
-					description: Daily sales for the current week
-					content:
-						application/json:
-							schema:
-								$ref: '#/components/schemas/InsightSalesSeriesResponse'
-				'500':
-					$ref: '#/components/responses/InternalServerError'
-	/insights/sales-in-month:
-		get:
-			tags:
-				- Insights
-			summary: Retrieve sales counts grouped by day for the current month
-			operationId: getSalesInMonth
-			responses:
-				'200':
-					description: Daily sales for the current month
-					content:
-						application/json:
-							schema:
-								$ref: '#/components/schemas/InsightSalesSeriesResponse'
-				'500':
-					$ref: '#/components/responses/InternalServerError'
-	/insights/sales-in-year:
-		get:
-			tags:
-				- Insights
-			summary: Retrieve sales counts grouped by menu type for each month of the current year
-			operationId: getSalesInYear
-			responses:
-				'200':
-					description: Monthly sales grouped by menu category
-					content:
-						application/json:
-							schema:
-								$ref: '#/components/schemas/InsightSalesByCategoryResponse'
-				'500':
-					$ref: '#/components/responses/InternalServerError'
-	/menus/hot:
-		get:
-			tags:
-				- Menus
-			summary: List all available hot beverages
-			operationId: listHotMenus
-			responses:
-				'200':
-					description: Hot beverages currently available
-					content:
-						application/json:
-							schema:
-								$ref: '#/components/schemas/MenuListResponse'
-				'500':
-					$ref: '#/components/responses/InternalServerError'
-	/menus/iced:
-		get:
-			tags:
-				- Menus
-			summary: List all available iced beverages
-			operationId: listIcedMenus
-			responses:
-				'200':
-					description: Iced beverages currently available
-					content:
-						application/json:
-							schema:
-								$ref: '#/components/schemas/MenuListResponse'
-				'500':
-					$ref: '#/components/responses/InternalServerError'
-	/menus/bakery:
-		get:
-			tags:
-				- Menus
-			summary: List all available bakery menus
-			operationId: listBakeryMenus
-			responses:
-				'200':
-					description: Bakery menus currently available
-					content:
-						application/json:
-							schema:
-								$ref: '#/components/schemas/MenuListResponse'
-				'500':
-					$ref: '#/components/responses/InternalServerError'
-	/menus/{id}:
-		get:
-			tags:
-				- Menus
-			summary: Retrieve a specific menu by its identifier
-			operationId: getMenuById
-			parameters:
-				- in: path
-					name: id
-					required: true
-					description: Numeric identifier of the menu.
-					schema:
-						type: integer
-						format: int64
-			responses:
-				'200':
-					description: Specific menu information
-					content:
-						application/json:
-							schema:
-								$ref: '#/components/schemas/MenuResponse'
-				'404':
-					$ref: '#/components/responses/NotFound'
-				'500':
-					$ref: '#/components/responses/InternalServerError'
-	/orders:
-		post:
-			tags:
-				- Orders
-			summary: Create a new order from the provided cart items
-			operationId: createOrder
-			requestBody:
-				required: true
-				content:
-					application/json:
-						schema:
-							type: array
-							items:
-								$ref: '#/components/schemas/OrderRequestItem'
-			responses:
-				'201':
-					description: Order created successfully
-					content:
-						application/json:
-							schema:
-								$ref: '#/components/schemas/OrderCreatedResponse'
-				'400':
-					$ref: '#/components/responses/BadRequest'
-				'500':
-					$ref: '#/components/responses/InternalServerError'
-		get:
-			tags:
-				- Orders
-			summary: List orders placed during the current day
-			operationId: listTodayOrders
-			responses:
-				'200':
-					description: Orders placed during the current day
-					content:
-						application/json:
-							schema:
-								$ref: '#/components/schemas/OrderListResponse'
-				'500':
-					$ref: '#/components/responses/InternalServerError'
-	/orders/{uuid}:
-		get:
-			tags:
-				- Orders
-			summary: Retrieve details for a specific order
-			operationId: getOrderByUuid
-			parameters:
-				- in: path
-					name: uuid
-					required: true
-					description: Order identifier (UUID).
-					schema:
-						type: string
-						format: uuid
-			responses:
-				'200':
-					description: Order details or informational message when not found
-					content:
-						application/json:
-							schema:
-								$ref: '#/components/schemas/OrderDetailResponse'
-				'400':
-					$ref: '#/components/responses/BadRequest'
-				'500':
-					$ref: '#/components/responses/InternalServerError'
-	/users:
-		post:
-			tags:
-				- Users
-			summary: Register a new user
-			operationId: registerUser
-			requestBody:
-				required: true
-				content:
-					application/json:
-						schema:
-							$ref: '#/components/schemas/RegisterUserRequest'
-			responses:
-				'201':
-					description: User registered successfully
-					content:
-						application/json:
-							schema:
-								$ref: '#/components/schemas/SimpleMessageResponse'
-				'400':
-					$ref: '#/components/responses/BadRequest'
-				'500':
-					$ref: '#/components/responses/InternalServerError'
-		put:
-			tags:
-				- Users
-			summary: Update an existing user's information
-			operationId: updateUser
-			requestBody:
-				required: true
-				content:
-					application/json:
-						schema:
-							$ref: '#/components/schemas/UserEditRequest'
-			responses:
-				'200':
-					description: User updated successfully
-					content:
-						application/json:
-							schema:
-								$ref: '#/components/schemas/SimpleMessageResponse'
-				'400':
-					$ref: '#/components/responses/BadRequest'
-				'404':
-					$ref: '#/components/responses/NotFound'
-				'500':
-					$ref: '#/components/responses/InternalServerError'
-	/users/{uuid}:
-		post:
-			tags:
-				- Users
-			summary: Toggle attendance for the specified user
-			operationId: toggleUserAttendance
-			parameters:
-				- in: path
-					name: uuid
-					required: true
-					description: User identifier (UUID).
-					schema:
-						type: string
-						format: uuid
-			responses:
-				'201':
-					description: Attendance status toggled
-					content:
-						application/json:
-							schema:
-								$ref: '#/components/schemas/SimpleMessageResponse'
-				'404':
-					$ref: '#/components/responses/NotFound'
-				'500':
-					$ref: '#/components/responses/InternalServerError'
-		get:
-			tags:
-				- Users
-			summary: Retrieve information for the specified user
-			operationId: getUserByUuid
-			parameters:
-				- in: path
-					name: uuid
-					required: true
-					description: User identifier (UUID).
-					schema:
-						type: string
-						format: uuid
-			responses:
-				'200':
-					description: User information
-					content:
-						application/json:
-							schema:
-								$ref: '#/components/schemas/UserInfoResponse'
-				'404':
-					$ref: '#/components/responses/NotFound'
-				'500':
-					$ref: '#/components/responses/InternalServerError'
-		delete:
-			tags:
-				- Users
-			summary: Remove the specified user and related records
-			operationId: deleteUser
-			parameters:
-				- in: path
-					name: uuid
-					required: true
-					description: User identifier (UUID).
-					schema:
-						type: string
-						format: uuid
-			responses:
-				'200':
-					description: User deleted successfully
-					content:
-						application/json:
-							schema:
-								$ref: '#/components/schemas/SimpleMessageResponse'
-				'404':
-					$ref: '#/components/responses/NotFound'
-				'500':
-					$ref: '#/components/responses/InternalServerError'
+  /branches:
+    post:
+      tags:
+        - Branches
+      summary: Create a new branch
+      operationId: createBranch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBranchRequest'
+      responses:
+        '201':
+          description: Branch created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleMessageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /branches/signin:
+    post:
+      tags:
+        - Branches
+      summary: Sign in to a branch and receive a JWT token
+      operationId: signInBranch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignInBranchRequest'
+      responses:
+        '200':
+          description: Branch signed in successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignInBranchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /insights/sales-today:
+    get:
+      tags:
+        - Insights
+      summary: Retrieve the number of orders placed today
+      operationId: getSalesToday
+      parameters:
+        - $ref: '#/components/parameters/BranchToken'
+      responses:
+        '200':
+          description: Sales count for today
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightSalesTodayResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /insights/top-menus:
+    get:
+      tags:
+        - Insights
+      summary: Retrieve insight about top selling menu items
+      operationId: getTopMenus
+      parameters:
+        - $ref: '#/components/parameters/BranchToken'
+      responses:
+        '200':
+          description: Top sold menus
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightTopMenusResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /insights/sales-in-week:
+    get:
+      tags:
+        - Insights
+      summary: Retrieve sales counts grouped by day for the current week
+      operationId: getSalesInWeek
+      parameters:
+        - $ref: '#/components/parameters/BranchToken'
+      responses:
+        '200':
+          description: Daily sales for the current week
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightSalesSeriesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /insights/sales-in-month:
+    get:
+      tags:
+        - Insights
+      summary: Retrieve sales counts grouped by day for the current month
+      operationId: getSalesInMonth
+      parameters:
+        - $ref: '#/components/parameters/BranchToken'
+      responses:
+        '200':
+          description: Daily sales for the current month
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightSalesSeriesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /insights/sales-in-year:
+    get:
+      tags:
+        - Insights
+      summary: Retrieve sales counts grouped by menu type for each month of the current year
+      operationId: getSalesInYear
+      parameters:
+        - $ref: '#/components/parameters/BranchToken'
+      responses:
+        '200':
+          description: Monthly sales grouped by menu category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightSalesByCategoryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /menus/hot:
+    get:
+      tags:
+        - Menus
+      summary: List all available hot beverages
+      operationId: listHotMenus
+      responses:
+        '200':
+          description: Hot beverages currently available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /menus/iced:
+    get:
+      tags:
+        - Menus
+      summary: List all available iced beverages
+      operationId: listIcedMenus
+      responses:
+        '200':
+          description: Iced beverages currently available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /menus/bakery:
+    get:
+      tags:
+        - Menus
+      summary: List all available bakery menus
+      operationId: listBakeryMenus
+      responses:
+        '200':
+          description: Bakery menus currently available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /menus/{id}:
+    get:
+      tags:
+        - Menus
+      summary: Retrieve a specific menu by its identifier
+      operationId: getMenuById
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Numeric identifier of the menu.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Specific menu information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags:
+        - Menus
+      summary: Update a specific menu by its identifier
+      operationId: editMenuById
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Numeric identifier of the menu.
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditMenuRequest'
+      responses:
+        '200':
+          description: Menu updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleMessageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /orders:
+    post:
+      tags:
+        - Orders
+      summary: Create a new order from the provided cart items
+      description: Requires a valid Branch-Token header for authorization.
+      operationId: createOrder
+      parameters:
+        - $ref: '#/components/parameters/BranchToken'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/OrderRequestItem'
+      responses:
+        '201':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderCreatedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags:
+        - Orders
+      summary: List orders placed during the current day
+      description: Requires a valid Branch-Token header for authorization.
+      operationId: listTodayOrders
+      parameters:
+        - $ref: '#/components/parameters/BranchToken'
+      responses:
+        '200':
+          description: Orders placed during the current day
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /orders/{uuid}:
+    get:
+      tags:
+        - Orders
+      summary: Retrieve details for a specific order
+      description: Requires a valid Branch-Token header for authorization.
+      operationId: getOrderByUuid
+      parameters:
+        - $ref: '#/components/parameters/BranchToken'
+        - in: path
+          name: uuid
+          required: true
+          description: Order identifier (UUID).
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Order details or informational message when not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetailResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /recipes:
+    post:
+      tags:
+        - Recipes
+      summary: Add a new recipe with an image
+      operationId: addRecipe
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - name
+                - recipe_image
+              properties:
+                name:
+                  type: string
+                  description: Name of the recipe.
+                recipe_image:
+                  type: string
+                  format: binary
+                  description: PNG image file for the recipe (max 5MB).
+      responses:
+        '201':
+          description: Recipe added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleMessageResponse'
+        '422':
+          description: Unprocessable entity - file validation failed (wrong type or size exceeded)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /stocks:
+    put:
+      tags:
+        - Stocks
+      summary: Update stock quantity for a recipe at the branch
+      description: Requires a valid Branch-Token header for authorization.
+      operationId: editStockQuantity
+      parameters:
+        - $ref: '#/components/parameters/BranchToken'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditQuantityRequest'
+      responses:
+        '200':
+          description: Stock quantity updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleMessageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /users:
+    post:
+      tags:
+        - Users
+      summary: Register a new user
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleMessageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: User with the provided email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /users/{email}:
+    post:
+      tags:
+        - Users
+      summary: Toggle attendance for the specified user
+      description: >-
+        Requires authentication via password in the request body (AuthenticateUser middleware).
+        The user's password must be provided for verification.
+      operationId: toggleUserAttendance
+      parameters:
+        - in: path
+          name: email
+          required: true
+          description: Email address of the user.
+          schema:
+            type: string
+            format: email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticateRequest'
+      responses:
+        '201':
+          description: Attendance status toggled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleMessageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags:
+        - Users
+      summary: Retrieve information for the specified user
+      operationId: getUserByEmail
+      parameters:
+        - in: path
+          name: email
+          required: true
+          description: Email address of the user.
+          schema:
+            type: string
+            format: email
+      responses:
+        '200':
+          description: User information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfoResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags:
+        - Users
+      summary: Update an existing user's information
+      description: >-
+        Requires authorization via manager credentials in the request body (AuthorizeUser middleware).
+        Only users with MANAGER role can update other users.
+      operationId: updateUser
+      parameters:
+        - in: path
+          name: email
+          required: true
+          description: Email address of the user to update.
+          schema:
+            type: string
+            format: email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditUserRequest'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleMessageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - Users
+      summary: Remove the specified user and related records
+      description: >-
+        Requires authorization via manager credentials in the request body (AuthorizeUser middleware).
+        Only users with MANAGER role can delete other users.
+      operationId: deleteUser
+      parameters:
+        - in: path
+          name: email
+          required: true
+          description: Email address of the user to delete.
+          schema:
+            type: string
+            format: email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteUserRequest'
+      responses:
+        '200':
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleMessageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 components:
-	schemas:
-		ApiError:
-			type: object
-			description: Error response payload.
-			properties:
-				error:
-					type: string
-					description: Error message describing what went wrong.
-				message:
-					type: string
-					description: Additional context about the error.
-			additionalProperties: false
-		SimpleMessageResponse:
-			type: object
-			required:
-				- message
-			properties:
-				message:
-					type: string
-					description: Human readable message.
-		InsightSalesTodayResponse:
-			type: object
-			required:
-				- message
-				- insight
-			properties:
-				message:
-					type: string
-				insight:
-					type: integer
-					format: int32
-					minimum: 0
-					description: Number of orders placed today.
-		TopMenuInsightItem:
-			type: object
-			required:
-				- menuName
-				- totalQuantity
-			properties:
-				menuName:
-					type: string
-				totalQuantity:
-					type: integer
-					format: int32
-					minimum: 0
-		TopMenuInsightChart:
-			type: object
-			required:
-				- labels
-				- data
-			properties:
-				labels:
-					type: array
-					items:
-						type: string
-				data:
-					type: array
-					items:
-						type: integer
-						format: int32
-						minimum: 0
-		InsightTopMenusResponse:
-			type: object
-			required:
-				- message
-				- insight
-			properties:
-				message:
-					type: string
-				insight:
-					oneOf:
-						- type: array
-							items:
-								$ref: '#/components/schemas/TopMenuInsightItem'
-						- $ref: '#/components/schemas/TopMenuInsightChart'
-		InsightSeries:
-			type: object
-			required:
-				- labels
-				- data
-			properties:
-				labels:
-					type: array
-					items:
-						type: string
-				data:
-					type: array
-					items:
-						type: integer
-						format: int32
-						minimum: 0
-		InsightSalesSeriesResponse:
-			type: object
-			required:
-				- message
-				- insight
-			properties:
-				message:
-					type: string
-				insight:
-					$ref: '#/components/schemas/InsightSeries'
-		SalesByCategoryItem:
-			type: object
-			required:
-				- label
-				- data
-			properties:
-				label:
-					type: string
-				data:
-					type: array
-					maxItems: 12
-					items:
-						type: integer
-						format: int32
-						minimum: 0
-		InsightSalesByCategoryResponse:
-			type: object
-			required:
-				- message
-				- insight
-			properties:
-				message:
-					type: string
-				insight:
-					type: array
-					items:
-						$ref: '#/components/schemas/SalesByCategoryItem'
-		MenuSummary:
-			type: object
-			required:
-				- id
-				- name
-				- price
-				- fileName
-			properties:
-				id:
-					type: integer
-					format: int64
-				name:
-					type: string
-				price:
-					type: number
-					format: float
-					minimum: 0
-				fileName:
-					type: string
-		MenuListResponse:
-			type: object
-			required:
-				- message
-				- menus
-			properties:
-				message:
-					type: string
-				menus:
-					type: array
-					items:
-						$ref: '#/components/schemas/MenuSummary'
-		MenuResponse:
-			type: object
-			required:
-				- message
-				- menu
-			properties:
-				message:
-					type: string
-				menu:
-					$ref: '#/components/schemas/MenuSummary'
-		OrderRequestItem:
-			type: object
-			required:
-				- menuId
-				- quantity
-			properties:
-				menuId:
-					type: integer
-					format: int64
-				quantity:
-					type: integer
-					format: int32
-					minimum: 1
-		OrderCreatedResponse:
-			type: object
-			required:
-				- message
-				- order_id
-			properties:
-				message:
-					type: string
-				order_id:
-					type: string
-					format: uuid
-		OrderSummary:
-			type: object
-			required:
-				- uuid
-				- timestamp
-				- totalPrice
-			properties:
-				uuid:
-					type: string
-					format: uuid
-				timestamp:
-					type: integer
-					format: int64
-				totalPrice:
-					type: number
-					format: float
-					minimum: 0
-		OrderListResponse:
-			type: object
-			required:
-				- message
-				- today_orders
-			properties:
-				message:
-					type: string
-				today_orders:
-					type: array
-					items:
-						$ref: '#/components/schemas/OrderSummary'
-		OrderMenuItem:
-			type: object
-			required:
-				- quantity
-				- menu
-			properties:
-				quantity:
-					type: integer
-					format: int32
-					minimum: 1
-				menu:
-					type: object
-					required:
-						- name
-						- price
-					properties:
-						name:
-							type: string
-						price:
-							type: number
-							format: float
-							minimum: 0
-		OrderDetail:
-			type: object
-			required:
-				- uuid
-				- totalPrice
-				- OrderMenu
-			properties:
-				uuid:
-					type: string
-					format: uuid
-				totalPrice:
-					type: number
-					format: float
-					minimum: 0
-				OrderMenu:
-					type: array
-					items:
-						$ref: '#/components/schemas/OrderMenuItem'
-		OrderDetailResponse:
-			type: object
-			required:
-				- message
-			properties:
-				message:
-					type: string
-				order:
-					$ref: '#/components/schemas/OrderDetail'
-		RegisterUserRequest:
-			type: object
-			required:
-				- firstName
-				- lastName
-				- password
-				- branchId
-			properties:
-				firstName:
-					type: string
-					minLength: 1
-				lastName:
-					type: string
-					minLength: 1
-				password:
-					type: string
-					minLength: 1
-				branchId:
-					type: integer
-					format: int64
-					minimum: 1
-		UserInfo:
-			type: object
-			required:
-				- firstName
-				- lastName
-				- branchId
-			properties:
-				firstName:
-					type: string
-				lastName:
-					type: string
-				branchId:
-					type: integer
-					format: int64
-					minimum: 1
-		UserInfoResponse:
-			type: object
-			required:
-				- message
-				- user
-			properties:
-				message:
-					type: string
-				user:
-					$ref: '#/components/schemas/UserInfo'
-		UserEditRequest:
-			type: object
-			required:
-				- uuid
-				- firstName
-				- lastName
-				- password
-				- role
-			properties:
-				uuid:
-					type: string
-					format: uuid
-				firstName:
-					type: string
-					minLength: 1
-				lastName:
-					type: string
-					minLength: 1
-				password:
-					type: string
-					minLength: 1
-				role:
-					type: string
-					enum:
-						- STAFF
-						- MANAGER
-		DeleteUserResponse:
-			allOf:
-				- $ref: '#/components/schemas/SimpleMessageResponse'
-	responses:
-		BadRequest:
-			description: Client error due to invalid input.
-			content:
-				application/json:
-					schema:
-						$ref: '#/components/schemas/ApiError'
-		NotFound:
-			description: Requested resource was not found.
-			content:
-				application/json:
-					schema:
-						$ref: '#/components/schemas/ApiError'
-		InternalServerError:
-			description: Unexpected server error.
-			content:
-				application/json:
-					schema:
-						$ref: '#/components/schemas/ApiError'
+  parameters:
+    BranchToken:
+      in: header
+      name: Branch-Token
+      required: true
+      description: JWT token for branch authorization obtained from /branches/signin.
+      schema:
+        type: string
+  schemas:
+    ApiError:
+      type: object
+      description: Error response payload.
+      properties:
+        error:
+          type: string
+          description: Error message describing what went wrong.
+        message:
+          type: string
+          description: Additional context about the error.
+      additionalProperties: false
+    SimpleMessageResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Human readable message.
+    CreateBranchRequest:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          minLength: 1
+          description: Password for the new branch.
+    SignInBranchRequest:
+      type: object
+      required:
+        - branchId
+        - password
+      properties:
+        branchId:
+          type: integer
+          format: int64
+          description: Branch identifier.
+        password:
+          type: string
+          minLength: 1
+          description: Password for the branch.
+    SignInBranchResponse:
+      type: object
+      required:
+        - message
+        - token
+      properties:
+        message:
+          type: string
+        token:
+          type: string
+          description: JWT token for subsequent authenticated requests.
+    InsightSalesTodayResponse:
+      type: object
+      required:
+        - message
+        - insight
+      properties:
+        message:
+          type: string
+        insight:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Number of orders placed today.
+    TopMenuInsightItem:
+      type: object
+      required:
+        - menuName
+        - totalQuantity
+      properties:
+        menuName:
+          type: string
+        totalQuantity:
+          type: integer
+          format: int32
+          minimum: 0
+    TopMenuInsightChart:
+      type: object
+      required:
+        - labels
+        - data
+      properties:
+        labels:
+          type: array
+          items:
+            type: string
+        data:
+          type: array
+          items:
+            type: integer
+            format: int32
+            minimum: 0
+    InsightTopMenusResponse:
+      type: object
+      required:
+        - message
+        - insight
+      properties:
+        message:
+          type: string
+        insight:
+          oneOf:
+            - type: array
+              items:
+                $ref: '#/components/schemas/TopMenuInsightItem'
+            - $ref: '#/components/schemas/TopMenuInsightChart'
+    InsightSeries:
+      type: object
+      required:
+        - labels
+        - data
+      properties:
+        labels:
+          type: array
+          items:
+            type: string
+        data:
+          type: array
+          items:
+            type: integer
+            format: int32
+            minimum: 0
+    InsightSalesSeriesResponse:
+      type: object
+      required:
+        - message
+        - insight
+      properties:
+        message:
+          type: string
+        insight:
+          $ref: '#/components/schemas/InsightSeries'
+    SalesByCategoryItem:
+      type: object
+      required:
+        - label
+        - data
+      properties:
+        label:
+          type: string
+        data:
+          type: array
+          maxItems: 12
+          items:
+            type: integer
+            format: int32
+            minimum: 0
+    InsightSalesByCategoryResponse:
+      type: object
+      required:
+        - message
+        - insight
+      properties:
+        message:
+          type: string
+        insight:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalesByCategoryItem'
+    MenuSummary:
+      type: object
+      required:
+        - id
+        - name
+        - price
+        - fileName
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        price:
+          type: number
+          format: float
+          minimum: 0
+        fileName:
+          type: string
+    MenuListResponse:
+      type: object
+      required:
+        - message
+        - menus
+      properties:
+        message:
+          type: string
+        menus:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuSummary'
+    MenuResponse:
+      type: object
+      required:
+        - message
+        - menu
+      properties:
+        message:
+          type: string
+        menu:
+          $ref: '#/components/schemas/MenuSummary'
+    EditMenuRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Updated name of the menu.
+        price:
+          type: number
+          format: float
+          minimum: 0
+          description: Updated price of the menu.
+        type:
+          type: string
+          description: Updated type/category of the menu.
+        fileName:
+          type: string
+          description: Updated file name for the menu image.
+        editor:
+          $ref: '#/components/schemas/EditorCredentials'
+    EditorCredentials:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email of the editor (manager/admin).
+        password:
+          type: string
+          minLength: 1
+          description: Password of the editor for authorization.
+    OrderRequestItem:
+      type: object
+      required:
+        - menuId
+        - quantity
+      properties:
+        menuId:
+          type: integer
+          format: int64
+        quantity:
+          type: integer
+          format: int32
+          minimum: 1
+    OrderCreatedResponse:
+      type: object
+      required:
+        - message
+        - order_id
+      properties:
+        message:
+          type: string
+        order_id:
+          type: string
+          format: uuid
+    OrderSummary:
+      type: object
+      required:
+        - uuid
+        - timestamp
+        - totalPrice
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        timestamp:
+          type: integer
+          format: int64
+        totalPrice:
+          type: number
+          format: float
+          minimum: 0
+    OrderListResponse:
+      type: object
+      required:
+        - message
+        - today_orders
+      properties:
+        message:
+          type: string
+        today_orders:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderSummary'
+    OrderMenuItem:
+      type: object
+      required:
+        - quantity
+        - menu
+      properties:
+        quantity:
+          type: integer
+          format: int32
+          minimum: 1
+        menu:
+          type: object
+          required:
+            - name
+            - price
+          properties:
+            name:
+              type: string
+            price:
+              type: number
+              format: float
+              minimum: 0
+    OrderDetail:
+      type: object
+      required:
+        - uuid
+        - totalPrice
+        - OrderMenu
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        totalPrice:
+          type: number
+          format: float
+          minimum: 0
+        OrderMenu:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderMenuItem'
+    OrderDetailResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+        order:
+          $ref: '#/components/schemas/OrderDetail'
+    EditQuantityRequest:
+      type: object
+      required:
+        - recipeId
+        - quantity
+      properties:
+        recipeId:
+          type: integer
+          format: int64
+          description: Recipe identifier for the stock item.
+        quantity:
+          type: integer
+          format: int32
+          minimum: 0
+          description: New quantity for the stock.
+    RegisterUserRequest:
+      type: object
+      required:
+        - email
+        - firstName
+        - lastName
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email address for the new user.
+        firstName:
+          type: string
+          minLength: 1
+        lastName:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+        branchId:
+          type: integer
+          format: int64
+          minimum: 1
+          default: 1
+          description: Branch ID to assign the user to.
+    AuthenticateRequest:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          minLength: 1
+          description: User password for authentication.
+    UserInfo:
+      type: object
+      required:
+        - email
+        - firstName
+        - lastName
+      properties:
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        branchId:
+          type: integer
+          format: int64
+          minimum: 1
+        role:
+          type: string
+          enum:
+            - STAFF
+            - MANAGER
+            - ADMINISTRATOR
+    UserInfoResponse:
+      type: object
+      required:
+        - message
+        - userInfo
+      properties:
+        message:
+          type: string
+        userInfo:
+          $ref: '#/components/schemas/UserInfo'
+    EditUserRequest:
+      type: object
+      required:
+        - editor
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+        lastName:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+        role:
+          type: string
+          enum:
+            - STAFF
+            - MANAGER
+        editor:
+          $ref: '#/components/schemas/EditorCredentials'
+          description: Manager credentials required for authorization.
+    DeleteUserRequest:
+      type: object
+      required:
+        - editor
+      properties:
+        editor:
+          $ref: '#/components/schemas/EditorCredentials'
+          description: Manager credentials required for authorization.
+  responses:
+    BadRequest:
+      description: Client error due to invalid input.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Unauthorized:
+      description: Authentication or authorization failed.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    NotFound:
+      description: Requested resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    InternalServerError:
+      description: Unexpected server error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
