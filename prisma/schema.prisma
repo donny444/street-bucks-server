@@ -52,6 +52,7 @@ model Stock {
 
 model Recipe {
   name            String            @id @db.Citext
+  unit            String            @db.Citext
   imagePath       String            @unique
   stock           Stock[]
   ingredient      Ingredient[]
@@ -63,7 +64,6 @@ model Ingredient {
   recipe        Recipe        @relation(fields: [recipeId], references: [name])
   recipeId      String
   amount        Int
-  unit          String
 
   @@id([menuId, recipeId])
 }
