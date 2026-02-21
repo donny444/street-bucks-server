@@ -9,6 +9,8 @@ servers:
   - url: http://localhost:8085
     description: Local development server
 tags:
+  - name: Assets
+    description: Static file serving endpoints for menus, receipts, and recipes.
   - name: Branches
     description: Branch authentication and management endpoints.
   - name: Insights
@@ -224,20 +226,78 @@ paths:
                 $ref: '#/components/schemas/MenuListResponse'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /menus/{id}:
+  /menus:
+    post:
+      tags:
+        - Menus
+      summary: Add a new menu item with an image
+      description: >-
+        Requires authorization via administrator credentials in the request body (AuthorizeAdministrator middleware).
+        Only users with ADMINISTRATOR role can add new menus.
+      operationId: addMenu
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - name
+                - price
+                - category
+                - file
+                - editor
+              properties:
+                name:
+                  type: string
+                  description: Name of the menu item.
+                price:
+                  type: number
+                  format: float
+                  minimum: 0
+                  description: Price of the menu item.
+                category:
+                  type: string
+                  description: Category of the menu (e.g., hot, iced, bakery).
+                file:
+                  type: string
+                  format: binary
+                  description: Image file for the menu (jpg, jpeg, png, gif, webp).
+                editor:
+                  type: string
+                  description: JSON string containing administrator credentials {email, password}.
+      responses:
+        '201':
+          description: Menu added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleMessageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Menu with the provided name already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /menus/{name}:
     get:
       tags:
         - Menus
-      summary: Retrieve a specific menu by its identifier
-      operationId: getMenuById
+      summary: Retrieve a specific menu by its name
+      operationId: getMenuByName
       parameters:
         - in: path
-          name: id
+          name: name
           required: true
-          description: Numeric identifier of the menu.
+          description: Name of the menu.
           schema:
-            type: integer
-            format: int64
+            type: string
       responses:
         '200':
           description: Specific menu information
@@ -252,16 +312,18 @@ paths:
     put:
       tags:
         - Menus
-      summary: Update a specific menu by its identifier
-      operationId: editMenuById
+      summary: Update a specific menu by its name
+      description: >-
+        Requires authorization via administrator credentials in the request body (AuthorizeAdministrator middleware).
+        Only users with ADMINISTRATOR role can update menus.
+      operationId: editMenuByName
       parameters:
         - in: path
-          name: id
+          name: name
           required: true
-          description: Numeric identifier of the menu.
+          description: Name of the menu to update.
           schema:
-            type: integer
-            format: int64
+            type: string
       requestBody:
         required: true
         content:
@@ -277,6 +339,8 @@ paths:
                 $ref: '#/components/schemas/SimpleMessageResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -361,11 +425,44 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /orders/{uuid}/receipt:
+    get:
+      tags:
+        - Orders
+      summary: Retrieve PDF receipt for a specific order
+      description: Requires a valid Branch-Token header for authorization.
+      operationId: getOrderReceipt
+      parameters:
+        - $ref: '#/components/parameters/BranchToken'
+        - in: path
+          name: uuid
+          required: true
+          description: Order identifier (UUID).
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: PDF receipt file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /recipes:
     post:
       tags:
         - Recipes
       summary: Add a new recipe with an image
+      description: >-
+        Requires authorization via administrator credentials in the request body (AuthorizeAdministrator middleware).
+        Only users with ADMINISTRATOR role can add new recipes.
       operationId: addRecipe
       requestBody:
         required: true
@@ -375,15 +472,22 @@ paths:
               type: object
               required:
                 - name
-                - recipe_image
+                - file
+                - editor
               properties:
                 name:
                   type: string
                   description: Name of the recipe.
-                recipe_image:
+                unit:
+                  type: string
+                  description: Unit of measurement for the recipe.
+                file:
                   type: string
                   format: binary
-                  description: PNG image file for the recipe (max 5MB).
+                  description: Image file for the recipe (jpg, jpeg, png, gif, webp).
+                editor:
+                  type: string
+                  description: JSON string containing administrator credentials {email, password}.
       responses:
         '201':
           description: Recipe added successfully
@@ -391,8 +495,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleMessageResponse'
-        '422':
-          description: Unprocessable entity - file validation failed (wrong type or size exceeded)
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Recipe with the provided name already exists
           content:
             application/json:
               schema:
@@ -404,7 +512,9 @@ paths:
       tags:
         - Stocks
       summary: Update stock quantity for a recipe at the branch
-      description: Requires a valid Branch-Token header for authorization.
+      description: >-
+        Requires both Branch-Token header (AuthorizeBranch middleware) and manager credentials
+        in the request body (AuthorizeManager middleware). Only users with MANAGER role can update stock.
       operationId: editStockQuantity
       parameters:
         - $ref: '#/components/parameters/BranchToken'
@@ -413,7 +523,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EditQuantityRequest'
+              $ref: '#/components/schemas/EditQuantityWithEditorRequest'
       responses:
         '200':
           description: Stock quantity updated successfully
@@ -423,6 +533,8 @@ paths:
                 $ref: '#/components/schemas/SimpleMessageResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -432,13 +544,16 @@ paths:
       tags:
         - Users
       summary: Register a new user
+      description: >-
+        Requires authorization via manager credentials in the request body (AuthorizeManager middleware).
+        Only users with MANAGER role can register new users.
       operationId: registerUser
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegisterUserRequest'
+              $ref: '#/components/schemas/RegisterUserWithEditorRequest'
       responses:
         '201':
           description: User registered successfully
@@ -448,6 +563,8 @@ paths:
                 $ref: '#/components/schemas/SimpleMessageResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '409':
           description: User with the provided email already exists
           content:
@@ -498,6 +615,9 @@ paths:
       tags:
         - Users
       summary: Retrieve information for the specified user
+      description: >-
+        Requires authorization via manager credentials in the request body (AuthorizeManager middleware).
+        Only users with MANAGER role can view user information.
       operationId: getUserByEmail
       parameters:
         - in: path
@@ -507,6 +627,12 @@ paths:
           schema:
             type: string
             format: email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManagerAuthRequest'
       responses:
         '200':
           description: User information
@@ -516,6 +642,8 @@ paths:
                 $ref: '#/components/schemas/UserInfoResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -594,6 +722,64 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /assets/menus/{filename}:
+    get:
+      tags:
+        - Assets
+      summary: Retrieve a menu image by filename
+      operationId: getMenuImage
+      parameters:
+        - in: path
+          name: filename
+          required: true
+          schema:
+            type: string
+          description: The filename of the menu image (e.g., espresso.png)
+      responses:
+        '200':
+          description: Menu image file
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Menu image not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /assets/recipes/{filename}:
+    get:
+      tags:
+        - Assets
+      summary: Retrieve a recipe file by filename
+      operationId: getRecipe
+      parameters:
+        - in: path
+          name: filename
+          required: true
+          schema:
+            type: string
+          description: The filename of the recipe document
+      responses:
+        '200':
+          description: Recipe file
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Recipe not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 components:
   parameters:
     BranchToken:
@@ -615,6 +801,15 @@ components:
           type: string
           description: Additional context about the error.
       additionalProperties: false
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message describing what went wrong.
+        message:
+          type: string
+          description: Additional context about the error.
     SimpleMessageResponse:
       type: object
       required:
@@ -808,6 +1003,8 @@ components:
           $ref: '#/components/schemas/MenuSummary'
     EditMenuRequest:
       type: object
+      required:
+        - editor
       properties:
         name:
           type: string
@@ -825,6 +1022,7 @@ components:
           description: Updated file name for the menu image.
         editor:
           $ref: '#/components/schemas/EditorCredentials'
+          description: Administrator credentials required for authorization.
     EditorCredentials:
       type: object
       required:
@@ -956,6 +1154,25 @@ components:
           format: int32
           minimum: 0
           description: New quantity for the stock.
+    EditQuantityWithEditorRequest:
+      type: object
+      required:
+        - recipeId
+        - quantity
+        - editor
+      properties:
+        recipeId:
+          type: integer
+          format: int64
+          description: Recipe identifier for the stock item.
+        quantity:
+          type: integer
+          format: int32
+          minimum: 0
+          description: New quantity for the stock.
+        editor:
+          $ref: '#/components/schemas/EditorCredentials'
+          description: Manager credentials required for authorization.
     RegisterUserRequest:
       type: object
       required:
@@ -983,6 +1200,39 @@ components:
           minimum: 1
           default: 1
           description: Branch ID to assign the user to.
+    RegisterUserWithEditorRequest:
+      type: object
+      required:
+        - email
+        - firstName
+        - lastName
+        - password
+        - editor
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email address for the new user.
+        firstName:
+          type: string
+          minLength: 1
+        lastName:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+        editor:
+          $ref: '#/components/schemas/EditorCredentials'
+          description: Manager credentials required for authorization.
+    ManagerAuthRequest:
+      type: object
+      required:
+        - editor
+      properties:
+        editor:
+          $ref: '#/components/schemas/EditorCredentials'
+          description: Manager credentials required for authorization.
     AuthenticateRequest:
       type: object
       required:
