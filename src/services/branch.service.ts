@@ -38,10 +38,6 @@ export class BranchService {
     try {
       const newBranch = await this.prisma.branch.create({
         data,
-        select: {
-          id: true,
-          password: true,
-        },
       });
 
       return newBranch;

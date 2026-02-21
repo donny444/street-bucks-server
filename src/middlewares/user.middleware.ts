@@ -1,26 +1,22 @@
 import { Injectable, NestMiddleware } from "@nestjs/common";
 import { Request, Response, NextFunction } from "express";
+
 import * as bcrypt from "bcryptjs";
 import { PrismaClient, $Enums } from "../../prisma/client";
 
-import { EditMenuDto } from "../dtos/menu.dto";
-import { EditUserDto, RemoveUserDto, AuthDto } from "../dtos/user.dto";
+import { EditorDto } from "../dtos/user.dto";
 
 @Injectable()
 export class AuthenticateUser implements NestMiddleware {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async use(
-    req: Request<{ email: string }, any, AuthDto>,
-    res: Response,
-    next: NextFunction
-  ) {
-    const { email } = req.params;
-    const { password } = req.body;
+  async use(req: Request<any, any, any>, res: Response, next: NextFunction) {
+    const { email } = req.params as EditorDto;
+    const { password } = req.body as EditorDto;
 
     if (!email || !password) {
       return res.status(400).json({
-        message: "Email and password of staff are required.",
+        message: "Email and password of user are required.",
       });
     }
 
@@ -43,7 +39,7 @@ export class AuthenticateUser implements NestMiddleware {
       if (!correctPassword) {
         return res
           .status(401)
-          .json({ message: "Incorrect password for staff." });
+          .json({ message: "Incorrect password for user." });
       }
 
       return next();
@@ -54,14 +50,11 @@ export class AuthenticateUser implements NestMiddleware {
   }
 }
 
-export class AuthorizeUser implements NestMiddleware {
+export class AuthorizeManager implements NestMiddleware {
   constructor(private readonly prisma: PrismaClient) {}
-  async use(
-    req: Request<any, any, EditUserDto | RemoveUserDto>,
-    res: Response,
-    next: NextFunction
-  ) {
-    const { email, password } = req.body.editor;
+
+  async use(req: Request<any, any, any>, res: Response, next: NextFunction) {
+    const { email, password } = req.body.editor as EditorDto;
 
     if (!email || !password) {
       return res.status(400).json({
@@ -106,14 +99,10 @@ export class AuthorizeUser implements NestMiddleware {
   }
 }
 
-export class AdminAction implements NestMiddleware {
+export class AuthorizeAdministrator implements NestMiddleware {
   constructor(private readonly prisma: PrismaClient) {}
-  async use(
-    req: Request<any, any, EditMenuDto>,
-    res: Response,
-    next: NextFunction
-  ) {
-    const { email, password } = req.body.editor;
+  async use(req: Request<any, any, any>, res: Response, next: NextFunction) {
+    const { email, password } = req.body.editor as EditorDto;
 
     if (!email || !password) {
       return res.status(400).json({

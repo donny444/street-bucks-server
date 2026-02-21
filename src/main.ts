@@ -6,8 +6,8 @@ async function bootstrap() {
 
   app.enableCors({
     origin: process.env.CORS_ORIGIN?.split(",") ?? [
-      "http://localhost:3000",
-      "http://localhost:5500",
+      "http://localhost:3000", // Local Next.js application
+      "http://localhost:5500", // Swagger service in Docker container
     ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Accept"],
