@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Headers,
   HttpCode,
   Post,
   Put,
@@ -14,6 +15,7 @@ import { Response } from "express";
 import { UserService } from "../services/user.service";
 
 import { RegisterDto, EditUserDto } from "../dtos/user.dto";
+import { BranchPayloadDto } from "../dtos/branch.dto";
 import { $Enums } from "../../prisma/client";
 
 @Controller("users")
@@ -28,11 +30,23 @@ export class UserController {
   @Post()
   @HttpCode(201)
   async RegisterUser(
+    @Headers("Branch-Payload") branchPayload: string,
     @Body() userData: RegisterDto,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const { email, password, firstName, lastName, branchId = 1 } = userData;
+      const parsedBranchPayload = JSON.parse(
+        branchPayload || "{}"
+      ) as BranchPayloadDto;
+      if (!parsedBranchPayload) {
+        return res
+          .status(500)
+          .json({ message: "Failed to register a new user." });
+      }
+
+      const { branchId } = parsedBranchPayload;
+
+      const { email, password, firstName, lastName } = userData;
 
       if (!email || !firstName || !lastName || !password || !branchId) {
         return res.status(400).json({
@@ -55,7 +69,13 @@ export class UserController {
           .json({ message: "User with the email provided already exists." });
       }
 
-      const newUser = await this.userService.InsertUser(userData);
+      const newUser = await this.userService.InsertUser({
+        email,
+        password,
+        firstName,
+        lastName,
+        branchId: BigInt(branchId),
+      });
       if (!newUser || newUser instanceof Error) {
         return res
           .status(500)
@@ -107,7 +127,7 @@ export class UserController {
   }
 
   @Get(":email")
-  async UserInfo(
+  async GetUserInfo(
     @Param("email") email: string,
     @Res() res: Response
   ): Promise<Response> {

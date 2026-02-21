@@ -9,9 +9,9 @@ import { BranchPayloadDto } from "../dtos/branch.dto";
 export class InsightController {
   constructor(private readonly insightService: InsightService) {}
 
-  @HttpCode(200)
   @Get("sales-today")
-  async SalesToday(
+  @HttpCode(200)
+  async GetSalesToday(
     @Headers("Branch-Payload") branchPayload: string,
     @Res() res: Response
   ): Promise<Response> {
@@ -41,9 +41,9 @@ export class InsightController {
     }
   }
 
-  @HttpCode(200)
   @Get("top-menus")
-  async TopMenus(
+  @HttpCode(200)
+  async GetTopMenus(
     @Headers("Branch-Payload") branchPayload: string,
     @Res() res: Response
   ): Promise<Response> {
@@ -84,9 +84,9 @@ export class InsightController {
     }
   }
 
-  @HttpCode(200)
   @Get("sales-in-week")
-  async SalesInWeek(
+  @HttpCode(200)
+  async GetSalesInWeek(
     @Headers("Branch-Payload") branchPayload: string,
     @Res() res: Response
   ): Promise<Response> {
@@ -138,9 +138,9 @@ export class InsightController {
     }
   }
 
-  @HttpCode(200)
   @Get("sales-in-month")
-  async SalesInMonth(
+  @HttpCode(200)
+  async GetSalesInMonth(
     @Headers("Branch-Payload") branchPayload: string,
     @Res() res: Response
   ): Promise<Response> {
@@ -192,9 +192,9 @@ export class InsightController {
     }
   }
 
-  @HttpCode(200)
   @Get("sales-in-year")
-  async SalesInYear(
+  @HttpCode(200)
+  async GetSalesInYear(
     @Headers("Branch-Payload") branchPayload: string,
     @Res() res: Response
   ): Promise<Response> {

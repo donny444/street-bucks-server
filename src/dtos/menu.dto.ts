@@ -1,4 +1,4 @@
-import { AuthDto } from "./user.dto";
+import { EditorDto } from "./user.dto";
 import { Category } from "../../prisma/client";
 
 export class EditMenuDto {
@@ -6,5 +6,5 @@ export class EditMenuDto {
   price!: number;
   category!: Category;
   file!: File;
-  editor!: AuthDto;
+  editor!: EditorDto;
 }

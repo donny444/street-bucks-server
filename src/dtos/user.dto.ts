@@ -1,32 +1,31 @@
 import { $Enums } from "../../prisma/client";
 
-export type RegisterDto = {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  branchId: number | bigint;
-};
+export class RegisterDto {
+  email!: string;
+  password!: string;
+  firstName!: string;
+  lastName!: string;
+}
 
-export type EditUserDto = {
-  password: string;
-  firstName: string;
-  lastName: string;
-  role: typeof $Enums.Role.STAFF | typeof $Enums.Role.MANAGER;
-  editor: AuthDto;
-};
+export class EditUserDto {
+  password!: string;
+  firstName!: string;
+  lastName!: string;
+  role!: typeof $Enums.Role.STAFF | typeof $Enums.Role.MANAGER;
+  editor!: EditorDto;
+}
 
-export type RemoveUserDto = {
-  editor: AuthDto;
-};
+export class RemoveUserDto {
+  editor!: EditorDto;
+}
 
-export type UserInfoDto = {
-  firstName: string;
-  lastName: string;
-  branchId: number | bigint;
-};
+export class UserInfoDto {
+  firstName!: string;
+  lastName!: string;
+  branchId!: number | bigint;
+}
 
-export type AuthDto = {
-  email: string;
-  password: string;
-};
+export class EditorDto {
+  email!: string;
+  password!: string;
+}
