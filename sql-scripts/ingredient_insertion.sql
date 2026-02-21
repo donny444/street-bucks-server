@@ -1,21 +1,47 @@
-insert into "MenuRecipe" ("menuId", "recipeId", "amount") values
--- Hot Latte
-(1, 1, 2), (1, 2, 1), (1, 3, 1),
--- Iced Latte
-(2, 1, 2), (2, 2, 1), (2, 3, 1), (2, 4, 1),
--- Hot Mocha
-(3, 5, 1), (3, 1, 1), (3, 2, 1), (3, 3, 1), (3, 6, 1),
--- Iced Mocha
-(4, 5, 1), (4, 1, 1), (4, 2, 1), (4, 3, 1), (4, 6, 1), (4, 4, 1),
--- Espresso
-(5, 5, 1), (5, 2, 1),
--- Americano
-(6, 5, 2), (6, 2, 1), (6, 3, 1), (6, 4, 1),
--- Croissant
-(7, 5, 1), (7, 7, 1), (7, 8, 1), (7, 9, 1), (7, 10, 1),
--- Bagel
-(9, 5, 1), (9, 7, 1), (9, 8, 1), (9, 3, 1), (9, 10, 1),
--- Orange Cake
-(10, 11, 1), (10, 3, 2), (10, 12, 1), (10, 13, 1), (10, 8, 1), (10, 14, 1), (10, 15, 2), (10, 10, 1),
--- Ham Cheese Sandwich
-(11, 16, 1), (11, 17, 1), (11, 18, 1), (11, 19, 2);
+insert into "Ingredient" ("menuId", "recipeId", "amount") values
+('Hot latte', 'Milk', 2),
+('Hot latte', 'Coffee beans', 1),
+('Hot latte', 'Sugar', 1),
+('Hot mocha', 'Water', 1),
+('Hot mocha', 'Milk', 1),
+('Hot mocha', 'Coffee beans', 1),
+('Hot mocha', 'Sugar', 1),
+('Hot mocha', 'Cocoa powder', 1),
+('Espresso', 'Water', 1),
+('Espresso', 'Coffee beans', 1),
+('Iced latte', 'Milk', 2),
+('Iced latte', 'Coffee beans', 1),
+('Iced latte', 'Sugar', 1),
+('Iced latte', 'Ice', 1),
+('Iced mocha', 'Water', 1),
+('Iced mocha', 'Milk', 1),
+('Iced mocha', 'Coffee beans', 1),
+('Iced mocha', 'Sugar', 1),
+('Iced mocha', 'Cocoa powder', 1),
+('Iced mocha', 'Ice', 1),
+('Americano', 'Water', 2),
+('Americano', 'Coffee beans', 1),
+('Americano', 'Sugar', 1),
+('Americano', 'Ice', 1),
+('Croissant', 'Water', 1),
+('Croissant', 'Yeast', 1),
+('Croissant', 'Flour', 2),
+('Croissant', 'Butter', 1),
+('Croissant', 'Salt', 1),
+('Bagel', 'Water', 2),
+('Bagel', 'Yeast', 2),
+('Bagel', 'Flour', 3),
+('Bagel', 'Sugar', 1),
+('Bagel', 'Salt', 2),
+('Orange cake', 'Condensed milk', 1),
+('Orange cake', 'Sugar', 3),
+('Orange cake', 'Unsalted butter', 1),
+('Orange cake', 'Egg', 1),
+('Orange cake', 'Flour', 2),
+('Orange cake', 'Whipped cream', 1),
+('Orange cake', 'Orange jam', 2),
+('Orange cake', 'Salt', 1),
+('Hamcheese sandwich', 'Sliced cheese', 1),
+('Hamcheese sandwich', 'Sliced ham', 1),
+('Hamcheese sandwich', 'Mayonnaise', 1),
+('Hamcheese sandwich', 'Sliced bread', 2);

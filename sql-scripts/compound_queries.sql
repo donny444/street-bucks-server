@@ -1,84 +1,111 @@
 BEGIN TRANSACTION;
 
 -- Seed base tables referenced by dependent records.
-INSERT INTO "Branch" VALUES
-(1), (2), (3), (4), (5), (6), (7), (8), (9), (10), (11), (12), (13), (14);
+insert into "Branch" ("id", "password") values
+(1, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(2, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(3, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(4, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(5, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(6, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(7, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(8, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(9, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(10, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(11, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(12, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(13, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(14, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za');
 
-INSERT INTO "Recipe" ("id", "name") VALUES
-	(1, 'milk'),
-	(2, 'coffee beans'),
-	(3, 'sugar'),
-	(4, 'ice'),
-	(5, 'water'),
-	(6, 'cocoa powder'),
-	(7, 'yeast'),
-	(8, 'flour'),
-	(9, 'butter'),
-	(10, 'salt'),
-	(11, 'condensed milk'),
-	(12, 'unsalted butter'),
-	(13, 'egg'),
-	(14, 'whipped cream'),
-	(15, 'orange jam'),
-	(16, 'sliced cheese'),
-	(17, 'sliced ham'),
-	(18, 'mayonnaise'),
-	(19, 'sliced bread');
+insert into "Recipe" ("name", "unit", "imagePath") values
+	('Milk', 'cup', 'milk.png'),
+	('Coffee beans', 'cap', 'coffee_beans.png'),
+	('Sugar', 'tbsp', 'sugar.png'),
+	('Ice', 'glass', 'ice.png'),
+	('Water', 'cup', 'water.png'),
+	('Cocoa powder', 'tsp', 'cocoa_powder.png'),
+	('Yeast', 'tsp', 'yeast.png'),
+	('Flour', 'cup', 'flour.png'),
+	('Butter', 'tsp', 'butter.png'),
+	('Salt', 'tsp', 'salt.png'),
+	('Condensed milk', 'cup', 'condensed_milk.png'),
+	('Unsalted butter', 'tsp', 'unsalted_butter.png'),
+	('Egg', 'pc', 'egg.png'),
+	('Whipped cream', 'tbsp', 'whipped_cream.png'),
+	('Orange jam', 'tbsp', 'orange_jam.png'),
+	('Sliced cheese', 'pc', 'sliced_cheese.png'),
+	('Sliced ham', 'pc', 'sliced_ham.png'),
+	('Mayonnaise', 'tbsp', 'mayonnaise.png'),
+	('Sliced bread', 'pc', 'sliced_bread.png');
 
-INSERT INTO "Menu" ("id", "name", "price", "type", "fileName") VALUES 
-(1, 'Hot Latte', 50, 'hot', 'hot_latte.png'),
-(2, 'Iced Latte', 60, 'iced', 'iced_latte.png'),
-(3, 'Hot Mocha', 50, 'hot', 'hot_mocha.png'),
-(4, 'Iced Mocha', 50, 'iced', 'iced_mocha.png'),
-(5, 'Espresso', 40, 'hot', 'espresso.png'),
-(6, 'Americano', 50, 'iced', 'americano.png'),
-(7, 'Croissant', 50, 'bakery', 'croissant.png'),
-(9, 'Bagel', 50, 'bakery', 'bagel.png'),
-(10, 'Orange Cake', 70, 'bakery', 'orange_cake.png'),
-(11, 'Ham Cheese Sandwich', 60, 'bakery', 'hamcheese_sandwich.png');
+insert into "Menu" ("name", "price", "category", "imagePath") values 
+('Hot latte', 50, 'hot', 'hot_latte.png'),
+('Iced latte', 60, 'iced', 'iced_latte.png'),
+('Hot mocha', 50, 'hot', 'hot_mocha.png'),
+('Iced mocha', 50, 'iced', 'iced_mocha.png'),
+('Espresso', 40, 'hot', 'espresso.png'),
+('Americano', 50, 'iced', 'americano.png'),
+('Croissant', 50, 'bakery', 'croissant.png'),
+('Bagel', 50, 'bakery', 'bagel.png'),
+('Orange cake', 70, 'bakery', 'orange_cake.png'),
+('Hamcheese sandwich', 60, 'bakery', 'hamcheese_sandwich.png');
 
 COMMIT;
 
 BEGIN TRANSACTION;
 
 -- Insert dependent records now that referenced tables exist.
-INSERT INTO "MenuRecipe" ("menuId", "recipeId", "amount") VALUES
--- Hot Latte
-(1, 1, 2), (1, 2, 1), (1, 3, 1),
--- Iced Latte
-(2, 1, 2), (2, 2, 1), (2, 3, 1), (2, 4, 1),
--- Hot Mocha
-(3, 5, 1), (3, 1, 1), (3, 2, 1), (3, 3, 1), (3, 6, 1),
--- Iced Mocha
-(4, 5, 1), (4, 1, 1), (4, 2, 1), (4, 3, 1), (4, 6, 1), (4, 4, 1),
--- Espresso
-(5, 5, 1), (5, 2, 1),
--- Americano
-(6, 5, 2), (6, 2, 1), (6, 3, 1), (6, 4, 1),
--- Croissant
-(7, 5, 1), (7, 7, 1), (7, 8, 1), (7, 9, 1), (7, 10, 1),
--- Bagel
-(9, 5, 1), (9, 7, 1), (9, 8, 1), (9, 3, 1), (9, 10, 1),
--- Orange Cake
-(10, 11, 1), (10, 3, 2), (10, 12, 1), (10, 13, 1), (10, 8, 1), (10, 14, 1), (10, 15, 2), (10, 10, 1),
--- Ham Cheese Sandwich
-(11, 16, 1), (11, 17, 1), (11, 18, 1), (11, 19, 2);
+insert into "Ingredient" ("menuId", "recipeId", "amount") values
+('Hot latte', 'Milk', 2),
+('Hot latte', 'Coffee beans', 1),
+('Hot latte', 'Sugar', 1),
+('Hot mocha', 'Water', 1),
+('Hot mocha', 'Milk', 1),
+('Hot mocha', 'Coffee beans', 1),
+('Hot mocha', 'Sugar', 1),
+('Hot mocha', 'Cocoa powder', 1),
+('Espresso', 'Water', 1),
+('Espresso', 'Coffee beans', 1),
+('Iced latte', 'Milk', 2),
+('Iced latte', 'Coffee beans', 1),
+('Iced latte', 'Sugar', 1),
+('Iced latte', 'Ice', 1),
+('Iced mocha', 'Water', 1),
+('Iced mocha', 'Milk', 1),
+('Iced mocha', 'Coffee beans', 1),
+('Iced mocha', 'Sugar', 1),
+('Iced mocha', 'Cocoa powder', 1),
+('Iced mocha', 'Ice', 1),
+('Americano', 'Water', 2),
+('Americano', 'Coffee beans', 1),
+('Americano', 'Sugar', 1),
+('Americano', 'Ice', 1),
+('Croissant', 'Water', 1),
+('Croissant', 'Yeast', 1),
+('Croissant', 'Flour', 2),
+('Croissant', 'Butter', 1),
+('Croissant', 'Salt', 1),
+('Bagel', 'Water', 2),
+('Bagel', 'Yeast', 2),
+('Bagel', 'Flour', 3),
+('Bagel', 'Sugar', 1),
+('Bagel', 'Salt', 2),
+('Orange cake', 'Condensed milk', 1),
+('Orange cake', 'Sugar', 3),
+('Orange cake', 'Unsalted butter', 1),
+('Orange cake', 'Egg', 1),
+('Orange cake', 'Flour', 2),
+('Orange cake', 'Whipped cream', 1),
+('Orange cake', 'Orange jam', 2),
+('Orange cake', 'Salt', 1),
+('Hamcheese sandwich', 'Sliced cheese', 1),
+('Hamcheese sandwich', 'Sliced ham', 1),
+('Hamcheese sandwich', 'Mayonnaise', 1),
+('Hamcheese sandwich', 'Sliced bread', 2);
 
-INSERT INTO "Stock" ("branchId", "recipeId", "quantity")
-VALUES 
-	(1, 1, 9999), (1, 2, 9999), (1, 3, 9999), (1, 4, 9999), (1, 5, 9999), (1, 6, 9999), (1, 7, 9999), (1, 8, 9999), (1, 9, 9999), (1, 10, 9999), (1, 11, 9999), (1, 12, 9999), (1, 13, 9999), (1, 14, 9999), (1, 15, 9999), (1, 16, 9999), (1, 17, 9999), (1, 18, 9999), (1, 19, 9999),
-	(2, 1, 9999), (2, 2, 9999), (2, 3, 9999), (2, 4, 9999), (2, 5, 9999), (2, 6, 9999), (2, 7, 9999), (2, 8, 9999), (2, 9, 9999), (2, 10, 9999), (2, 11, 9999), (2, 12, 9999), (2, 13, 9999), (2, 14, 9999), (2, 15, 9999), (2, 16, 9999), (2, 17, 9999), (2, 18, 9999), (2, 19, 9999),
-	(3, 1, 9999), (3, 2, 9999), (3, 3, 9999), (3, 4, 9999), (3, 5, 9999), (3, 6, 9999), (3, 7, 9999), (3, 8, 9999), (3, 9, 9999), (3, 10, 9999), (3, 11, 9999), (3, 12, 9999), (3, 13, 9999), (3, 14, 9999), (3, 15, 9999), (3, 16, 9999), (3, 17, 9999), (3, 18, 9999), (3, 19, 9999),
-	(4, 1, 9999), (4, 2, 9999), (4, 3, 9999), (4, 4, 9999), (4, 5, 9999), (4, 6, 9999), (4, 7, 9999), (4, 8, 9999), (4, 9, 9999), (4, 10, 9999), (4, 11, 9999), (4, 12, 9999), (4, 13, 9999), (4, 14, 9999), (4, 15, 9999), (4, 16, 9999), (4, 17, 9999), (4, 18, 9999), (4, 19, 9999),
-	(5, 1, 9999), (5, 2, 9999), (5, 3, 9999), (5, 4, 9999), (5, 5, 9999), (5, 6, 9999), (5, 7, 9999), (5, 8, 9999), (5, 9, 9999), (5, 10, 9999), (5, 11, 9999), (5, 12, 9999), (5, 13, 9999), (5, 14, 9999), (5, 15, 9999), (5, 16, 9999), (5, 17, 9999), (5, 18, 9999), (5, 19, 9999),
-	(6, 1, 9999), (6, 2, 9999), (6, 3, 9999), (6, 4, 9999), (6, 5, 9999), (6, 6, 9999), (6, 7, 9999), (6, 8, 9999), (6, 9, 9999), (6, 10, 9999), (6, 11, 9999), (6, 12, 9999), (6, 13, 9999), (6, 14, 9999), (6, 15, 9999), (6, 16, 9999), (6, 17, 9999), (6, 18, 9999), (6, 19, 9999),
-	(7, 1, 9999), (7, 2, 9999), (7, 3, 9999), (7, 4, 9999), (7, 5, 9999), (7, 6, 9999), (7, 7, 9999), (7, 8, 9999), (7, 9, 9999), (7, 10, 9999), (7, 11, 9999), (7, 12, 9999), (7, 13, 9999), (7, 14, 9999), (7, 15, 9999), (7, 16, 9999), (7, 17, 9999), (7, 18, 9999), (7, 19, 9999),
-	(8, 1, 9999), (8, 2, 9999), (8, 3, 9999), (8, 4, 9999), (8, 5, 9999), (8, 6, 9999), (8, 7, 9999), (8, 8, 9999), (8, 9, 9999), (8, 10, 9999), (8, 11, 9999), (8, 12, 9999), (8, 13, 9999), (8, 14, 9999), (8, 15, 9999), (8, 16, 9999), (8, 17, 9999), (8, 18, 9999), (8, 19, 9999),
-	(9, 1, 9999), (9, 2, 9999), (9, 3, 9999), (9, 4, 9999), (9, 5, 9999), (9, 6, 9999), (9, 7, 9999), (9, 8, 9999), (9, 9, 9999), (9, 10, 9999), (9, 11, 9999), (9, 12, 9999), (9, 13, 9999), (9, 14, 9999), (9, 15, 9999), (9, 16, 9999), (9, 17, 9999), (9, 18, 9999), (9, 19, 9999),
-	(10, 1, 9999), (10, 2, 9999), (10, 3, 9999), (10, 4, 9999), (10, 5, 9999), (10, 6, 9999), (10, 7, 9999), (10, 8, 9999), (10, 9, 9999), (10, 10, 9999), (10, 11, 9999), (10, 12, 9999), (10, 13, 9999), (10, 14, 9999), (10, 15, 9999), (10, 16, 9999), (10, 17, 9999), (10, 18, 9999), (10, 19, 9999),
-	(11, 1, 9999), (11, 2, 9999), (11, 3, 9999), (11, 4, 9999), (11, 5, 9999), (11, 6, 9999), (11, 7, 9999), (11, 8, 9999), (11, 9, 9999), (11, 10, 9999), (11, 11, 9999), (11, 12, 9999), (11, 13, 9999), (11, 14, 9999), (11, 15, 9999), (11, 16, 9999), (11, 17, 9999), (11, 18, 9999), (11, 19, 9999),
-	(12, 1, 9999), (12, 2, 9999), (12, 3, 9999), (12, 4, 9999), (12, 5, 9999), (12, 6, 9999), (12, 7, 9999), (12, 8, 9999), (12, 9, 9999), (12, 10, 9999), (12, 11, 9999), (12, 12, 9999), (12, 13, 9999), (12, 14, 9999), (12, 15, 9999), (12, 16, 9999), (12, 17, 9999), (12, 18, 9999), (12, 19, 9999),
-	(13, 1, 9999), (13, 2, 9999), (13, 3, 9999), (13, 4, 9999), (13, 5, 9999), (13, 6, 9999), (13, 7, 9999), (13, 8, 9999), (13, 9, 9999), (13, 10, 9999), (13, 11, 9999), (13, 12, 9999), (13, 13, 9999), (13, 14, 9999), (13, 15, 9999), (13, 16, 9999), (13, 17, 9999), (13, 18, 9999), (13, 19, 9999),
-	(14, 1, 9999), (14, 2, 9999), (14, 3, 9999), (14, 4, 9999), (14, 5, 9999), (14, 6, 9999), (14, 7, 9999), (14, 8, 9999), (14, 9, 9999), (14, 10, 9999), (14, 11, 9999), (14, 12, 9999), (14, 13, 9999), (14, 14, 9999), (14, 15, 9999), (14, 16, 9999), (14, 17, 9999), (14, 18, 9999), (14, 19, 9999);
+insert into "Stock" ("branchId", "recipeId", "quantity")
+select b."id", r."name", 9999
+from "Branch" b
+cross join "Recipe" r;
 
 COMMIT;

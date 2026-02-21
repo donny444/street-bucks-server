@@ -1,2 +1,15 @@
-insert into "Branch" values
-(1), (2), (3), (4), (5), (6), (7), (8), (9), (10), (11), (12), (13), (14);
+insert into "Branch" ("id", "password") values
+(1, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(2, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(3, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(4, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(5, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(6, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(7, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(8, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(9, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(10, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(11, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(12, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(13, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za'),
+(14, '$2a$10$7W0VamDpmDMk9ycFv3sFfulNHlbDmmZjblpRv57MRPM.5E3FDk/za');
