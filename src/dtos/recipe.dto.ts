@@ -6,3 +6,9 @@ export class AddRecipeDto {
   file!: File;
   editor!: EditorDto;
 }
+
+export class EditRecipeDto {
+  name!: string;
+  unit!: string;
+  editor!: EditorDto;
+}

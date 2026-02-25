@@ -73,7 +73,8 @@ export class AppModule implements NestModule {
       { path: "menus/", method: RequestMethod.POST }, // AddMenu
 
       // Recipe entity
-      { path: "recipes/", method: RequestMethod.POST } // AddRecipe
+      { path: "recipes/", method: RequestMethod.POST }, // AddRecipe
+      { path: "recipes/:name", method: RequestMethod.PUT } // EditRecipe
     );
 
     consumer.apply(AuthorizeBranch).forRoutes(

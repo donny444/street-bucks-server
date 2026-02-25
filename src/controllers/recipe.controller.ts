@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Param,
   Post,
+  Put,
   Res,
   UploadedFile,
   UseInterceptors,
@@ -12,7 +14,7 @@ import { diskStorage } from "multer";
 import { extname } from "path";
 
 import { RecipeService } from "../services/recipe.service";
-import { AddRecipeDto } from "../dtos/recipe.dto";
+import { AddRecipeDto, EditRecipeDto } from "../dtos/recipe.dto";
 
 @Controller("recipes")
 export class RecipeController {
@@ -46,7 +48,7 @@ export class RecipeController {
     try {
       if (!addRecipe || !addRecipe.name) {
         return res.status(400).json({
-          message: "Missing required recipe information: name.",
+          message: "Missing required recipe information: name and unit.",
         });
       }
 
@@ -99,7 +101,7 @@ export class RecipeController {
         filePath
       );
       if (buffer instanceof Error) {
-        console.error("Error occurred in `CreateImage` service:", buffer);
+        console.error("Error occurred in `CreateRecipeImage` service:", buffer);
         return res.status(500).json({ message: buffer.message });
       }
 
@@ -107,6 +109,50 @@ export class RecipeController {
     } catch (err) {
       console.error("Error occurred in `AddRecipe` controller:", err);
       return res.status(500).json({ message: "Failed to add a new recipe." });
+    }
+  }
+
+  @Put(":name")
+  async EditRecipe(
+    @Param("name") recipeName: string,
+    @Body() editRecipe: EditRecipeDto,
+    @Res() res: Response
+  ): Promise<Response> {
+    try {
+      if (!editRecipe || !recipeName) {
+        return res.status(400).json({
+          message: "Missing required recipe information: name and unit.",
+        });
+      }
+
+      const recipeExists = await this.recipeService.CheckRecipeExists(
+        editRecipe.name
+      );
+      if (recipeExists) {
+        return res.status(409).json({
+          message: `Recipe with the name provided already exists.`,
+        });
+      }
+
+      const updatedRecipe = await this.recipeService.UpdateRecipe(
+        {
+          name: editRecipe.name,
+          unit: editRecipe.unit,
+        },
+        { name: recipeName }
+      );
+      if (updatedRecipe instanceof Error) {
+        console.error(
+          "Error occurred in `UpdateRecipe` service:",
+          updatedRecipe
+        );
+        return res.status(500).json({ message: updatedRecipe.message });
+      }
+
+      return res.status(200).json({ message: "Recipe has been updated." });
+    } catch (err) {
+      console.error("Error occurred in `EditRecipe` controller:", err);
+      return res.status(500).json({ message: "Failed to edit the recipe." });
     }
   }
 }

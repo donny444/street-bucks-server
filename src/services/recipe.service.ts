@@ -28,6 +28,23 @@ export class RecipeService {
     }
   }
 
+  async UpdateRecipe(
+    data: Prisma.RecipeUpdateInput,
+    where: Prisma.RecipeWhereUniqueInput
+  ): Promise<Recipe | Error> {
+    try {
+      const updatedRecipe = await this.prisma.recipe.update({
+        data,
+        where,
+      });
+
+      return updatedRecipe;
+    } catch (err) {
+      console.error("Failed to update recipe:", err);
+      return Error(err as string);
+    }
+  }
+
   async CreateRecipeImage(
     fileContent: Express.Multer.File,
     filePath: string
