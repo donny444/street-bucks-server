@@ -3,29 +3,29 @@ import { Response } from "express";
 
 import { IngredientService } from "../services/ingredient.service";
 
-import { EditIngredientDto } from "../dtos/ingredient.dto";
+import { EditAmountDto } from "../dtos/ingredient.dto";
 
 @Controller("ingredients")
 export class IngredientController {
   constructor(private readonly ingredientService: IngredientService) {}
 
   @Put()
-  async EditIngredients(
-    @Body() editIngredients: EditIngredientDto[],
+  async EditAmounts(
+    @Body() editAmounts: EditAmountDto[],
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const updatedIngredients = await this.ingredientService.UpdateAmount({
+      const updatedIngredients = await this.ingredientService.UpdateAmounts({
         data: [
-          ...editIngredients.map((ingredient) => ({
-            amount: ingredient.amount,
+          ...editAmounts.map((i) => ({
+            amount: i.amount,
           })),
         ],
         where: [
-          ...editIngredients.map((ingredient) => ({
+          ...editAmounts.map((i) => ({
             menuId_recipeId: {
-              menuId: ingredient.menuId,
-              recipeId: ingredient.recipeId,
+              menuId: i.menuId,
+              recipeId: i.recipeId,
             },
           })),
         ],
@@ -37,17 +37,17 @@ export class IngredientController {
         );
         return res
           .status(500)
-          .json({ message: "Failed to edit amount of ingredients." });
+          .json({ message: "Failed to edit amounts of ingredients." });
       }
 
       return res.json({
-        message: "The amount of ingredients has been updated.",
+        message: "The amounts of ingredients has been updated.",
       });
     } catch (err) {
-      console.error("Error occurred in `EditIngredient`:", err);
+      console.error("Error occurred in `EditAmounts`:", err);
       return res
         .status(500)
-        .json({ message: "Failed to edit amount of ingredients." });
+        .json({ message: "Failed to edit amounts of ingredients." });
     }
   }
 }

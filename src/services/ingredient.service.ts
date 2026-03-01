@@ -5,16 +5,16 @@ import { PrismaClient, Prisma, Ingredient } from "../../prisma/client";
 export class IngredientService {
   constructor(private prisma: PrismaClient) {}
 
-  async UpdateAmount(params: {
+  async UpdateAmounts(params: {
     data: Prisma.IngredientUpdateInput[];
     where: Prisma.IngredientWhereUniqueInput[];
   }): Promise<Ingredient[] | Error> {
     try {
-      return await this.prisma.$transaction(async (prisma) => {
-        const updatePromises = params.where.map((where, index) => {
-          return prisma.ingredient.update({
-            data: params.data[index],
-            where: where,
+      return await this.prisma.$transaction(async (p) => {
+        const updatePromises = params.where.map((ing, ind) => {
+          return p.ingredient.update({
+            data: params.data[ind],
+            where: ing,
           });
         });
         return Promise.all(updatePromises);
