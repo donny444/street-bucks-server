@@ -10,7 +10,7 @@ async function bootstrap() {
       "http://localhost:5500", // Swagger service in Docker container
     ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+    allowedHeaders: ["content-type", "authorization", "accept", "branch-token"],
     credentials: true,
   });
 

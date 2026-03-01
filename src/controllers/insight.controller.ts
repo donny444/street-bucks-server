@@ -12,7 +12,7 @@ export class InsightController {
   @Get("sales-today")
   @HttpCode(200)
   async GetSalesToday(
-    @Headers("Branch-Payload") branchPayload: string,
+    @Headers("branch-payload") branchPayload: string,
     @Res() res: Response
   ): Promise<Response> {
     try {
@@ -44,7 +44,7 @@ export class InsightController {
   @Get("top-menus")
   @HttpCode(200)
   async GetTopMenus(
-    @Headers("Branch-Payload") branchPayload: string,
+    @Headers("branch-payload") branchPayload: string,
     @Res() res: Response
   ): Promise<Response> {
     try {
@@ -87,7 +87,7 @@ export class InsightController {
   @Get("sales-in-week")
   @HttpCode(200)
   async GetSalesInWeek(
-    @Headers("Branch-Payload") branchPayload: string,
+    @Headers("branch-payload") branchPayload: string,
     @Res() res: Response
   ): Promise<Response> {
     try {
@@ -141,7 +141,7 @@ export class InsightController {
   @Get("sales-in-month")
   @HttpCode(200)
   async GetSalesInMonth(
-    @Headers("Branch-Payload") branchPayload: string,
+    @Headers("branch-payload") branchPayload: string,
     @Res() res: Response
   ): Promise<Response> {
     try {
@@ -195,7 +195,7 @@ export class InsightController {
   @Get("sales-in-year")
   @HttpCode(200)
   async GetSalesInYear(
-    @Headers("Branch-Payload") branchPayload: string,
+    @Headers("branch-payload") branchPayload: string,
     @Res() res: Response
   ): Promise<Response> {
     try {

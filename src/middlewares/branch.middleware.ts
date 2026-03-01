@@ -9,12 +9,12 @@ export class AuthorizeBranch implements NestMiddleware {
   constructor(private readonly prisma: PrismaClient) {}
 
   async use(req: Request<any, any, any>, res: Response, next: NextFunction) {
-    const branchToken = req.headers["Branch-Token"] as string;
+    const branchToken = req.headers["branch-token"] as string;
 
     if (!branchToken) {
       return res
         .status(400)
-        .json({ message: "Branch-Token header is missing." });
+        .json({ message: "branch-token header is missing." });
     }
 
     try {
@@ -27,6 +27,7 @@ export class AuthorizeBranch implements NestMiddleware {
       const decoded = jwtVerify(branchToken, jwtSecret) as BranchPayloadDto;
 
       const branch = await this.prisma.branch.findUnique({
+        select: { id: true },
         where: { id: decoded.branchId },
       });
       if (!branch) {
@@ -35,11 +36,14 @@ export class AuthorizeBranch implements NestMiddleware {
           .json({ message: "Branch not found with the provided token." });
       }
 
-      req.headers["Branch-Payload"] = JSON.stringify(decoded);
+      req.headers["branch-payload"] = JSON.stringify(decoded);
 
       return next();
     } catch (err) {
       console.error("Error in `AuthorizeBranch` middleware:", err);
+      if (err instanceof Error && err.name === "TokenExpiredError") {
+        return res.status(401).json({ message: "Branch token has expired." });
+      }
       return res.status(500).json({ message: "Failed to authorize branch." });
     }
   }
