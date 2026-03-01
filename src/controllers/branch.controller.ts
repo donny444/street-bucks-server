@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Post, Res } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, Post, Res } from "@nestjs/common";
 import { Response } from "express";
 
 import { Branch } from "../../prisma/client";
@@ -22,7 +22,7 @@ export class BranchController {
     return Number(branch.id);
   }
 
-  @Post("signin")
+  @Post("sign-in")
   @HttpCode(200)
   async SignInBranch(
     @Body() signInData: SignInDto,
@@ -108,6 +108,26 @@ export class BranchController {
     } catch (err) {
       console.error("Error creating new branch:", err);
       return res.status(500).json({ error: "Failed to create a new branch." });
+    }
+  }
+
+  @Get()
+  async GetBranches(@Res() res: Response): Promise<Response> {
+    try {
+      const branchIds = await this.branchService.SelectBranches();
+      if (branchIds instanceof Error) {
+        return res
+          .status(500)
+          .json({ error: "Failed to fetch branches from the database." });
+      }
+
+      return res.json({
+        message: "Returned array of branch IDs",
+        branch_ids: branchIds,
+      });
+    } catch (err) {
+      console.error("Error fetching branches:", err);
+      return res.status(500).json({ error: "Failed to retrieve branch IDs." });
     }
   }
 }

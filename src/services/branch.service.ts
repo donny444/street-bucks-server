@@ -46,4 +46,19 @@ export class BranchService {
       return Error(err as string);
     }
   }
+
+  async SelectBranches(): Promise<number[] | Error> {
+    try {
+      const branches = await this.prisma.branch.findMany({
+        select: {
+          id: true,
+        },
+      });
+
+      return branches.map((b) => Number(b.id));
+    } catch (err) {
+      console.error("Error selecting branches:", err);
+      return Error(err as string);
+    }
+  }
 }
