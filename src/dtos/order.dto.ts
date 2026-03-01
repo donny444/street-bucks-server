@@ -8,7 +8,25 @@ export class MenuPriceDto {
   price!: number;
 }
 
-export class ReceiptType {
+export class SerializedOrderDto {
+  uuid!: string;
+  timestamp!: number;
+  totalPrice!: number;
+}
+
+export class SpecificOrderDto {
+  uuid!: string;
+  totalPrice!: number;
+  entry!: {
+    quantity: number;
+    menu: {
+      name: string;
+      price: number;
+    };
+  }[];
+}
+
+export class ReceiptDto {
   uuid!: string;
   timestamp!: number;
   totalPrice!: number;

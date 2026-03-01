@@ -1,5 +1,5 @@
-export class EditIngredientDto {
-  menuId: string;
-  recipeId: string;
-  amount: number;
+export class EditAmountDto {
+  menuId!: string;
+  recipeId!: string;
+  amount!: number;
 }
