@@ -142,7 +142,7 @@ export class MenuController {
   @UseInterceptors(
     FileInterceptor("file", {
       storage: diskStorage({
-        destination: "../assets/menus",
+        destination: "../../assets/menus",
         filename: (req, file, callback) => {
           const uniqueSuffix =
             Date.now() + "-" + Math.round(Math.random() * 1e9);

@@ -91,7 +91,7 @@ export class MenuService {
         "File content and name are required to create a menu image."
       );
     }
-    const filePath = `../assets/menus/${fileName}`;
+    const filePath = `../../assets/menus/${fileName}`;
 
     await mkdir(dirname(filePath), { recursive: true });
 

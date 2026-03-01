@@ -74,7 +74,7 @@ export class RecipeController {
         ""
       ).toLowerCase();
       const fileName = `${baseName}${extension}`;
-      const filePath = `../assets/recipes/${fileName}`;
+      const filePath = `../../assets/recipes/${fileName}`;
 
       // if (file.path !== renamedFilePath) {
       //   const { rename } = await import("fs/promises");
