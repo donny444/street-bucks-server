@@ -1,4 +1,4 @@
-import { Body, Controller, Headers, Put, Res } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Put, Res } from "@nestjs/common";
 import { Response } from "express";
 
 import { StockService } from "../services/stock.service";
@@ -54,6 +54,39 @@ export class StockController {
       return res
         .status(500)
         .json({ message: "Failed to edit quantity of a recipe." });
+    }
+  }
+
+  @Get()
+  async GetBranchStocks(
+    @Headers("Branch-Payload") branchPayload: string,
+    @Res() res: Response
+  ): Promise<Response> {
+    try {
+      const parsedBranchPayload = JSON.parse(
+        branchPayload || "{}"
+      ) as BranchPayloadDto;
+      if (!parsedBranchPayload) {
+        return res
+          .status(500)
+          .json({ message: "Failed to get the stock information." });
+      }
+
+      const { branchId } = parsedBranchPayload;
+
+      const branchStocks = await this.stockService.GetStocksByBranch({
+        branchId: BigInt(branchId),
+      });
+
+      return res.json({
+        message: "Get stocks of the branch.",
+        branch_stocks: branchStocks,
+      });
+    } catch (err) {
+      console.error("Error occurred in `GetBranchStocks`:", err);
+      return res
+        .status(500)
+        .json({ message: "Failed to get the stock information." });
     }
   }
 }

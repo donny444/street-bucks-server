@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaClient, Prisma } from "../../prisma/client";
+import { PrismaClient, Prisma, Stock } from "../../prisma/client";
 
 @Injectable()
 export class StockService {
@@ -8,10 +8,28 @@ export class StockService {
   async UpdateQuantity(params: {
     data: Prisma.StockUncheckedUpdateInput;
     where: Prisma.StockWhereUniqueInput;
-  }): Promise<Prisma.Prisma__StockClient<Prisma.StockUncheckedUpdateInput>> {
+  }): Promise<Stock> {
     return this.prisma.stock.update({
       data: params.data,
       where: params.where,
+    });
+  }
+
+  async GetStocksByBranch(
+    where: Prisma.StockWhereInput
+  ): Promise<Prisma.StockWhereInput[]> {
+    return this.prisma.stock.findMany({
+      select: {
+        quantity: true,
+        recipe: {
+          select: {
+            name: true,
+            unit: true,
+            imagePath: true,
+          },
+        },
+      },
+      where,
     });
   }
 }
