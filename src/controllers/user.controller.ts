@@ -249,4 +249,37 @@ export class UserController {
       return res.status(500).json({ error: "Failed to delete user." });
     }
   }
+
+  @Get("branch")
+  async GetBranchUser(
+    @Headers("Branch-Payload") branchPayload: string,
+    @Res() res: Response
+  ): Promise<Response> {
+    try {
+      const parsedBranchPayload = JSON.parse(
+        branchPayload || "{}"
+      ) as BranchPayloadDto;
+      if (!parsedBranchPayload) {
+        return res
+          .status(500)
+          .json({ message: "Failed to fetch the users of the branch." });
+      }
+
+      const { branchId } = parsedBranchPayload;
+
+      const branchUsers = await this.userService.GetUsersByBranch({
+        branchId: BigInt(branchId),
+      });
+
+      return res.json({
+        message: "Get users of the branch.",
+        branch_users: branchUsers,
+      });
+    } catch (err) {
+      console.error("Error fetching branch users:", err);
+      return res
+        .status(500)
+        .json({ error: "Failed to fetch the users of the branch." });
+    }
+  }
 }

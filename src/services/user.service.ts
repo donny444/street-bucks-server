@@ -111,4 +111,18 @@ export class UserService {
 
     return user;
   }
+
+  async GetUsersByBranch(where: Prisma.UserWhereInput) {
+    const branchUsers = await this.prisma.user.findMany({
+      select: {
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+      },
+      where,
+    });
+
+    return branchUsers;
+  }
 }
