@@ -8,10 +8,11 @@ export class RegisterDto {
 }
 
 export class EditUserDto {
-  password!: string;
+  email!: string;
   firstName!: string;
   lastName!: string;
   role!: typeof $Enums.Role.STAFF | typeof $Enums.Role.MANAGER;
+  password!: string;
   editor!: EditorDto;
 }
 
@@ -23,6 +24,14 @@ export class UserInfoDto {
   firstName!: string;
   lastName!: string;
   branchId!: number | bigint;
+}
+
+export class BranchUserDto {
+  firstName!: string;
+  lastName!: string;
+  email!: string;
+  role!: $Enums.Role;
+  attended!: boolean;
 }
 
 export class EditorDto {

@@ -1,103 +1,167 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaClient, Prisma, Category } from "../../prisma/client";
+
 import { mkdir, writeFile } from "fs/promises";
 import { dirname } from "path";
+
+import { MenuInfoDto } from "src/dtos/menu.dto";
 
 @Injectable()
 export class MenuService {
   constructor(private prisma: PrismaClient) {}
 
-  async GetHotMenus() {
-    const hotMenus = await this.prisma.menu.findMany({
-      select: {
-        name: true,
-        price: true,
-        imagePath: true,
-      },
-      where: { category: Category.HOT },
-    });
-
-    return hotMenus;
+  private toError(tag: string, err: unknown): Error {
+    return new Error(
+      `${tag} error: ${err instanceof Error ? err.message : String(err)}`
+    );
   }
 
-  async GetIcedMenus() {
-    const icedMenus = await this.prisma.menu.findMany({
-      select: {
-        name: true,
-        price: true,
-        imagePath: true,
-      },
-      where: { category: Category.ICED },
-    });
+  async GetHotMenus(): Promise<MenuInfoDto[] | Error> {
+    try {
+      try {
+        const hotMenus = await this.prisma.menu.findMany({
+          select: {
+            name: true,
+            price: true,
+            imagePath: true,
+          },
+          where: { category: Category.HOT },
+        });
 
-    return icedMenus;
+        return hotMenus;
+      } catch (err) {
+        throw this.toError("Error fetching hot menus:", err);
+      }
+    } catch (err) {
+      return err instanceof Error ? err : new Error(String(err));
+    }
   }
 
-  async GetBakeryMenus() {
-    const bakeryMenus = await this.prisma.menu.findMany({
-      select: {
-        name: true,
-        price: true,
-        imagePath: true,
-      },
-      where: { category: Category.BAKERY },
-    });
+  async GetIcedMenus(): Promise<MenuInfoDto[] | Error> {
+    try {
+      try {
+        const icedMenus = await this.prisma.menu.findMany({
+          select: {
+            name: true,
+            price: true,
+            imagePath: true,
+          },
+          where: { category: Category.ICED },
+        });
 
-    return bakeryMenus;
+        return icedMenus;
+      } catch (err) {
+        throw this.toError("Error fetching iced menus:", err);
+      }
+    } catch (err) {
+      return err instanceof Error ? err : new Error(String(err));
+    }
   }
 
-  async GetSpecificMenu(name: string) {
-    const specificMenu = await this.prisma.menu.findUnique({
-      where: { name },
-      include: {
-        ingredient: false,
-        entry: false,
-      },
-    });
+  async GetBakeryMenus(): Promise<MenuInfoDto[] | Error> {
+    try {
+      try {
+        const bakeryMenus = await this.prisma.menu.findMany({
+          select: {
+            name: true,
+            price: true,
+            imagePath: true,
+          },
+          where: { category: Category.BAKERY },
+        });
 
-    return specificMenu;
+        return bakeryMenus;
+      } catch (err) {
+        throw this.toError("Error fetching bakery menus:", err);
+      }
+    } catch (err) {
+      return err instanceof Error ? err : new Error(String(err));
+    }
+  }
+
+  async GetSpecificMenu(name: string): Promise<MenuInfoDto | null | Error> {
+    try {
+      try {
+        const specificMenu = await this.prisma.menu.findUnique({
+          where: { name },
+        });
+
+        return specificMenu;
+      } catch (err) {
+        throw this.toError("Error fetching specific menu:", err);
+      }
+    } catch (err) {
+      return err instanceof Error ? err : new Error(String(err));
+    }
   }
 
   async UpdateMenu(params: {
     data: Prisma.MenuUncheckedUpdateInput;
     where: Prisma.MenuWhereUniqueInput;
-  }): Promise<Prisma.Prisma__MenuClient<Prisma.MenuUncheckedUpdateInput>> {
-    return this.prisma.menu.update({
-      data: params.data,
-      where: params.where,
-    });
+  }): Promise<void | Error> {
+    try {
+      try {
+        await this.prisma.menu.update({
+          data: params.data,
+          where: params.where,
+        });
+      } catch (err) {
+        throw this.toError("Error updating menu:", err);
+      }
+    } catch (err) {
+      return err instanceof Error ? err : new Error(String(err));
+    }
   }
 
-  async CheckMenuExists(name: string): Promise<boolean> {
-    const menu = await this.prisma.menu.findUnique({
-      where: { name },
-      select: { name: true },
-    });
-    return menu !== null;
+  async CheckMenuExists(name: string): Promise<boolean | Error> {
+    try {
+      try {
+        const menu = await this.prisma.menu.findUnique({
+          where: { name },
+          select: { name: true },
+        });
+
+        return menu !== null;
+      } catch (err) {
+        throw this.toError("Error checking menu existence:", err);
+      }
+    } catch (err) {
+      return err instanceof Error ? err : new Error(String(err));
+    }
   }
 
-  async InsertMenu(data: Prisma.MenuCreateInput) {
-    return this.prisma.menu.create({
-      data,
-    });
+  async InsertMenu(data: Prisma.MenuCreateInput): Promise<void | Error> {
+    try {
+      try {
+        await this.prisma.menu.create({
+          data,
+        });
+      } catch (err) {
+        throw this.toError("Error inserting menu:", err);
+      }
+    } catch (err) {
+      return err instanceof Error ? err : new Error(String(err));
+    }
   }
 
   async CreateMenuImage(
     fileContent: Express.Multer.File,
     fileName: string
-  ): Promise<Buffer<ArrayBufferLike> | Error> {
-    if (!fileContent || !fileName) {
-      return Error(
-        "File content and name are required to create a menu image."
-      );
+  ): Promise<void | Error> {
+    try {
+      try {
+        const filePath = `../../assets/menus/${fileName}`;
+
+        await mkdir(dirname(filePath), { recursive: true });
+
+        const buffer = Buffer.from(fileContent.buffer);
+
+        await writeFile(filePath, buffer);
+      } catch (err) {
+        throw this.toError("Error creating menu image:", err);
+      }
+    } catch (err) {
+      return err instanceof Error ? err : new Error(String(err));
     }
-    const filePath = `../../assets/menus/${fileName}`;
-
-    await mkdir(dirname(filePath), { recursive: true });
-
-    const buffer = Buffer.from(fileContent.buffer);
-
-    await writeFile(filePath, buffer);
-    return buffer;
   }
 }

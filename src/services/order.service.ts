@@ -1,10 +1,17 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaClient, Prisma, Order } from "../../prisma/client";
+
 import PDFDocument from "pdfkit";
 import * as fs from "fs";
 import * as path from "path";
 
-import { OrderedMenuDto, MenuPriceDto, ReceiptType } from "../dtos/order.dto";
+import {
+  OrderedMenuDto,
+  MenuPriceDto,
+  ReceiptDto,
+  SerializedOrderDto,
+  SpecificOrderDto,
+} from "../dtos/order.dto";
 
 @Injectable()
 export class OrderService {
@@ -32,9 +39,9 @@ export class OrderService {
     orderedMenus: OrderedMenuDto[],
     branchId: number
   ): Promise<Order | Error> {
-    const extractedMenuIds = orderedMenus.map((item) => item.menuId);
-
     try {
+      const extractedMenuIds = orderedMenus.map((item) => item.menuId);
+
       const order = await this.prisma.$transaction(async (prisma) => {
         let menuPrices: MenuPriceDto[];
         try {
@@ -171,58 +178,83 @@ export class OrderService {
     }
   }
 
-  async GetTodayOrders(branchId: number) {
-    const startOfDay = new Date().setHours(0, 0, 0, 0);
-    const endOfDay = new Date().setHours(23, 59, 59, 999);
+  async GetTodayOrders(
+    branchId: number
+  ): Promise<SerializedOrderDto[] | Error> {
+    try {
+      const startOfDay = new Date().setHours(0, 0, 0, 0);
+      const endOfDay = new Date().setHours(23, 59, 59, 999);
 
-    const orders = await this.prisma.order.findMany({
-      where: {
-        timestamp: {
-          gte: startOfDay,
-          lte: endOfDay,
-        },
-        branchId: BigInt(branchId),
-      },
-      select: {
-        uuid: true,
-        timestamp: true,
-        totalPrice: true,
-      },
-    });
+      let orders: {
+        uuid: string;
+        timestamp: bigint;
+        totalPrice: number;
+      }[];
+      try {
+        orders = await this.prisma.order.findMany({
+          where: {
+            timestamp: {
+              gte: startOfDay,
+              lte: endOfDay,
+            },
+            branchId: BigInt(branchId),
+          },
+          select: {
+            uuid: true,
+            timestamp: true,
+            totalPrice: true,
+          },
+        });
+      } catch (err) {
+        throw this.toError("Failed to find orders by `branchId`", err);
+      }
 
-    const serializedOrders = orders.map((order) => ({
-      uuid: order.uuid,
-      timestamp: Number(order.timestamp),
-      totalPrice: order.totalPrice,
-    }));
+      const serializedOrders = orders.map((order) => ({
+        uuid: order.uuid,
+        timestamp: Number(order.timestamp),
+        totalPrice: order.totalPrice,
+      }));
 
-    return serializedOrders;
+      return serializedOrders;
+    } catch (err) {
+      return err instanceof Error ? err : new Error(String(err));
+    }
   }
 
-  async GetSpecificOrder(where: Prisma.OrderWhereUniqueInput) {
-    const order = await this.prisma.order.findUnique({
-      select: {
-        uuid: true,
-        totalPrice: true,
-        entry: {
+  async GetSpecificOrder(
+    where: Prisma.OrderWhereUniqueInput
+  ): Promise<SpecificOrderDto | null | Error> {
+    try {
+      try {
+        const order = await this.prisma.order.findUnique({
           select: {
-            quantity: true,
-            menu: {
+            uuid: true,
+            totalPrice: true,
+            entry: {
               select: {
-                name: true,
-                price: true,
+                quantity: true,
+                menu: {
+                  select: {
+                    name: true,
+                    price: true,
+                  },
+                },
               },
             },
           },
-        },
-      },
-      where: where,
-    });
+          where: where,
+        });
 
-    return order;
+        return order;
+      } catch (err) {
+        throw this.toError("Failed to find specific order", err);
+      }
+    } catch (err) {
+      return err instanceof Error ? err : new Error(String(err));
+    }
   }
 
-  async GenerateReceipt(receipt: ReceiptType): Promise<string> {
+  async GenerateReceipt(receipt: ReceiptDto): Promise<string> {
     const receiptsDir = path.join(__dirname, "..", "..", "assets", "receipts");
 
     if (!fs.existsSync(receiptsDir)) {

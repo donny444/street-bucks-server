@@ -12,53 +12,61 @@ export class BranchService {
   //   };
   // }
 
+  private toError(tag: string, err: unknown): Error {
+    return new Error(
+      `${tag} error: ${err instanceof Error ? err.message : String(err)}`
+    );
+  }
+
   async FindBranch(
     where: Prisma.BranchWhereUniqueInput
   ): Promise<Branch | null | Error> {
     try {
-      const branchInfo = await this.prisma.branch.findUnique({
-        select: {
-          id: true,
-          password: true,
-        },
-        where,
-      });
-      if (!branchInfo) {
-        return null;
-      }
+      try {
+        const branchInfo = await this.prisma.branch.findUnique({
+          where,
+        });
 
-      return branchInfo;
+        return branchInfo;
+      } catch (err) {
+        throw this.toError("Error finding unique branch:", err);
+      }
     } catch (err) {
-      console.error("Error finding branch:", err);
-      return Error(err as string);
+      return err instanceof Error ? err : new Error(String(err));
     }
   }
 
   async InsertBranch(data: Prisma.BranchCreateInput): Promise<Branch | Error> {
     try {
-      const newBranch = await this.prisma.branch.create({
-        data,
-      });
+      try {
+        const newBranch = await this.prisma.branch.create({
+          data,
+        });
 
-      return newBranch;
+        return newBranch;
+      } catch (err) {
+        throw this.toError("Error inserting new branch:", err);
+      }
     } catch (err) {
-      console.error("Error inserting new branch:", err);
-      return Error(err as string);
+      return err instanceof Error ? err : new Error(String(err));
     }
   }
 
   async SelectBranches(): Promise<number[] | Error> {
     try {
-      const branches = await this.prisma.branch.findMany({
-        select: {
-          id: true,
-        },
-      });
+      try {
+        const branches = await this.prisma.branch.findMany({
+          select: {
+            id: true,
+          },
+        });
 
-      return branches.map((b) => Number(b.id));
+        return branches.map((b) => Number(b.id));
+      } catch (err) {
+        throw this.toError("Error selecting branches:", err);
+      }
     } catch (err) {
-      console.error("Error selecting branches:", err);
-      return Error(err as string);
+      return err instanceof Error ? err : new Error(String(err));
     }
   }
 }

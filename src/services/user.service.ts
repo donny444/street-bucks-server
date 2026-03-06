@@ -119,6 +119,15 @@ export class UserService {
         firstName: true,
         lastName: true,
         role: true,
+        attendances: {
+          select: { dateTime: true },
+          where: {
+            dateTime: {
+              gte: new Date(new Date().setHours(0, 0, 0, 0)),
+              lte: new Date(new Date().setHours(23, 59, 59, 999)),
+            },
+          },
+        },
       },
       where,
     });
