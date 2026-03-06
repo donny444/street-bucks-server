@@ -3,6 +3,11 @@ export type TopMenusByQuantityDto = {
   totalQuantity: number;
 };
 
+export type TopMenusByRevenueDto = {
+  menuName: string;
+  totalRevenue: number;
+};
+
 export type SaleByCategoryDto = {
   order: {
     timestamp: number;

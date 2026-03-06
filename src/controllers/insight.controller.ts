@@ -20,9 +20,10 @@ export class InsightController {
         branchPayload || "{}"
       ) as BranchPayloadDto;
       if (!parsedBranchPayload) {
-        return res
-          .status(500)
-          .json({ error: "Failed to fetch specific order." });
+        return res.status(500).json({
+          error:
+            "Failed to parse branch payload from `branch-payload` request header.",
+        });
       }
 
       const { branchId } = parsedBranchPayload;
@@ -41,9 +42,9 @@ export class InsightController {
     }
   }
 
-  @Get("top-menus")
+  @Get("sales-this-week")
   @HttpCode(200)
-  async GetTopMenus(
+  async GetSalesThisWeek(
     @Headers("branch-payload") branchPayload: string,
     @Res() res: Response
   ): Promise<Response> {
@@ -52,15 +53,85 @@ export class InsightController {
         branchPayload || "{}"
       ) as BranchPayloadDto;
       if (!parsedBranchPayload) {
-        return res
-          .status(500)
-          .json({ error: "Failed to fetch specific order." });
+        return res.status(500).json({
+          error:
+            "Failed to parse branch payload from `branch-payload` request header.",
+        });
       }
 
       const { branchId } = parsedBranchPayload;
 
-      const topMenus = await this.insightService.GetTopMenus(branchId);
-      if (topMenus.length < 1) {
+      const salesThisWeek =
+        await this.insightService.GetSalesThisWeek(branchId);
+
+      return res.json({
+        message: "See this week's menu sales.",
+        insight: salesThisWeek,
+      });
+    } catch (err) {
+      console.error("Error retrieving this week's sales:", err);
+      return res
+        .status(500)
+        .json({ error: "Failed to retrieve this week's sales." });
+    }
+  }
+
+  @Get("sales-this-month")
+  @HttpCode(200)
+  async GetSalesThisMonth(
+    @Headers("branch-payload") branchPayload: string,
+    @Res() res: Response
+  ): Promise<Response> {
+    try {
+      const parsedBranchPayload = JSON.parse(
+        branchPayload || "{}"
+      ) as BranchPayloadDto;
+      if (!parsedBranchPayload) {
+        return res.status(500).json({
+          error:
+            "Failed to parse branch payload from `branch-payload` request header.",
+        });
+      }
+
+      const { branchId } = parsedBranchPayload;
+
+      const salesThisMonth =
+        await this.insightService.GetSalesThisMonth(branchId);
+
+      return res.json({
+        message: "See this month's menu sales.",
+        insight: salesThisMonth,
+      });
+    } catch (err) {
+      console.error("Error retrieving this month's sales:", err);
+      return res
+        .status(500)
+        .json({ error: "Failed to retrieve this month's sales." });
+    }
+  }
+
+  @Get("top-menus-by-quantity")
+  @HttpCode(200)
+  async GetTopMenusByQuantity(
+    @Headers("branch-payload") branchPayload: string,
+    @Res() res: Response
+  ): Promise<Response> {
+    try {
+      const parsedBranchPayload = JSON.parse(
+        branchPayload || "{}"
+      ) as BranchPayloadDto;
+      if (!parsedBranchPayload) {
+        return res.status(500).json({
+          error:
+            "Failed to parse branch payload from `branch-payload` request header.",
+        });
+      }
+
+      const { branchId } = parsedBranchPayload;
+
+      const topMenusByQuantity =
+        await this.insightService.GetTopMenusByQuantity(branchId);
+      if (topMenusByQuantity.length < 1) {
         return res.json({
           message:
             "No menu sales data available, thus top menus can't be calculated.",
@@ -68,19 +139,68 @@ export class InsightController {
         });
       }
 
-      const labels = topMenus.map((m) => m.menuName);
-      const data = topMenus.map((m) => m.totalQuantity);
+      const labels = topMenusByQuantity.map((m) => m.menuName);
+      const data = topMenusByQuantity.map((m) => m.totalQuantity);
 
       return res.json({
-        message: "Retrieved top 5 sold menus.",
+        message: "Retrieved top 5 sold menus by quantity.",
         insight: {
           labels,
           data,
         },
       });
     } catch (err) {
-      console.error("Error retrieving top menus:", err);
-      return res.status(500).json({ error: "Failed to retrieve top menus." });
+      console.error("Error retrieving top menus by quantity:", err);
+      return res
+        .status(500)
+        .json({ error: "Failed to retrieve top menus by quantity." });
+    }
+  }
+
+  @Get("top-menus-by-revenue")
+  @HttpCode(200)
+  async GetTopMenusByRevenue(
+    @Headers("branch-payload") branchPayload: string,
+    @Res() res: Response
+  ): Promise<Response> {
+    try {
+      const parsedBranchPayload = JSON.parse(
+        branchPayload || "{}"
+      ) as BranchPayloadDto;
+      if (!parsedBranchPayload) {
+        return res.status(500).json({
+          error:
+            "Failed to parse branch payload from `branch-payload` request header.",
+        });
+      }
+
+      const { branchId } = parsedBranchPayload;
+
+      const topMenusByRevenue =
+        await this.insightService.GetTopMenusByRevenue(branchId);
+      if (topMenusByRevenue.length < 1) {
+        return res.json({
+          message:
+            "No menu sales data available, thus top menus can't be calculated.",
+          insight: [],
+        });
+      }
+
+      const labels = topMenusByRevenue.map((m) => m.menuName);
+      const data = topMenusByRevenue.map((m) => m.totalRevenue);
+
+      return res.json({
+        message: "Retrieved top 5 sold menus by revenue.",
+        insight: {
+          labels,
+          data,
+        },
+      });
+    } catch (err) {
+      console.error("Error retrieving top menus by revenue:", err);
+      return res
+        .status(500)
+        .json({ error: "Failed to retrieve top menus by revenue." });
     }
   }
 
@@ -95,9 +215,10 @@ export class InsightController {
         branchPayload || "{}"
       ) as BranchPayloadDto;
       if (!parsedBranchPayload) {
-        return res
-          .status(500)
-          .json({ error: "Failed to fetch specific order." });
+        return res.status(500).json({
+          error:
+            "Failed to parse branch payload from `branch-payload` request header.",
+        });
       }
 
       const { branchId } = parsedBranchPayload;
@@ -149,9 +270,10 @@ export class InsightController {
         branchPayload || "{}"
       ) as BranchPayloadDto;
       if (!parsedBranchPayload) {
-        return res
-          .status(500)
-          .json({ error: "Failed to fetch specific order." });
+        return res.status(500).json({
+          error:
+            "Failed to parse branch payload from `branch-payload` request header.",
+        });
       }
 
       const { branchId } = parsedBranchPayload;
@@ -203,9 +325,10 @@ export class InsightController {
         branchPayload || "{}"
       ) as BranchPayloadDto;
       if (!parsedBranchPayload) {
-        return res
-          .status(500)
-          .json({ error: "Failed to fetch specific order." });
+        return res.status(500).json({
+          error:
+            "Failed to parse branch payload from `branch-payload` request header.",
+        });
       }
 
       const { branchId } = parsedBranchPayload;

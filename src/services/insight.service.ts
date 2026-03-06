@@ -1,7 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaClient } from "../../prisma/client";
 
-import { TopMenusByQuantityDto, SaleByCategoryDto } from "../dtos/insight.dto";
+import {
+  TopMenusByQuantityDto,
+  TopMenusByRevenueDto,
+  SaleByCategoryDto,
+} from "../dtos/insight.dto";
 
 @Injectable()
 export class InsightService {
@@ -45,7 +49,54 @@ export class InsightService {
     // return this.serializeOrders(salesToday);
   }
 
-  async GetTopMenus(branchId: number): Promise<TopMenusByQuantityDto[]> {
+  async GetSalesThisWeek(branchId: number): Promise<number> {
+    const now = new Date();
+    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+    startOfWeek.setHours(0, 0, 0, 0);
+    const startTimestamp = startOfWeek.getTime();
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(endOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+    const endTimestamp = endOfWeek.getTime();
+
+    const salesThisWeek = await this.prisma.order.count({
+      where: {
+        timestamp: {
+          gte: startTimestamp,
+          lte: endTimestamp,
+        },
+        branchId: BigInt(branchId),
+      },
+    });
+
+    return salesThisWeek;
+  }
+
+  async GetSalesThisMonth(branchId: number): Promise<number> {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    const startTimestamp = startOfMonth.getTime();
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    endOfMonth.setHours(23, 59, 59, 999);
+    const endTimestamp = endOfMonth.getTime();
+
+    const salesThisMonth = await this.prisma.order.count({
+      where: {
+        timestamp: {
+          gte: startTimestamp,
+          lte: endTimestamp,
+        },
+        branchId: BigInt(branchId),
+      },
+    });
+
+    return salesThisMonth;
+  }
+
+  async GetTopMenusByQuantity(
+    branchId: number
+  ): Promise<TopMenusByQuantityDto[]> {
     const topSold = await this.prisma.entry.groupBy({
       by: ["menuId"],
       _sum: { quantity: true },
@@ -70,6 +121,55 @@ export class InsightService {
         totalQuantity: m._sum.quantity ?? 0,
       }))
       .sort((a, b) => b.totalQuantity - a.totalQuantity)
+      .slice(0, 5);
+
+    return topMenus;
+  }
+
+  async GetTopMenusByRevenue(
+    branchId: number
+  ): Promise<TopMenusByRevenueDto[]> {
+    // Fetch all entries for the branch with menu prices
+    const entries = await this.prisma.entry.findMany({
+      select: {
+        menuId: true,
+        quantity: true,
+        menu: {
+          select: {
+            name: true,
+            price: true,
+          },
+        },
+      },
+      where: {
+        order: {
+          branchId: BigInt(branchId),
+        },
+      },
+    });
+
+    // Calculate revenue per menu (price * quantity)
+    const revenueMap = new Map<
+      string,
+      { menuName: string; totalRevenue: number }
+    >();
+
+    entries.forEach((e) => {
+      const revenue = e.menu.price * e.quantity;
+      const existing = revenueMap.get(e.menuId);
+      if (existing) {
+        existing.totalRevenue += revenue;
+      } else {
+        revenueMap.set(e.menuId, {
+          menuName: e.menu.name,
+          totalRevenue: revenue,
+        });
+      }
+    });
+
+    // Sort by revenue descending and take top 5
+    const topMenus = Array.from(revenueMap.values())
+      .sort((a, b) => b.totalRevenue - a.totalRevenue)
       .slice(0, 5);
 
     return topMenus;
