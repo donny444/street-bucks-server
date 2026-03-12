@@ -1,4 +1,4 @@
-import { Controller, Get, Headers, HttpCode, Res } from "@nestjs/common";
+import { Controller, Get, Headers, Res } from "@nestjs/common";
 import { Response } from "express";
 
 import { InsightService } from "../services/insight.service";
@@ -10,7 +10,6 @@ export class InsightController {
   constructor(private readonly insightService: InsightService) {}
 
   @Get("sales-today")
-  @HttpCode(200)
   async GetSalesToday(
     @Headers("branch-payload") branchPayload: string,
     @Res() res: Response
@@ -29,13 +28,17 @@ export class InsightController {
       const { branchId } = parsedBranchPayload;
 
       const salesToday = await this.insightService.GetSalesToday(branchId);
+      if (salesToday instanceof Error) {
+        console.error("Error occurred in `GetSalesToday`:", salesToday);
+        return res.status(500).json({ error: salesToday.message });
+      }
 
       return res.json({
         message: "See today's menu sales.",
         insight: salesToday,
       });
     } catch (err) {
-      console.error("Error retrieving today's sales:", err);
+      console.error("Error occurred in `GetSalesToday`:", err);
       return res
         .status(500)
         .json({ error: "Failed to retrieve today's sales." });
@@ -43,7 +46,6 @@ export class InsightController {
   }
 
   @Get("sales-this-week")
-  @HttpCode(200)
   async GetSalesThisWeek(
     @Headers("branch-payload") branchPayload: string,
     @Res() res: Response
@@ -63,13 +65,17 @@ export class InsightController {
 
       const salesThisWeek =
         await this.insightService.GetSalesThisWeek(branchId);
+      if (salesThisWeek instanceof Error) {
+        console.error("Error occurred in `GetSalesThisWeek`:", salesThisWeek);
+        return res.status(500).json({ error: salesThisWeek.message });
+      }
 
       return res.json({
         message: "See this week's menu sales.",
         insight: salesThisWeek,
       });
     } catch (err) {
-      console.error("Error retrieving this week's sales:", err);
+      console.error("Error occurred in `GetSalesThisWeek`:", err);
       return res
         .status(500)
         .json({ error: "Failed to retrieve this week's sales." });
@@ -77,7 +83,6 @@ export class InsightController {
   }
 
   @Get("sales-this-month")
-  @HttpCode(200)
   async GetSalesThisMonth(
     @Headers("branch-payload") branchPayload: string,
     @Res() res: Response
@@ -97,13 +102,17 @@ export class InsightController {
 
       const salesThisMonth =
         await this.insightService.GetSalesThisMonth(branchId);
+      if (salesThisMonth instanceof Error) {
+        console.error("Error occurred in `GetSalesThisMonth`:", salesThisMonth);
+        return res.status(500).json({ error: salesThisMonth.message });
+      }
 
       return res.json({
         message: "See this month's menu sales.",
         insight: salesThisMonth,
       });
     } catch (err) {
-      console.error("Error retrieving this month's sales:", err);
+      console.error("Error occurred in `GetSalesThisMonth`:", err);
       return res
         .status(500)
         .json({ error: "Failed to retrieve this month's sales." });
@@ -111,7 +120,6 @@ export class InsightController {
   }
 
   @Get("top-menus-by-quantity")
-  @HttpCode(200)
   async GetTopMenusByQuantity(
     @Headers("branch-payload") branchPayload: string,
     @Res() res: Response
@@ -131,12 +139,12 @@ export class InsightController {
 
       const topMenusByQuantity =
         await this.insightService.GetTopMenusByQuantity(branchId);
-      if (topMenusByQuantity.length < 1) {
-        return res.json({
-          message:
-            "No menu sales data available, thus top menus can't be calculated.",
-          insight: [],
-        });
+      if (topMenusByQuantity instanceof Error) {
+        console.error(
+          "Error occurred in `GetTopMenusByQuantity`:",
+          topMenusByQuantity
+        );
+        return res.status(500).json({ error: topMenusByQuantity.message });
       }
 
       const labels = topMenusByQuantity.map((m) => m.menuName);
@@ -150,7 +158,7 @@ export class InsightController {
         },
       });
     } catch (err) {
-      console.error("Error retrieving top menus by quantity:", err);
+      console.error("Error occurred in `GetTopMenusByQuantity`:", err);
       return res
         .status(500)
         .json({ error: "Failed to retrieve top menus by quantity." });
@@ -158,7 +166,6 @@ export class InsightController {
   }
 
   @Get("top-menus-by-revenue")
-  @HttpCode(200)
   async GetTopMenusByRevenue(
     @Headers("branch-payload") branchPayload: string,
     @Res() res: Response
@@ -178,12 +185,12 @@ export class InsightController {
 
       const topMenusByRevenue =
         await this.insightService.GetTopMenusByRevenue(branchId);
-      if (topMenusByRevenue.length < 1) {
-        return res.json({
-          message:
-            "No menu sales data available, thus top menus can't be calculated.",
-          insight: [],
-        });
+      if (topMenusByRevenue instanceof Error) {
+        console.error(
+          "Error occurred in `GetTopMenusByRevenue`:",
+          topMenusByRevenue
+        );
+        return res.status(500).json({ error: topMenusByRevenue.message });
       }
 
       const labels = topMenusByRevenue.map((m) => m.menuName);
@@ -197,7 +204,7 @@ export class InsightController {
         },
       });
     } catch (err) {
-      console.error("Error retrieving top menus by revenue:", err);
+      console.error("Error occurred in `GetTopMenusByRevenue`:", err);
       return res
         .status(500)
         .json({ error: "Failed to retrieve top menus by revenue." });
@@ -205,7 +212,6 @@ export class InsightController {
   }
 
   @Get("sales-in-week")
-  @HttpCode(200)
   async GetSalesInWeek(
     @Headers("branch-payload") branchPayload: string,
     @Res() res: Response
@@ -224,6 +230,10 @@ export class InsightController {
       const { branchId } = parsedBranchPayload;
 
       const salesInWeek = await this.insightService.GetSalesInWeek(branchId);
+      if (salesInWeek instanceof Error) {
+        console.error("Error occurred in `GetSalesInWeek`:", salesInWeek);
+        return res.status(500).json({ error: salesInWeek.message });
+      }
 
       const counts: Map<string, number> = new Map();
 
@@ -252,15 +262,14 @@ export class InsightController {
         insight: { labels, data },
       });
     } catch (err) {
-      console.error("Error retrieving this week's sales:", err);
+      console.error("Error occurred in `GetSalesInWeek`:", err);
       return res
         .status(500)
-        .json({ error: "Failed to retrieve this week's sales." });
+        .json({ error: "Failed to retrieve sales in this week." });
     }
   }
 
   @Get("sales-in-month")
-  @HttpCode(200)
   async GetSalesInMonth(
     @Headers("branch-payload") branchPayload: string,
     @Res() res: Response
@@ -279,6 +288,10 @@ export class InsightController {
       const { branchId } = parsedBranchPayload;
 
       const salesInMonth = await this.insightService.GetSalesInMonth(branchId);
+      if (salesInMonth instanceof Error) {
+        console.error("Error occurred in `GetSalesInMonth`:", salesInMonth);
+        return res.status(500).json({ error: salesInMonth.message });
+      }
 
       const countMap: Map<string, number> = new Map();
 
@@ -307,15 +320,14 @@ export class InsightController {
         insight: { labels, data },
       });
     } catch (err) {
-      console.error("Error retrieving this month's sales:", err);
+      console.error("Error occurred in `GetSalesInMonth`:", err);
       return res
         .status(500)
-        .json({ error: "Failed to retrieve this month's sales." });
+        .json({ error: "Failed to retrieve sales in this month." });
     }
   }
 
   @Get("sales-in-year")
-  @HttpCode(200)
   async GetSalesInYear(
     @Headers("branch-payload") branchPayload: string,
     @Res() res: Response
@@ -334,6 +346,10 @@ export class InsightController {
       const { branchId } = parsedBranchPayload;
 
       const salesInYear = await this.insightService.GetSalesInYear(branchId);
+      if (salesInYear instanceof Error) {
+        console.error("Error occurred in `GetSalesInYear`:", salesInYear);
+        return res.status(500).json({ error: salesInYear.message });
+      }
 
       const countArr: number[] = new Array(12).fill(0) as number[];
 
@@ -358,10 +374,10 @@ export class InsightController {
         insight: salesByType,
       });
     } catch (err) {
-      console.error("Error retrieving this year's sales:", err);
+      console.error("Error occurred in `GetSalesInYear`:", err);
       return res
         .status(500)
-        .json({ error: "Failed to retrieve this year's sales." });
+        .json({ error: "Failed to retrieve sales in this year." });
     }
   }
 }

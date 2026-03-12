@@ -6,10 +6,9 @@ import {
   HttpCode,
   Post,
   Param,
-  Req,
   Res,
 } from "@nestjs/common";
-import { Request, Response } from "express";
+import { Response } from "express";
 
 import { OrderService } from "../services/order.service";
 
@@ -32,17 +31,18 @@ export class OrderController {
         branchPayload || "{}"
       ) as BranchPayloadDto;
       if (!parsedBranchPayload) {
-        return res.status(500).json({ error: "Failed to make an order." });
+        return res.status(500).json({
+          error:
+            "Failed to parse branch payload from `branch-payload` request header.",
+        });
       }
 
       const { branchId } = parsedBranchPayload;
 
       const order = await this.orderService.InsertOrder(cartItems, branchId);
-      if (!order) {
-        return res.status(500).json({ error: "Failed to make an order." });
-      }
       if (order instanceof Error) {
-        return res.status(400).json({ error: order.message });
+        console.error("Error occurred in `InsertOrder`:", order);
+        return res.status(500).json({ error: order.message });
       }
 
       // Generate PDF receipt after successful order creation
@@ -50,10 +50,19 @@ export class OrderController {
         uuid: order.uuid,
         branchId: BigInt(branchId),
       });
+      if (!orderDetails) {
+        return res
+          .status(500)
+          .json({ error: "Failed to retrieve the order details." });
+      }
+      if (orderDetails instanceof Error) {
+        console.error("Error occurred in `GetSpecificOrder`:", orderDetails);
+        return res.status(500).json({ error: orderDetails.message });
+      }
 
       if (orderDetails) {
         await this.orderService.GenerateReceipt({
-          uuid: order.uuid,
+          uuid: orderDetails.uuid,
           timestamp: Number(order.timestamp),
           totalPrice: orderDetails.totalPrice,
           entries: orderDetails.entry.map((e) => ({
@@ -69,7 +78,7 @@ export class OrderController {
         order_id: order.uuid,
       });
     } catch (err) {
-      console.error("Error making an order:", err);
+      console.error("Error occurred in `MakeOrder`:", err);
       return res.status(500).json({ error: "Failed to make an order." });
     }
   }
@@ -77,7 +86,6 @@ export class OrderController {
   @Get()
   async GetTodayOrders(
     @Headers("Branch-Payload") branchPayload: string,
-    @Req() req: Request,
     @Res() res: Response
   ): Promise<Response> {
     try {
@@ -85,19 +93,26 @@ export class OrderController {
         branchPayload || "{}"
       ) as BranchPayloadDto;
       if (!parsedBranchPayload) {
-        return res.status(500).json({ error: "Failed to fetch today orders." });
+        return res.status(500).json({
+          error:
+            "Failed to parse branch payload from `branch-payload` request header.",
+        });
       }
 
       const { branchId } = parsedBranchPayload;
 
       const todayOrders = await this.orderService.GetTodayOrders(branchId);
+      if (todayOrders instanceof Error) {
+        console.error("Error occurred in `GetTodayOrders`:", todayOrders);
+        return res.status(500).json({ error: todayOrders.message });
+      }
 
       return res.json({
         message: "Get orders in current day.",
         today_orders: todayOrders,
       });
     } catch (err) {
-      console.error("Error fetching orders:", err);
+      console.error("Error occurred in `GetTodayOrders`:", err);
       return res.status(500).json({ error: "Failed to fetch today orders." });
     }
   }
@@ -105,7 +120,7 @@ export class OrderController {
   @Get(":uuid")
   async GetSpecificOrder(
     @Headers("Branch-Payload") branchPayload: string,
-    @Param("uuid") uuid: string | undefined,
+    @Param("uuid") uuid: string,
     @Res() res: Response
   ): Promise<Response> {
     try {
@@ -113,23 +128,21 @@ export class OrderController {
         branchPayload || "{}"
       ) as BranchPayloadDto;
       if (!parsedBranchPayload) {
-        return res
-          .status(500)
-          .json({ error: "Failed to fetch specific order." });
+        return res.status(500).json({
+          error:
+            "Failed to parse branch payload from `branch-payload` request header.",
+        });
       }
 
       const { branchId } = parsedBranchPayload;
-
-      if (!uuid) {
-        return res.status(400).json({ error: "Order UUID is required." });
-      }
 
       const order = await this.orderService.GetSpecificOrder({
         uuid,
         branchId,
       });
-      if (!order) {
-        return res.json({ message: "Order not found." });
+      if (order instanceof Error) {
+        console.error("Error occurred in `GetSpecificOrder`:", order);
+        return res.status(500).json({ error: order.message });
       }
 
       return res.json({
@@ -137,7 +150,7 @@ export class OrderController {
         order,
       });
     } catch (err) {
-      console.error("Error fetching specific order:", err);
+      console.error("Error occurred in `GetSpecificOrder`:", err);
       return res.status(500).json({ error: "Failed to fetch specific order." });
     }
   }
@@ -153,9 +166,10 @@ export class OrderController {
         branchPayload || "{}"
       ) as BranchPayloadDto;
       if (!parsedBranchPayload) {
-        return res
-          .status(500)
-          .json({ error: "Failed to fetch specific order." });
+        return res.status(500).json({
+          error:
+            "Failed to parse branch payload from `branch-payload` request header.",
+        });
       }
 
       if (!uuid) {
@@ -172,7 +186,7 @@ export class OrderController {
 
       return res.sendFile(receiptPath);
     } catch (err) {
-      console.error("Error fetching receipt:", err);
+      console.error("Error occurred in `GetReceipt`:", err);
       return res.status(500).json({ error: "Failed to fetch receipt." });
     }
   }

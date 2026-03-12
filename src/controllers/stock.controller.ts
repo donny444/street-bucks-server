@@ -21,9 +21,10 @@ export class StockController {
         branchPayload || "{}"
       ) as BranchPayloadDto;
       if (!parsedBranchPayload) {
-        return res
-          .status(500)
-          .json({ message: "Failed to edit the stock information." });
+        return res.status(500).json({
+          message:
+            "Failed to parse branch payload from `branch-payload` request header.",
+        });
       }
 
       const { branchId } = parsedBranchPayload;
@@ -39,15 +40,16 @@ export class StockController {
           },
         },
       });
-      if (!updatedQuantity) {
+      if (updatedQuantity instanceof Error) {
+        console.error("Error occurred in `UpdateQuantity`:", updatedQuantity);
         return res
           .status(500)
-          .json({ message: "Failed to edit quantity of a recipe." });
+          .json({ message: "Failed to edit quantity of the recipe." });
       }
 
       return res.json({
         message:
-          "The quantity of selected recipe has been updated for you branch.",
+          "The quantity of the selected recipe has been updated for you branch.",
       });
     } catch (err) {
       console.error("Error occurred in `EditQuantity`:", err);
@@ -67,9 +69,10 @@ export class StockController {
         branchPayload || "{}"
       ) as BranchPayloadDto;
       if (!parsedBranchPayload) {
-        return res
-          .status(500)
-          .json({ message: "Failed to get the stock information." });
+        return res.status(500).json({
+          message:
+            "Failed to parse branch payload from `branch-payload` request header.",
+        });
       }
 
       const { branchId } = parsedBranchPayload;
@@ -77,6 +80,12 @@ export class StockController {
       const branchStocks = await this.stockService.GetStocksByBranch({
         branchId: BigInt(branchId),
       });
+      if (branchStocks instanceof Error) {
+        console.error("Error occurred in `GetStocksByBranch`:", branchStocks);
+        return res.status(500).json({
+          message: "Failed to get the stock information of the branch.",
+        });
+      }
 
       return res.json({
         message: "Get stocks of the branch.",

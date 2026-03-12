@@ -46,7 +46,7 @@ export class RecipeController {
     @Res() res: Response
   ): Promise<Response> {
     try {
-      if (!addRecipe || !addRecipe.name) {
+      if (!addRecipe.name || !addRecipe.unit) {
         return res.status(400).json({
           message: "Missing required recipe information: name and unit.",
         });
@@ -55,6 +55,12 @@ export class RecipeController {
       const recipeExists = await this.recipeService.CheckRecipeExists(
         addRecipe.name
       );
+      if (recipeExists instanceof Error) {
+        console.error("Error occurred in `CheckRecipeExists`:", recipeExists);
+        return res
+          .status(500)
+          .json({ error: "Failed to check recipe existence." });
+      }
       if (recipeExists) {
         return res.status(409).json({
           message: `Recipe with the name provided already exists.`,
@@ -92,8 +98,10 @@ export class RecipeController {
         imagePath: fileName,
       });
       if (newRecipe instanceof Error) {
-        console.error("Error occurred in `InsertRecipe` service:", newRecipe);
-        return res.status(500).json({ message: newRecipe.message });
+        console.error("Error occurred in `InsertRecipe`:", newRecipe);
+        return res
+          .status(500)
+          .json({ message: "Failed to insert a new recipe" });
       }
 
       const buffer = await this.recipeService.CreateRecipeImage(
@@ -101,8 +109,10 @@ export class RecipeController {
         filePath
       );
       if (buffer instanceof Error) {
-        console.error("Error occurred in `CreateRecipeImage` service:", buffer);
-        return res.status(500).json({ message: buffer.message });
+        console.error("Error occurred in `CreateRecipeImage`:", buffer);
+        return res
+          .status(500)
+          .json({ message: "Failed to create the image of the recipe" });
       }
 
       return res.status(201).json({ message: "New recipe has been added." });
@@ -121,13 +131,19 @@ export class RecipeController {
     try {
       if (!editRecipe || !recipeName) {
         return res.status(400).json({
-          message: "Missing required recipe information: name and unit.",
+          message: "Missing required information for editing recipe.",
         });
       }
 
       const recipeExists = await this.recipeService.CheckRecipeExists(
         editRecipe.name
       );
+      if (recipeExists instanceof Error) {
+        console.error("Error occurred in `CheckRecipeExists`:", recipeExists);
+        return res
+          .status(500)
+          .json({ error: "Failed to check recipe existence." });
+      }
       if (recipeExists) {
         return res.status(409).json({
           message: `Recipe with the name provided already exists.`,
@@ -142,16 +158,15 @@ export class RecipeController {
         { name: recipeName }
       );
       if (updatedRecipe instanceof Error) {
-        console.error(
-          "Error occurred in `UpdateRecipe` service:",
-          updatedRecipe
-        );
-        return res.status(500).json({ message: updatedRecipe.message });
+        console.error("Error occurred in `UpdateRecipe`:", updatedRecipe);
+        return res
+          .status(500)
+          .json({ message: "Failed to update the recipe." });
       }
 
       return res.status(200).json({ message: "Recipe has been updated." });
     } catch (err) {
-      console.error("Error occurred in `EditRecipe` controller:", err);
+      console.error("Error occurred in `EditRecipe`:", err);
       return res.status(500).json({ message: "Failed to edit the recipe." });
     }
   }

@@ -14,7 +14,7 @@ import { Response } from "express";
 
 import { UserService } from "../services/user.service";
 
-import { RegisterDto, EditUserDto } from "../dtos/user.dto";
+import { RegisterDto, EditUserDto, BranchUserDto } from "../dtos/user.dto";
 import { BranchPayloadDto } from "../dtos/branch.dto";
 import { $Enums } from "../../prisma/client";
 
@@ -22,7 +22,7 @@ import { $Enums } from "../../prisma/client";
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  validateEmail(email: string): boolean {
+  private validateEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
@@ -39,9 +39,10 @@ export class UserController {
         branchPayload || "{}"
       ) as BranchPayloadDto;
       if (!parsedBranchPayload) {
-        return res
-          .status(500)
-          .json({ message: "Failed to register a new user." });
+        return res.status(500).json({
+          message:
+            "Failed to parse branch payload from `branch-payload` request header.",
+        });
       }
 
       const { branchId } = parsedBranchPayload;
@@ -63,6 +64,12 @@ export class UserController {
       }
 
       const existingUser = await this.userService.FindUser({ email });
+      if (existingUser instanceof Error) {
+        console.error("Error occurred in `FindUser`:", existingUser);
+        return res
+          .status(500)
+          .json({ message: "Failed to check existing user with the email." });
+      }
       if (existingUser) {
         return res
           .status(409)
@@ -76,7 +83,8 @@ export class UserController {
         lastName,
         branchId: BigInt(branchId),
       });
-      if (!newUser || newUser instanceof Error) {
+      if (newUser instanceof Error) {
+        console.error("Error occurred in `InsertUser`:", newUser);
         return res
           .status(500)
           .json({ message: "Failed to register the new user." });
@@ -86,7 +94,7 @@ export class UserController {
         message: "User registered to the system successfully.",
       });
     } catch (err) {
-      console.error("Error registering user:", err);
+      console.error("Error occurred in `RegisterUser`:", err);
       return res
         .status(500)
         .json({ error: "Failed to register the new user." });
@@ -109,6 +117,12 @@ export class UserController {
       }
 
       const existingUser = await this.userService.FindUser({ email });
+      if (existingUser instanceof Error) {
+        console.error("Error occurred in `FindUser`:", existingUser);
+        return res
+          .status(500)
+          .json({ message: "Failed to check existing user with the email." });
+      }
       if (!existingUser) {
         return res
           .status(404)
@@ -121,7 +135,7 @@ export class UserController {
         message: `User: ${email} attendance status for today has been switched`,
       });
     } catch (err) {
-      console.error("Error checking in user:", err);
+      console.error("Error occurred in `AttendUser`:", err);
       return res.status(500).json({ error: "Failed to check in user." });
     }
   }
@@ -141,6 +155,12 @@ export class UserController {
       }
 
       const userInfo = await this.userService.FindUser({ email });
+      if (userInfo instanceof Error) {
+        console.error("Error occurred in `FindUser`:", userInfo);
+        return res
+          .status(500)
+          .json({ message: "Failed to retrieve user information." });
+      }
       if (!userInfo) {
         return res
           .status(404)
@@ -149,10 +169,10 @@ export class UserController {
 
       return res.json({
         message: `See the specific information of user: ${email}`,
-        userInfo,
+        user_info: userInfo,
       });
     } catch (err) {
-      console.error("Error retrieving user info:", err);
+      console.error("Error occurred in `GetUserInfo`:", err);
       return res.status(500).json({ error: "Failed to retrieve user info." });
     }
   }
@@ -168,28 +188,39 @@ export class UserController {
       if (!validEmail) {
         return res
           .status(400)
-          .json({ message: "User email is required to edit a specific user." });
+          .json({ message: "User email must be in valid pattern." });
       }
 
-      const { firstName, lastName, password, role } = userData;
-      if (firstName === "" || lastName === "" || password === "") {
+      const { firstName, lastName, role, password } = userData;
+      const newEmail = userData.email;
+      if (!newEmail || !firstName || !lastName || !role || !password) {
         return res.status(400).json({
-          message:
-            "firstname, lastname, and password must not be empty strings.",
+          message: "All input fields are required.",
         });
       }
 
-      if (role) {
-        const validRoles = [$Enums.Role.STAFF, $Enums.Role.MANAGER];
-        if (!validRoles.includes(role)) {
-          return res.status(400).json({
-            message:
-              "You either select the user role to be a staff or a manager.",
-          });
-        }
+      const validNewEmail = this.validateEmail(newEmail);
+      if (!validNewEmail) {
+        return res.status(400).json({
+          message: "New user email must be in valid pattern.",
+        });
+      }
+
+      const validRoles = [$Enums.Role.STAFF, $Enums.Role.MANAGER];
+      if (!validRoles.includes(role)) {
+        return res.status(400).json({
+          message:
+            "You either select the user role to be a staff or a manager.",
+        });
       }
 
       const existingUser = await this.userService.FindUser({ email });
+      if (existingUser instanceof Error) {
+        console.error("Error occurred in `FindUser`:", existingUser);
+        return res
+          .status(500)
+          .json({ message: "Failed to check existing user with the email." });
+      }
       if (!existingUser) {
         return res.status(404).json({ message: "User not found." });
       }
@@ -206,7 +237,8 @@ export class UserController {
         where: { email },
         data: newUserData,
       });
-      if (!updatedUser) {
+      if (updatedUser instanceof Error) {
+        console.error("Error occurred in `UpdateUser`:", updatedUser);
         return res
           .status(500)
           .json({ message: "Failed to update the user information." });
@@ -216,7 +248,7 @@ export class UserController {
         message: `Updated the information of the user: ${email}`,
       });
     } catch (err) {
-      console.error("Error editing user info:", err);
+      console.error("Error occurred in `EditUser`:", err);
       return res.status(500).json({ error: "Failed to edit user info." });
     }
   }
@@ -235,23 +267,33 @@ export class UserController {
       }
 
       const user = await this.userService.FindUser({ email });
+      if (user instanceof Error) {
+        console.error("Error occurred in `FindUser`:", user);
+        return res
+          .status(500)
+          .json({ message: "Failed to check existing user with the email." });
+      }
       if (!user) {
         return res.status(404).json({ message: "User not found." });
       }
 
-      await this.userService.DeleteUser({ email });
+      const deletedUser = await this.userService.DeleteUser({ email });
+      if (deletedUser instanceof Error) {
+        console.error("Error occurred in `DeleteUser`:", deletedUser);
+        return res.status(500).json({ message: "Failed to delete the user." });
+      }
 
       return res.json({
         message: `Removed the user: ${email} from the database`,
       });
     } catch (err) {
-      console.error("Error deleting user:", err);
-      return res.status(500).json({ error: "Failed to delete user." });
+      console.error("Error occurred in `RemoveUser`:", err);
+      return res.status(500).json({ error: "Failed to remove the user." });
     }
   }
 
-  @Get("branch")
-  async GetBranchUser(
+  @Get()
+  async GetBranchUsers(
     @Headers("Branch-Payload") branchPayload: string,
     @Res() res: Response
   ): Promise<Response> {
@@ -260,9 +302,10 @@ export class UserController {
         branchPayload || "{}"
       ) as BranchPayloadDto;
       if (!parsedBranchPayload) {
-        return res
-          .status(500)
-          .json({ message: "Failed to fetch the users of the branch." });
+        return res.status(500).json({
+          message:
+            "Failed to parse branch payload from `branch-payload` request header.",
+        });
       }
 
       const { branchId } = parsedBranchPayload;
@@ -270,16 +313,37 @@ export class UserController {
       const branchUsers = await this.userService.GetUsersByBranch({
         branchId: BigInt(branchId),
       });
+      if (branchUsers instanceof Error) {
+        console.error("Error occurred in `GetUsersByBranch`:", branchUsers);
+        return res
+          .status(500)
+          .json({ message: "Failed to retrieve the users of the branch." });
+      }
+
+      const processedBranchUsers: BranchUserDto[] = branchUsers.map((user) => {
+        let attended = false;
+        if (user.attendances.length > 0) {
+          attended = true;
+        }
+
+        return {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          role: user.role,
+          attended,
+        };
+      });
 
       return res.json({
         message: "Get users of the branch.",
-        branch_users: branchUsers,
+        branch_users: processedBranchUsers,
       });
     } catch (err) {
-      console.error("Error fetching branch users:", err);
+      console.error("Error occurred in `GetBranchUsers`:", err);
       return res
         .status(500)
-        .json({ error: "Failed to fetch the users of the branch." });
+        .json({ error: "Failed to retrieve users of the branch." });
     }
   }
 }

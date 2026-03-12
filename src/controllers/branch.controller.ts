@@ -23,7 +23,6 @@ export class BranchController {
   }
 
   @Post("sign-in")
-  @HttpCode(200)
   async SignInBranch(
     @Body() signInData: SignInDto,
     @Res() res: Response
@@ -38,15 +37,14 @@ export class BranchController {
       }
 
       const branchInfo = await this.branchService.FindBranch({ id: branchId });
+      if (branchInfo instanceof Error) {
+        console.error("Error occurred in `FindBranch`:", branchInfo);
+        return res.status(500).json({ error: branchInfo.message });
+      }
       if (!branchInfo) {
         return res
           .status(404)
           .json({ message: "No branch exists with the provided ID" });
-      }
-      if (branchInfo instanceof Error) {
-        return res
-          .status(500)
-          .json({ error: "Failed to sign in to a branch." });
       }
 
       const correctPassword = await bcrypt.compare(
@@ -62,7 +60,7 @@ export class BranchController {
       const jwtSecret = process.env.BRANCH_JWT_SECRET;
       if (!jwtSecret) {
         console.error("Missing JWT secret for branch sign-in");
-        return res.status(500).json({ error: "Failed to sign in branch." });
+        return res.status(500).json({ error: "Error signing in a branch." });
       }
 
       const jwtPayload = { branchId: Number(branchInfo.id) };
@@ -71,42 +69,42 @@ export class BranchController {
 
       return res.json({ message: "Branch signed in successfully.", token });
     } catch (err) {
-      console.error("Error signing in branch:", err);
+      console.error("Error occurred in `SignInBranch`:", err);
       return res.status(500).json({ error: "Failed to sign in to a branch." });
     }
   }
 
   @Post()
+  @HttpCode(201)
   async CreateBranch(
     @Body() branchData: CreateBranchDto,
     @Res() res: Response
   ): Promise<Response> {
-    const { password } = branchData;
-    if (!password) {
-      return res
-        .status(400)
-        .json({ message: "Password is required to create a branch." });
-    }
-
     try {
+      const { password } = branchData;
+      if (!password) {
+        return res
+          .status(400)
+          .json({ message: "Password is required to create a branch." });
+      }
+
       const hashedPassword = await bcrypt.hash(password, 10);
 
       const newBranch = await this.branchService.InsertBranch({
         password: hashedPassword,
       });
       if (newBranch instanceof Error) {
+        console.error("Error occurred in `InsertBranch`:", newBranch);
         return res
           .status(500)
           .json({ error: "Failed to create a new branch." });
       }
 
-      const serializedBranchId = this.serializeBranchId(newBranch);
-
-      return res.status(201).json({
-        message: `Branch created successfully with the id: #${serializedBranchId}.`,
+      return res.json({
+        message: "Branch created successfully.",
       });
     } catch (err) {
-      console.error("Error creating new branch:", err);
+      console.error("Error occurred in `CreateBranch`:", err);
       return res.status(500).json({ error: "Failed to create a new branch." });
     }
   }
@@ -116,9 +114,10 @@ export class BranchController {
     try {
       const branchIds = await this.branchService.SelectBranches();
       if (branchIds instanceof Error) {
+        console.error("Error occurred in `SelectBranches`:", branchIds);
         return res
           .status(500)
-          .json({ error: "Failed to fetch branches from the database." });
+          .json({ error: "Failed to find available branches." });
       }
 
       return res.json({
@@ -126,7 +125,7 @@ export class BranchController {
         branch_ids: branchIds,
       });
     } catch (err) {
-      console.error("Error fetching branches:", err);
+      console.error("Error occurred in `GetBranches`:", err);
       return res.status(500).json({ error: "Failed to retrieve branch IDs." });
     }
   }

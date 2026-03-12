@@ -15,7 +15,7 @@ export class IngredientController {
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const updatedIngredients = await this.ingredientService.UpdateAmounts({
+      const updatedAmounts = await this.ingredientService.UpdateAmounts({
         data: [
           ...editAmounts.map((i) => ({
             amount: i.amount,
@@ -30,14 +30,11 @@ export class IngredientController {
           })),
         ],
       });
-      if (!updatedIngredients || updatedIngredients instanceof Error) {
-        console.error(
-          "Transaction in `UpdateIngredients` did not complete:",
-          updatedIngredients
-        );
+      if (updatedAmounts instanceof Error) {
+        console.error("Error occurred in `UpdateAmounts`:", updatedAmounts);
         return res
           .status(500)
-          .json({ message: "Failed to edit amounts of ingredients." });
+          .json({ error: "Failed to update amounts of ingredients." });
       }
 
       return res.json({

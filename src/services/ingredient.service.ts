@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaClient, Prisma, Ingredient } from "../../prisma/client";
+import { PrismaClient, Prisma } from "../../prisma/client";
 
 @Injectable()
 export class IngredientService {
@@ -14,10 +14,10 @@ export class IngredientService {
   async UpdateAmounts(params: {
     data: Prisma.IngredientUpdateInput[];
     where: Prisma.IngredientWhereUniqueInput[];
-  }): Promise<Ingredient[] | Error> {
+  }): Promise<void | Error> {
     try {
       try {
-        return await this.prisma.$transaction(async (p) => {
+        await this.prisma.$transaction(async (p) => {
           const updatePromises = params.where.map((ing, ind) => {
             return p.ingredient.update({
               data: params.data[ind],

@@ -36,14 +36,12 @@ export class BranchService {
     }
   }
 
-  async InsertBranch(data: Prisma.BranchCreateInput): Promise<Branch | Error> {
+  async InsertBranch(data: Prisma.BranchCreateInput): Promise<void | Error> {
     try {
       try {
-        const newBranch = await this.prisma.branch.create({
+        await this.prisma.branch.create({
           data,
         });
-
-        return newBranch;
       } catch (err) {
         throw this.toError("Error inserting new branch:", err);
       }

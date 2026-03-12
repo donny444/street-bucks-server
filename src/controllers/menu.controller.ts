@@ -25,6 +25,12 @@ export class MenuController {
   async GetHotMenus(@Res() res: Response): Promise<Response> {
     try {
       const hotMenus = await this.menuService.GetHotMenus();
+      if (hotMenus instanceof Error) {
+        console.error("Error occurred in `GetHotMenus`:", hotMenus);
+        return res
+          .status(500)
+          .json({ error: "Failed to retrieve hot beverages." });
+      }
 
       return res.json({
         message: "Returns all available hot beverages",
@@ -42,6 +48,12 @@ export class MenuController {
   async GetIcedMenus(@Res() res: Response): Promise<Response> {
     try {
       const icedMenus = await this.menuService.GetIcedMenus();
+      if (icedMenus instanceof Error) {
+        console.error("Error occurred in `GetIcedMenus`:", icedMenus);
+        return res
+          .status(500)
+          .json({ error: "Failed to retrieve iced beverages." });
+      }
 
       return res.json({
         message: "Returns all available iced beverages",
@@ -59,6 +71,10 @@ export class MenuController {
   async GetBakeryMenus(@Res() res: Response): Promise<Response> {
     try {
       const bakeryMenus = await this.menuService.GetBakeryMenus();
+      if (bakeryMenus instanceof Error) {
+        console.error("Error occurred in `GetBakeryMenus`:", bakeryMenus);
+        return res.status(500).json({ error: "Failed to retrieve bakery." });
+      }
 
       return res.json({
         message: "Returns all available bakery menus",
@@ -81,8 +97,14 @@ export class MenuController {
       const specificMenu = await this.menuService.GetSpecificMenu(name);
       if (!specificMenu) {
         return res.status(404).json({
-          error: `Menu: #${name} not found. Please the name of menu in route parameter`,
+          error: `Menu: #${name} from the route parameter not found.`,
         });
+      }
+      if (specificMenu instanceof Error) {
+        console.error("Error occurred in `GetSpecificMenu`:", specificMenu);
+        return res
+          .status(500)
+          .json({ error: "Failed to retrieve the specific menu." });
       }
 
       return res.json({
@@ -113,15 +135,22 @@ export class MenuController {
       const specificMenu = await this.menuService.GetSpecificMenu(name);
       if (!specificMenu) {
         return res.status(404).json({
-          message: `Menu: #${name} not found. Please review the name of menu in route parameter`,
+          message: `Menu: #${name} from the route parameter not found.`,
         });
+      }
+      if (specificMenu instanceof Error) {
+        console.error("Error occurred in `GetSpecificMenu`:", specificMenu);
+        return res
+          .status(500)
+          .json({ message: "Failed to retrieve the specific menu." });
       }
 
       const updatedMenu = await this.menuService.UpdateMenu({
         data: editMenu,
         where: { name },
       });
-      if (!updatedMenu) {
+      if (updatedMenu instanceof Error) {
+        console.error("Error occurred in `UpdateMenu`:", updatedMenu);
         return res
           .status(500)
           .json({ message: "Failed to edit the menu information." });
@@ -164,13 +193,19 @@ export class MenuController {
     @Res() res: Response
   ): Promise<Response> {
     try {
-      if (!addMenu || !addMenu.name || !addMenu.price || !addMenu.category) {
+      if (!addMenu.name || !addMenu.price || !addMenu.category) {
         return res.status(400).json({
           message: "Missing required menu information: name, price, category.",
         });
       }
 
       const menuExists = await this.menuService.CheckMenuExists(addMenu.name);
+      if (menuExists instanceof Error) {
+        console.error("Error occurred in `CheckMenuExists`:", menuExists);
+        return res
+          .status(500)
+          .json({ message: "Failed to check menu existence." });
+      }
       if (menuExists) {
         return res.status(409).json({
           message: "Menu with the name provided already exists.",

@@ -31,7 +31,10 @@ export class BranchUserDto {
   lastName!: string;
   email!: string;
   role!: $Enums.Role;
-  attended!: boolean;
+  attendances?: {
+    dateTime: Date;
+  }[];
+  attended?: boolean;
 }
 
 export class EditorDto {
