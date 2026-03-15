@@ -3,23 +3,37 @@ import { PrismaClient, Prisma, $Enums } from "../../prisma/client";
 
 import * as bcrypt from "bcryptjs";
 
-import { UserInfoDto, BranchUserDto } from "../dtos/user.dto";
+import { UserFormDto, BranchUserDto, FindUserDto } from "../dtos/user.dto";
 
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaClient) {}
 
-  private serializeBranchId(userInfo: UserInfoDto): UserInfoDto {
-    return {
-      ...userInfo,
-      branchId: Number(userInfo.branchId),
-    };
-  }
-
   private toError(tag: string, err: unknown): Error {
     return new Error(
       `${tag}: ${err instanceof Error ? err.message : String(err)}`
     );
+  }
+
+  async CheckUserExists(email: string): Promise<boolean | Error> {
+    try {
+      try {
+        const user = await this.prisma.user.findUnique({
+          where: { email },
+          select: { email: true },
+        });
+
+        if (!user) {
+          return false;
+        }
+
+        return true;
+      } catch (err) {
+        throw this.toError("Error checking if user exists:", err);
+      }
+    } catch (err) {
+      return err instanceof Error ? err : new Error(String(err));
+    }
   }
 
   async InsertUser(
@@ -101,48 +115,56 @@ export class UserService {
 
   async FindUser(
     where: Prisma.UserWhereUniqueInput
-  ): Promise<UserInfoDto | null | Error> {
+  ): Promise<FindUserDto | null | Error> {
     try {
       try {
-        const userInfo = await this.prisma.user.findUnique({
+        const user = await this.prisma.user.findUnique({
           select: {
-            firstName: true,
-            lastName: true,
-            branchId: true,
+            email: true,
+            password: true,
+            role: true,
           },
           where,
         });
-        if (!userInfo) {
+
+        if (!user) {
           return null;
         }
 
-        const serializedUserInfo = this.serializeBranchId(userInfo);
-
-        return serializedUserInfo;
+        return user;
       } catch (err) {
-        throw this.toError("Failed to find a specific user", err);
+        throw this.toError("Failed to find a user", err);
       }
     } catch (err) {
-      console.error("Error finding user:", err);
+      console.error("Error finding a user:", err);
       return err instanceof Error ? err : new Error(String(err));
     }
   }
 
-  async UpdateUser(params: {
-    data: Prisma.UserUncheckedUpdateInput;
-    where: Prisma.UserWhereUniqueInput;
-  }): Promise<void | Error> {
+  async FindUserForm(
+    where: Prisma.UserWhereUniqueInput
+  ): Promise<UserFormDto | null | Error> {
     try {
       try {
-        await this.prisma.user.update({
-          data: params.data,
-          where: params.where,
+        const userForm = await this.prisma.user.findUnique({
+          select: {
+            email: true,
+            firstName: true,
+            lastName: true,
+            role: true,
+          },
+          where,
         });
+        if (!userForm) {
+          return null;
+        }
+
+        return userForm;
       } catch (err) {
-        throw this.toError("Failed to update user detail", err);
+        throw this.toError("Failed to find form values of a user", err);
       }
     } catch (err) {
-      console.error("Error updating user detail:", err);
+      console.error("Error finding form values of a user:", err);
       return err instanceof Error ? err : new Error(String(err));
     }
   }

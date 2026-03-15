@@ -12,9 +12,17 @@ import {
 } from "@nestjs/common";
 import { Response } from "express";
 
+import * as bcrypt from "bcryptjs";
+import { sign as jwtSign } from "jsonwebtoken";
+
 import { UserService } from "../services/user.service";
 
-import { RegisterDto, EditUserDto, BranchUserDto } from "../dtos/user.dto";
+import {
+  RegisterDto,
+  EditUserDto,
+  BranchUserDto,
+  UserCredentialsDto,
+} from "../dtos/user.dto";
 import { BranchPayloadDto } from "../dtos/branch.dto";
 import { $Enums } from "../../prisma/client";
 
@@ -63,9 +71,9 @@ export class UserController {
         });
       }
 
-      const existingUser = await this.userService.FindUser({ email });
+      const existingUser = await this.userService.CheckUserExists(email);
       if (existingUser instanceof Error) {
-        console.error("Error occurred in `FindUser`:", existingUser);
+        console.error("Error occurred in `CheckUserExists`:", existingUser);
         return res
           .status(500)
           .json({ message: "Failed to check existing user with the email." });
@@ -116,9 +124,9 @@ export class UserController {
         });
       }
 
-      const existingUser = await this.userService.FindUser({ email });
+      const existingUser = await this.userService.CheckUserExists(email);
       if (existingUser instanceof Error) {
-        console.error("Error occurred in `FindUser`:", existingUser);
+        console.error("Error occurred in `CheckUserExists`:", existingUser);
         return res
           .status(500)
           .json({ message: "Failed to check existing user with the email." });
@@ -140,8 +148,78 @@ export class UserController {
     }
   }
 
+  @Post("sign-in/administrator")
+  async SignInAdministrator(
+    @Body() credentials: UserCredentialsDto,
+    @Res() res: Response
+  ): Promise<Response> {
+    try {
+      const { email, password } = credentials;
+
+      if (!email || !password) {
+        return res.status(400).json({
+          message: "Email and password are required for administrator sign-in.",
+        });
+      }
+
+      const validEmail = this.validateEmail(email);
+      if (!validEmail) {
+        return res.status(400).json({
+          message:
+            "The email provided is not in valid format for administrator sign-in.",
+        });
+      }
+
+      const user = await this.userService.FindUser({ email });
+      if (user instanceof Error) {
+        console.error("Error occurred in `FindUser`:", user);
+        return res
+          .status(500)
+          .json({ message: "Failed to find the user with the email." });
+      }
+      if (!user) {
+        return res
+          .status(404)
+          .json({ message: "User not found with the provided email." });
+      }
+
+      const passwordMatch = await bcrypt.compare(password, user.password);
+      if (!passwordMatch) {
+        return res
+          .status(401)
+          .json({ message: "Incorrect password for administrator sign-in." });
+      }
+
+      if (user.role !== $Enums.Role.ADMINISTRATOR) {
+        return res.status(403).json({
+          message: "User does not have administrator privileges.",
+        });
+      }
+
+      const jwtSecret = process.env.BRANCH_JWT_SECRET;
+      if (!jwtSecret) {
+        console.error("Missing JWT secret for branch sign-in");
+        return res.status(500).json({ error: "Error signing in a branch." });
+      }
+
+      const jwtPayload = { email };
+
+      const token = jwtSign(jwtPayload, jwtSecret, { expiresIn: 86400 });
+
+      return res.json({
+        message: "Administrator signed in successfully.",
+        token,
+      });
+    } catch (err) {
+      console.error("Error occurred in `SignInAdministrator`:", err);
+      return res
+        .status(500)
+        .json({ error: "Failed to sign in as an administrator." });
+    }
+  }
+
   @Get(":email")
-  async GetUserInfo(
+  async GetUserForm(
     @Param("email") email: string,
     @Res() res: Response
   ): Promise<Response> {
@@ -154,14 +232,14 @@ export class UserController {
         });
       }
 
-      const userInfo = await this.userService.FindUser({ email });
-      if (userInfo instanceof Error) {
-        console.error("Error occurred in `FindUser`:", userInfo);
+      const userForm = await this.userService.FindUserForm({ email });
+      if (userForm instanceof Error) {
+        console.error("Error occurred in `FindUserForm`:", userForm);
         return res
           .status(500)
-          .json({ message: "Failed to retrieve user information." });
+          .json({ message: "Failed to find form values of a user." });
       }
-      if (!userInfo) {
+      if (!userForm) {
         return res
           .status(404)
           .json({ message: "User not found with the provided email." });
@@ -169,11 +247,13 @@ export class UserController {
 
       return res.json({
         message: `See the specific information of user: ${email}`,
-        user_info: userInfo,
+        user_form: userForm,
       });
     } catch (err) {
-      console.error("Error occurred in `GetUserInfo`:", err);
-      return res.status(500).json({ error: "Failed to retrieve user info." });
+      console.error("Error occurred in `GetUserForm`:", err);
+      return res
+        .status(500)
+        .json({ error: "Failed to get form values of a user." });
     }
   }
 
@@ -214,9 +294,9 @@ export class UserController {
         });
       }
 
-      const existingUser = await this.userService.FindUser({ email });
+      const existingUser = await this.userService.CheckUserExists(email);
       if (existingUser instanceof Error) {
-        console.error("Error occurred in `FindUser`:", existingUser);
+        console.error("Error occurred in `CheckUserExists`:", existingUser);
         return res
           .status(500)
           .json({ message: "Failed to check existing user with the email." });
@@ -266,9 +346,9 @@ export class UserController {
           .json({ message: "User email is required to remove specific user." });
       }
 
-      const user = await this.userService.FindUser({ email });
+      const user = await this.userService.CheckUserExists(email);
       if (user instanceof Error) {
-        console.error("Error occurred in `FindUser`:", user);
+        console.error("Error occurred in `CheckUserExists`:", user);
         return res
           .status(500)
           .json({ message: "Failed to check existing user with the email." });

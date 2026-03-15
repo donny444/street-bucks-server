@@ -20,10 +20,17 @@ export class RemoveUserDto {
   editor!: EditorDto;
 }
 
-export class UserInfoDto {
+export class FindUserDto {
+  email!: string;
+  password!: string;
+  role!: string;
+}
+
+export class UserFormDto {
+  email!: string;
   firstName!: string;
   lastName!: string;
-  branchId!: number | bigint;
+  role!: $Enums.Role;
 }
 
 export class BranchUserDto {
@@ -38,6 +45,11 @@ export class BranchUserDto {
 }
 
 export class EditorDto {
+  email!: string;
+  password!: string;
+}
+
+export class UserCredentialsDto {
   email!: string;
   password!: string;
 }
