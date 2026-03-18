@@ -5,11 +5,14 @@ import {
   MiddlewareConsumer,
 } from "@nestjs/common";
 
-import { AssetsController } from "./controllers/assets.controller";
+import { AssetController } from "./controllers/asset.controller";
 
 import { BranchController } from "./controllers/branch.controller";
 import { BranchService } from "./services/branch.service";
 import { AuthorizeBranch } from "./middlewares/branch.middleware";
+
+import { IngredientController } from "./controllers/ingredient.controller";
+import { IngredientService } from "./services/ingredient.service";
 
 import { InsightController } from "./controllers/insight.controller";
 import { InsightService } from "./services/insight.service";
@@ -19,6 +22,12 @@ import { MenuService } from "./services/menu.service";
 
 import { OrderController } from "./controllers/order.controller";
 import { OrderService } from "./services/order.service";
+
+import { RecipeController } from "./controllers/recipe.controller";
+import { RecipeService } from "./services/recipe.service";
+
+import { StockController } from "./controllers/stock.controller";
+import { StockService } from "./services/stock.service";
 
 import { UserController } from "./controllers/user.controller";
 import { UserService } from "./services/user.service";
@@ -33,18 +42,24 @@ import { PrismaClient } from "../prisma/client";
 @Module({
   imports: [],
   controllers: [
-    AssetsController,
+    AssetController,
     BranchController,
+    IngredientController,
     InsightController,
     MenuController,
     OrderController,
+    RecipeController,
+    StockController,
     UserController,
   ],
   providers: [
     BranchService,
+    IngredientService,
     InsightService,
     MenuService,
     OrderService,
+    RecipeService,
+    StockService,
     UserService,
     PrismaClient,
   ],
@@ -62,7 +77,6 @@ export class AppModule implements NestModule {
 
       // User entity
       { path: "users/", method: RequestMethod.POST }, // RegisterUser
-      { path: "users/:email", method: RequestMethod.GET }, // GetUserInfo
       { path: "users/:email", method: RequestMethod.PUT }, // EditUser
       { path: "users/:email", method: RequestMethod.DELETE } // RemoveUser
     );
@@ -83,7 +97,7 @@ export class AppModule implements NestModule {
       { path: "insights/top-menus", method: RequestMethod.GET }, // GetTopMenus
       { path: "insights/sales-in-week", method: RequestMethod.GET }, // GetSalesInWeek
       { path: "insights/sales-in-month", method: RequestMethod.GET }, // GetSalesInMonth
-      { path: "insights/sales-in-year", method: RequestMethod.GET }, // GetSalesInYear
+      { path: "insight/sales-in-year", method: RequestMethod.GET }, // GetSalesInYear
 
       // Order entity
       { path: "orders/", method: RequestMethod.POST }, // MakeOrder
@@ -91,8 +105,12 @@ export class AppModule implements NestModule {
       { path: "orders/:uuid", method: RequestMethod.GET }, // GetSpecificOrder
       { path: "orders/:uuid/receipt", method: RequestMethod.GET }, // GetReceipt
 
-      // Stock Entity
-      { path: "stocks/", method: RequestMethod.PUT } // EditQuantity
+      // Stock entity
+      { path: "stocks/", method: RequestMethod.PUT }, // EditQuantity
+      { path: "stocks/", method: RequestMethod.GET }, // GetBranchStocks
+
+      // User entity
+      { path: "users/", method: RequestMethod.GET } // GetBranchUsers
     );
   }
 }
