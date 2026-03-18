@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -85,6 +86,28 @@ export class MenuController {
       return res
         .status(500)
         .json({ error: "Failed to retrieve bakery menus." });
+    }
+  }
+
+  @Get()
+  async GetAllMenus(@Res() res: Response): Promise<Response> {
+    try {
+      const menus = await this.menuService.FindMenus();
+      if (menus instanceof Error) {
+        console.error("Error occurred in `FindMenus`:", menus);
+        return res.status(500).json({ error: "Failed to retrieve menus." });
+      }
+      if (menus.length === 0) {
+        return res.status(404).json({ error: "No menus found." });
+      }
+
+      return res.json({
+        message: "Returns all available menus",
+        menus,
+      });
+    } catch (err) {
+      console.error("Error retrieving all menus:", err);
+      return res.status(500).json({ error: "Failed to retrieve menus." });
     }
   }
 
@@ -253,6 +276,54 @@ export class MenuController {
     } catch (err) {
       console.error("Error occurred in `AddMenu` controller:", err);
       return res.status(500).json({ message: "Failed to add a new menu." });
+    }
+  }
+
+  @Delete(":name")
+  async RemoveMenu(
+    @Param("name") name: string,
+    @Res() res: Response
+  ): Promise<Response> {
+    try {
+      if (!name) {
+        return res
+          .status(400)
+          .json({ message: "Menu name is required for removal." });
+      }
+
+      const specificMenu = await this.menuService.GetSpecificMenu(name);
+      if (specificMenu instanceof Error) {
+        console.error("Error occurred in `GetSpecificMenu`:", specificMenu);
+        return res
+          .status(500)
+          .json({ message: "Failed to retrieve the specific menu." });
+      }
+      if (!specificMenu) {
+        return res.status(404).json({
+          message: `Menu: #${name} from the route parameter not found.`,
+        });
+      }
+
+      const deletedMenu = await this.menuService.DeleteMenu({ name });
+      if (deletedMenu instanceof Error) {
+        console.error("Error occurred in `DeleteMenu`:", deletedMenu);
+        return res.status(500).json({ message: "Failed to delete the menu." });
+      }
+
+      const deletedImage = await this.menuService.DeleteMenuImage(
+        specificMenu.imagePath
+      );
+      if (deletedImage instanceof Error) {
+        console.error("Error occurred in `DeleteMenuImage`:", deletedImage);
+        return res
+          .status(500)
+          .json({ message: "Failed to delete the menu image." });
+      }
+
+      return res.json({ message: "The menu has been removed." });
+    } catch (err) {
+      console.error("Error occurred in `RemoveMenu`:", err);
+      return res.status(500).json({ message: "Failed to remove the menu." });
     }
   }
 }

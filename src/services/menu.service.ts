@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaClient, Prisma, Category } from "../../prisma/client";
+import { PrismaClient, Prisma, Category, Menu } from "../../prisma/client";
 
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir, writeFile, unlink } from "fs/promises";
 import { dirname } from "path";
 
 import { MenuInfoDto } from "src/dtos/menu.dto";
@@ -79,10 +79,29 @@ export class MenuService {
     }
   }
 
+  async FindMenus(): Promise<Menu[] | Error> {
+    try {
+      try {
+        const menus = await this.prisma.menu.findMany();
+
+        return menus;
+      } catch (err) {
+        throw this.toError("Error fetching menus:", err);
+      }
+    } catch (err) {
+      return err instanceof Error ? err : new Error(String(err));
+    }
+  }
+
   async GetSpecificMenu(name: string): Promise<MenuInfoDto | null | Error> {
     try {
       try {
         const specificMenu = await this.prisma.menu.findUnique({
+          select: {
+            name: true,
+            price: true,
+            imagePath: true,
+          },
           where: { name },
         });
 
@@ -160,6 +179,35 @@ export class MenuService {
       } catch (err) {
         throw this.toError("Error creating menu image:", err);
       }
+    } catch (err) {
+      return err instanceof Error ? err : new Error(String(err));
+    }
+  }
+
+  async DeleteMenu(where: Prisma.MenuWhereUniqueInput): Promise<void | Error> {
+    try {
+      try {
+        await this.prisma.$transaction(async (prisma) => {
+          await prisma.ingredient.deleteMany({
+            where: { menuId: where.name },
+          });
+          await prisma.menu.delete({
+            where,
+          });
+        });
+      } catch (err) {
+        throw this.toError("Error deleting menu:", err);
+      }
+    } catch (err) {
+      return err instanceof Error ? err : new Error(String(err));
+    }
+  }
+
+  async DeleteMenuImage(fileName: string): Promise<void | Error> {
+    try {
+      const filePath = `../../assets/menus/${fileName}`;
+
+      await unlink(filePath);
     } catch (err) {
       return err instanceof Error ? err : new Error(String(err));
     }
