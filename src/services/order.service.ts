@@ -10,7 +10,7 @@ import {
   MenuPriceDto,
   ReceiptDto,
   SerializedOrderDto,
-  SpecificOrderDto,
+  OrderDetailsDto,
 } from "../dtos/order.dto";
 
 @Injectable()
@@ -221,9 +221,9 @@ export class OrderService {
     }
   }
 
-  async GetSpecificOrder(
+  async FindOrderDetails(
     where: Prisma.OrderWhereUniqueInput
-  ): Promise<SpecificOrderDto | null | Error> {
+  ): Promise<OrderDetailsDto | null | Error> {
     try {
       try {
         const order = await this.prisma.order.findUnique({
@@ -248,6 +248,22 @@ export class OrderService {
         return order;
       } catch (err) {
         throw this.toError("Failed to find specific order", err);
+      }
+    } catch (err) {
+      return err instanceof Error ? err : new Error(String(err));
+    }
+  }
+
+  async FindOrderByUuid(uuid: string): Promise<Order | null | Error> {
+    try {
+      try {
+        const order = await this.prisma.order.findUnique({
+          where: { uuid },
+        });
+
+        return order;
+      } catch (err) {
+        throw this.toError("Failed to find order by UUID", err);
       }
     } catch (err) {
       return err instanceof Error ? err : new Error(String(err));

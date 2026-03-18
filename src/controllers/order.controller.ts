@@ -7,6 +7,7 @@ import {
   Post,
   Param,
   Res,
+  Query,
 } from "@nestjs/common";
 import { Response } from "express";
 
@@ -46,7 +47,7 @@ export class OrderController {
       }
 
       // Generate PDF receipt after successful order creation
-      const orderDetails = await this.orderService.GetSpecificOrder({
+      const orderDetails = await this.orderService.FindOrderDetails({
         uuid: order.uuid,
         branchId: BigInt(branchId),
       });
@@ -56,7 +57,7 @@ export class OrderController {
           .json({ error: "Failed to retrieve the order details." });
       }
       if (orderDetails instanceof Error) {
-        console.error("Error occurred in `GetSpecificOrder`:", orderDetails);
+        console.error("Error occurred in `FindOrderDetails`:", orderDetails);
         return res.status(500).json({ error: orderDetails.message });
       }
 
@@ -118,7 +119,7 @@ export class OrderController {
   }
 
   @Get(":uuid")
-  async GetSpecificOrder(
+  async GetOrderDetails(
     @Headers("Branch-Payload") branchPayload: string,
     @Param("uuid") uuid: string,
     @Res() res: Response
@@ -136,12 +137,12 @@ export class OrderController {
 
       const { branchId } = parsedBranchPayload;
 
-      const order = await this.orderService.GetSpecificOrder({
+      const order = await this.orderService.FindOrderDetails({
         uuid,
         branchId,
       });
       if (order instanceof Error) {
-        console.error("Error occurred in `GetSpecificOrder`:", order);
+        console.error("Error occurred in `FindOrderDetails`:", order);
         return res.status(500).json({ error: order.message });
       }
 
@@ -150,8 +151,37 @@ export class OrderController {
         order,
       });
     } catch (err) {
-      console.error("Error occurred in `GetSpecificOrder`:", err);
+      console.error("Error occurred in `GetOrderDetails`:", err);
       return res.status(500).json({ error: "Failed to fetch specific order." });
+    }
+  }
+
+  @Get("find")
+  async GetOrderByUuid(
+    @Query("uuid") uuid: string,
+    @Res() res: Response
+  ): Promise<Response> {
+    try {
+      if (!uuid) {
+        return res.status(400).json({ error: "Order UUID is required." });
+      }
+
+      const foundOrder = await this.orderService.FindOrderByUuid(uuid);
+      if (foundOrder instanceof Error) {
+        console.error("Error occurred in `FindOrderByUuid`:", foundOrder);
+        return res.status(500).json({ error: foundOrder.message });
+      }
+      if (!foundOrder) {
+        return res.status(404).json({ error: "Order not found." });
+      }
+
+      return res.json({
+        message: `Found order with UUID: ${uuid}`,
+        found_order: foundOrder,
+      });
+    } catch (err) {
+      console.error("Error occurred in `GetOrderByUuid`:", err);
+      return res.status(500).json({ error: "Failed to fetch order by UUID." });
     }
   }
 
