@@ -14,7 +14,7 @@ export class SerializedOrderDto {
   totalPrice!: number;
 }
 
-export class SpecificOrderDto {
+export class OrderDetailsDto {
   uuid!: string;
   totalPrice!: number;
   entry!: {

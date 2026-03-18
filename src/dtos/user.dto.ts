@@ -33,6 +33,14 @@ export class UserFormDto {
   role!: $Enums.Role;
 }
 
+export class UserEntryDto {
+  email!: string;
+  firstName!: string;
+  lastName!: string;
+  role!: $Enums.Role;
+  branchId!: bigint | number;
+}
+
 export class BranchUserDto {
   firstName!: string;
   lastName!: string;
