@@ -1,6 +1,8 @@
 import {
   Body,
   Controller,
+  Delete,
+  Get,
   Param,
   Post,
   Put,
@@ -19,6 +21,22 @@ import { AddRecipeDto, EditRecipeDto } from "../dtos/recipe.dto";
 @Controller("recipes")
 export class RecipeController {
   constructor(private readonly recipeService: RecipeService) {}
+
+  @Get()
+  async GetRecipes(@Res() res: Response): Promise<Response> {
+    try {
+      const recipes = await this.recipeService.FindRecipes();
+      if (recipes instanceof Error) {
+        console.error("Error occurred in `FindRecipes`:", recipes);
+        return res.status(500).json({ message: "Failed to retrieve recipes." });
+      }
+
+      return res.status(200).json({ recipes });
+    } catch (err) {
+      console.error("Error occurred in `GetRecipes` controller:", err);
+      return res.status(500).json({ message: "Failed to get recipes." });
+    }
+  }
 
   @Post()
   @UseInterceptors(
@@ -168,6 +186,79 @@ export class RecipeController {
     } catch (err) {
       console.error("Error occurred in `EditRecipe`:", err);
       return res.status(500).json({ message: "Failed to edit the recipe." });
+    }
+  }
+
+  @Delete(":name")
+  async RemoveRecipe(
+    @Param("name") name: string,
+    @Res() res: Response
+  ): Promise<Response> {
+    try {
+      if (!name) {
+        return res.status(400).json({
+          message: "Recipe name is required for removal.",
+        });
+      }
+
+      const recipe = await this.recipeService.FindRecipe(name);
+      if (recipe instanceof Error) {
+        console.error("Error occurred in `FindRecipe`:", recipe);
+        return res
+          .status(500)
+          .json({ message: "Failed to find the recipe for deletion." });
+      }
+      if (!recipe) {
+        return res.status(404).json({
+          message: `Recipe with the name "${name}" not found.`,
+        });
+      }
+
+      const recipeDependencies =
+        await this.recipeService.FindRecipeDependencies({ name });
+      if (recipeDependencies instanceof Error) {
+        console.error(
+          "Error occurred in `FindRecipeDependencies`:",
+          recipeDependencies
+        );
+        return res
+          .status(500)
+          .json({ message: "Failed to check recipe dependencies." });
+      }
+      if (!recipeDependencies) {
+        return res.status(404).json({
+          message: `Recipe with the name "${name}" not found.`,
+        });
+      }
+      if (recipeDependencies.ingredient.length > 0) {
+        return res.status(403).json({
+          message:
+            "Cannot delete the recipe as it is used as an ingredient in existing menus.",
+        });
+      }
+
+      const deletedRecipe = await this.recipeService.DeleteRecipe({ name });
+      if (deletedRecipe instanceof Error) {
+        console.error("Error occurred in `DeleteRecipe`:", deletedRecipe);
+        return res
+          .status(500)
+          .json({ message: "Failed to delete the recipe." });
+      }
+
+      const deletedImage = await this.recipeService.DeleteRecipeImage(
+        recipe.imagePath
+      );
+      if (deletedImage instanceof Error) {
+        console.error("Error occurred in `DeleteRecipeImage`:", deletedImage);
+        return res
+          .status(500)
+          .json({ message: "Failed to delete the recipe image." });
+      }
+
+      return res.json({ message: "The recipe has been removed." });
+    } catch (err) {
+      console.error("Error occurred in `RemoveRecipe`:", err);
+      return res.status(500).json({ message: "Failed to remove the recipe." });
     }
   }
 }
