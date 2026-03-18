@@ -15,7 +15,7 @@ BEGIN
 	FOR i IN 1..target_orders LOOP
 		new_order_id := gen_random_uuid();
 		order_timestamp := floor(
-			extract(epoch FROM (timestamp '2025-01-01' + random() * interval '365 days')) * 1000
+			extract(epoch FROM (timestamp '2026-01-01' + random() * interval '365 days')) * 1000
 		)::bigint;
 		branch_id := (1 + floor(random() * 14))::bigint;
 
