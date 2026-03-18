@@ -9,6 +9,7 @@ import {
   Put,
   Param,
   Res,
+  Query,
 } from "@nestjs/common";
 import { Response } from "express";
 
@@ -20,6 +21,7 @@ import { UserService } from "../services/user.service";
 import {
   RegisterDto,
   EditUserDto,
+  UserEntryDto,
   BranchUserDto,
   UserCredentialsDto,
 } from "../dtos/user.dto";
@@ -254,6 +256,46 @@ export class UserController {
       return res
         .status(500)
         .json({ error: "Failed to get form values of a user." });
+    }
+  }
+
+  @Get("search")
+  async SearchUsersByName(
+    @Query("name") name: string,
+    @Res() res: Response
+  ): Promise<Response> {
+    try {
+      if (!name) {
+        return res.status(400).json({
+          message: "Name query parameter is required to search users by name.",
+        });
+      }
+
+      const foundUsers = await this.userService.FindUsersByName(name);
+      if (foundUsers instanceof Error) {
+        console.error("Error occurred in `SearchUsersByName`:", foundUsers);
+        return res
+          .status(500)
+          .json({ message: "Failed to search users by name." });
+      }
+      if (!foundUsers || foundUsers.length < 1) {
+        return res
+          .status(404)
+          .json({ message: "No users found matching the name query." });
+      }
+
+      const serializedFoundUsers: UserEntryDto[] = foundUsers.map((user) => ({
+        ...user,
+        branchId: Number(user.branchId),
+      }));
+
+      return res.json({
+        message: `Users found from the search name: ${name}`,
+        found_users: serializedFoundUsers,
+      });
+    } catch (err) {
+      console.error("Error occurred in `SearchUsersByName`:", err);
+      return res.status(500).json({ error: "Failed to search users by name." });
     }
   }
 

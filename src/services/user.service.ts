@@ -3,7 +3,12 @@ import { PrismaClient, Prisma, $Enums } from "../../prisma/client";
 
 import * as bcrypt from "bcryptjs";
 
-import { UserFormDto, BranchUserDto, FindUserDto } from "../dtos/user.dto";
+import {
+  UserFormDto,
+  BranchUserDto,
+  FindUserDto,
+  UserEntryDto,
+} from "../dtos/user.dto";
 
 @Injectable()
 export class UserService {
@@ -165,6 +170,58 @@ export class UserService {
       }
     } catch (err) {
       console.error("Error finding form values of a user:", err);
+      return err instanceof Error ? err : new Error(String(err));
+    }
+  }
+
+  async FindUsersByName(name: string): Promise<UserEntryDto[] | null | Error> {
+    try {
+      try {
+        const foundUsers = await this.prisma.user.findMany({
+          select: {
+            email: true,
+            firstName: true,
+            lastName: true,
+            role: true,
+            branchId: true,
+          },
+          where: {
+            OR: [
+              { firstName: { contains: name, mode: "insensitive" } },
+              { lastName: { contains: name, mode: "insensitive" } },
+            ],
+          },
+        });
+
+        if (foundUsers.length < 1) {
+          return null;
+        }
+
+        return foundUsers;
+      } catch (err) {
+        throw this.toError("Failed to find users by name", err);
+      }
+    } catch (err) {
+      console.error("Error finding users by name:", err);
+      return err instanceof Error ? err : new Error(String(err));
+    }
+  }
+
+  async UpdateUser(params: {
+    data: Prisma.UserUncheckedUpdateInput;
+    where: Prisma.UserWhereUniqueInput;
+  }): Promise<void | Error> {
+    try {
+      try {
+        await this.prisma.user.update({
+          data: params.data,
+          where: params.where,
+        });
+      } catch (err) {
+        throw this.toError("Failed to update user detail", err);
+      }
+    } catch (err) {
+      console.error("Error updating user detail:", err);
       return err instanceof Error ? err : new Error(String(err));
     }
   }
