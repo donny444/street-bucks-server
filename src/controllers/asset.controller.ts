@@ -4,7 +4,7 @@ import { join } from "path";
 import { existsSync } from "fs";
 
 @Controller("assets")
-export class AssetsController {
+export class AssetController {
   private readonly assetsPath = join(__dirname, "..", "..", "assets");
 
   @Get("menus/:filename")
