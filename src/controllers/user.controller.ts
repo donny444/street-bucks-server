@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Headers,
   HttpCode,
   Post,
   Put,
@@ -17,12 +16,12 @@ import * as bcrypt from "bcryptjs";
 import { sign as jwtSign } from "jsonwebtoken";
 
 import { UserService } from "../services/user.service";
+import { BranchPayload } from "../decorators/branch-payload.decorator";
 
 import {
   RegisterDto,
   EditUserDto,
   UserEntryDto,
-  BranchUserDto,
   UserCredentialsDto,
 } from "../dtos/user.dto";
 import { BranchPayloadDto } from "../dtos/branch.dto";
@@ -40,23 +39,11 @@ export class UserController {
   @Post()
   @HttpCode(201)
   async RegisterUser(
-    @Headers("Branch-Payload") branchPayload: string,
+    @BranchPayload() { branchId }: BranchPayloadDto,
     @Body() userData: RegisterDto,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const parsedBranchPayload = JSON.parse(
-        branchPayload || "{}"
-      ) as BranchPayloadDto;
-      if (!parsedBranchPayload) {
-        return res.status(500).json({
-          message:
-            "Failed to parse branch payload from `branch-payload` request header.",
-        });
-      }
-
-      const { branchId } = parsedBranchPayload;
-
       const { email, password, firstName, lastName } = userData;
 
       if (!email || !firstName || !lastName || !password || !branchId) {
@@ -416,22 +403,10 @@ export class UserController {
 
   @Get()
   async GetBranchUsers(
-    @Headers("Branch-Payload") branchPayload: string,
+    @BranchPayload() { branchId }: BranchPayloadDto,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const parsedBranchPayload = JSON.parse(
-        branchPayload || "{}"
-      ) as BranchPayloadDto;
-      if (!parsedBranchPayload) {
-        return res.status(500).json({
-          message:
-            "Failed to parse branch payload from `branch-payload` request header.",
-        });
-      }
-
-      const { branchId } = parsedBranchPayload;
-
       const branchUsers = await this.userService.GetUsersByBranch({
         branchId: BigInt(branchId),
       });
@@ -442,7 +417,7 @@ export class UserController {
           .json({ message: "Failed to retrieve the users of the branch." });
       }
 
-      const processedBranchUsers: BranchUserDto[] = branchUsers.map((user) => {
+      const processedBranchUsers = branchUsers.map((user) => {
         let attended = false;
         if (user.attendances.length > 0) {
           attended = true;

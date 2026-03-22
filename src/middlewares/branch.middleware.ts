@@ -13,7 +13,7 @@ export class AuthorizeBranch implements NestMiddleware {
 
     if (!branchToken) {
       return res
-        .status(400)
+        .status(401)
         .json({ message: "branch-token header is missing." });
     }
 
@@ -36,7 +36,7 @@ export class AuthorizeBranch implements NestMiddleware {
           .json({ message: "Branch not found with the provided token." });
       }
 
-      req.headers["branch-payload"] = JSON.stringify(decoded);
+      req.branchPayload = decoded;
 
       return next();
     } catch (err) {

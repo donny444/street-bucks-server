@@ -94,10 +94,13 @@ export class AppModule implements NestModule {
     consumer.apply(AuthorizeBranch).forRoutes(
       // Insight entity
       { path: "insights/sales-today", method: RequestMethod.GET }, // GetSalesToday
-      { path: "insights/top-menus", method: RequestMethod.GET }, // GetTopMenus
+      { path: "insights/sales-this-week", method: RequestMethod.GET }, // GetSalesThisWeek
+      { path: "insights/sales-this-month", method: RequestMethod.GET }, // GetSalesThisMonth
+      { path: "insights/top-menus-by-quantity", method: RequestMethod.GET }, // GetTopMenusByQuantity
+      { path: "insights/top-menus-by-revenue", method: RequestMethod.GET }, // GetTopMenusByRevenue
       { path: "insights/sales-in-week", method: RequestMethod.GET }, // GetSalesInWeek
       { path: "insights/sales-in-month", method: RequestMethod.GET }, // GetSalesInMonth
-      { path: "insight/sales-in-year", method: RequestMethod.GET }, // GetSalesInYear
+      { path: "insights/sales-in-year", method: RequestMethod.GET }, // GetSalesInYear
 
       // Order entity
       { path: "orders/", method: RequestMethod.POST }, // MakeOrder
@@ -110,6 +113,7 @@ export class AppModule implements NestModule {
       { path: "stocks/", method: RequestMethod.GET }, // GetBranchStocks
 
       // User entity
+      { path: "users/", method: RequestMethod.POST }, // RegisterUser
       { path: "users/", method: RequestMethod.GET } // GetBranchUsers
     );
   }

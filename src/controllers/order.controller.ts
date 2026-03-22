@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  Headers,
   HttpCode,
   Post,
   Param,
@@ -12,6 +11,7 @@ import {
 import { Response } from "express";
 
 import { OrderService } from "../services/order.service";
+import { BranchPayload } from "../decorators/branch-payload.decorator";
 
 import { OrderedMenuDto } from "../dtos/order.dto";
 import { BranchPayloadDto } from "../dtos/branch.dto";
@@ -23,23 +23,11 @@ export class OrderController {
   @Post()
   @HttpCode(201)
   async MakeOrder(
-    @Headers("Branch-Payload") branchPayload: string,
+    @BranchPayload() { branchId }: BranchPayloadDto,
     @Body() cartItems: OrderedMenuDto[],
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const parsedBranchPayload = JSON.parse(
-        branchPayload || "{}"
-      ) as BranchPayloadDto;
-      if (!parsedBranchPayload) {
-        return res.status(500).json({
-          error:
-            "Failed to parse branch payload from `branch-payload` request header.",
-        });
-      }
-
-      const { branchId } = parsedBranchPayload;
-
       const order = await this.orderService.InsertOrder(cartItems, branchId);
       if (order instanceof Error) {
         console.error("Error occurred in `InsertOrder`:", order);
@@ -86,22 +74,10 @@ export class OrderController {
 
   @Get()
   async GetTodayOrders(
-    @Headers("Branch-Payload") branchPayload: string,
+    @BranchPayload() { branchId }: BranchPayloadDto,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const parsedBranchPayload = JSON.parse(
-        branchPayload || "{}"
-      ) as BranchPayloadDto;
-      if (!parsedBranchPayload) {
-        return res.status(500).json({
-          error:
-            "Failed to parse branch payload from `branch-payload` request header.",
-        });
-      }
-
-      const { branchId } = parsedBranchPayload;
-
       const todayOrders = await this.orderService.GetTodayOrders(branchId);
       if (todayOrders instanceof Error) {
         console.error("Error occurred in `GetTodayOrders`:", todayOrders);
@@ -120,23 +96,11 @@ export class OrderController {
 
   @Get(":uuid")
   async GetOrderDetails(
-    @Headers("Branch-Payload") branchPayload: string,
+    @BranchPayload() { branchId }: BranchPayloadDto,
     @Param("uuid") uuid: string,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const parsedBranchPayload = JSON.parse(
-        branchPayload || "{}"
-      ) as BranchPayloadDto;
-      if (!parsedBranchPayload) {
-        return res.status(500).json({
-          error:
-            "Failed to parse branch payload from `branch-payload` request header.",
-        });
-      }
-
-      const { branchId } = parsedBranchPayload;
-
       const order = await this.orderService.FindOrderDetails({
         uuid,
         branchId,
@@ -187,21 +151,11 @@ export class OrderController {
 
   @Get(":uuid/receipt")
   GetReceipt(
-    @Headers("Branch-Payload") branchPayload: string,
+    @BranchPayload() { branchId }: BranchPayloadDto,
     @Param("uuid") uuid: string,
     @Res() res: Response
   ): Response | void {
     try {
-      const parsedBranchPayload = JSON.parse(
-        branchPayload || "{}"
-      ) as BranchPayloadDto;
-      if (!parsedBranchPayload) {
-        return res.status(500).json({
-          error:
-            "Failed to parse branch payload from `branch-payload` request header.",
-        });
-      }
-
       if (!uuid) {
         return res.status(400).json({ error: "Order UUID is required." });
       }

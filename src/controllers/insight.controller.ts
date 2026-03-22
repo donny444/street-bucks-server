@@ -1,8 +1,8 @@
-import { Controller, Get, Headers, Res } from "@nestjs/common";
+import { Controller, Get, Res } from "@nestjs/common";
 import { Response } from "express";
 
 import { InsightService } from "../services/insight.service";
-
+import { BranchPayload } from "../decorators/branch-payload.decorator";
 import { BranchPayloadDto } from "../dtos/branch.dto";
 
 @Controller("insights")
@@ -11,22 +11,10 @@ export class InsightController {
 
   @Get("sales-today")
   async GetSalesToday(
-    @Headers("branch-payload") branchPayload: string,
+    @BranchPayload() { branchId }: BranchPayloadDto,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const parsedBranchPayload = JSON.parse(
-        branchPayload || "{}"
-      ) as BranchPayloadDto;
-      if (!parsedBranchPayload) {
-        return res.status(500).json({
-          error:
-            "Failed to parse branch payload from `branch-payload` request header.",
-        });
-      }
-
-      const { branchId } = parsedBranchPayload;
-
       const salesToday = await this.insightService.GetSalesToday(branchId);
       if (salesToday instanceof Error) {
         console.error("Error occurred in `GetSalesToday`:", salesToday);
@@ -47,22 +35,10 @@ export class InsightController {
 
   @Get("sales-this-week")
   async GetSalesThisWeek(
-    @Headers("branch-payload") branchPayload: string,
+    @BranchPayload() { branchId }: BranchPayloadDto,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const parsedBranchPayload = JSON.parse(
-        branchPayload || "{}"
-      ) as BranchPayloadDto;
-      if (!parsedBranchPayload) {
-        return res.status(500).json({
-          error:
-            "Failed to parse branch payload from `branch-payload` request header.",
-        });
-      }
-
-      const { branchId } = parsedBranchPayload;
-
       const salesThisWeek =
         await this.insightService.GetSalesThisWeek(branchId);
       if (salesThisWeek instanceof Error) {
@@ -84,22 +60,10 @@ export class InsightController {
 
   @Get("sales-this-month")
   async GetSalesThisMonth(
-    @Headers("branch-payload") branchPayload: string,
+    @BranchPayload() { branchId }: BranchPayloadDto,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const parsedBranchPayload = JSON.parse(
-        branchPayload || "{}"
-      ) as BranchPayloadDto;
-      if (!parsedBranchPayload) {
-        return res.status(500).json({
-          error:
-            "Failed to parse branch payload from `branch-payload` request header.",
-        });
-      }
-
-      const { branchId } = parsedBranchPayload;
-
       const salesThisMonth =
         await this.insightService.GetSalesThisMonth(branchId);
       if (salesThisMonth instanceof Error) {
@@ -121,22 +85,10 @@ export class InsightController {
 
   @Get("top-menus-by-quantity")
   async GetTopMenusByQuantity(
-    @Headers("branch-payload") branchPayload: string,
+    @BranchPayload() { branchId }: BranchPayloadDto,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const parsedBranchPayload = JSON.parse(
-        branchPayload || "{}"
-      ) as BranchPayloadDto;
-      if (!parsedBranchPayload) {
-        return res.status(500).json({
-          error:
-            "Failed to parse branch payload from `branch-payload` request header.",
-        });
-      }
-
-      const { branchId } = parsedBranchPayload;
-
       const topMenusByQuantity =
         await this.insightService.GetTopMenusByQuantity(branchId);
       if (topMenusByQuantity instanceof Error) {
@@ -167,22 +119,10 @@ export class InsightController {
 
   @Get("top-menus-by-revenue")
   async GetTopMenusByRevenue(
-    @Headers("branch-payload") branchPayload: string,
+    @BranchPayload() { branchId }: BranchPayloadDto,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const parsedBranchPayload = JSON.parse(
-        branchPayload || "{}"
-      ) as BranchPayloadDto;
-      if (!parsedBranchPayload) {
-        return res.status(500).json({
-          error:
-            "Failed to parse branch payload from `branch-payload` request header.",
-        });
-      }
-
-      const { branchId } = parsedBranchPayload;
-
       const topMenusByRevenue =
         await this.insightService.GetTopMenusByRevenue(branchId);
       if (topMenusByRevenue instanceof Error) {
@@ -213,22 +153,10 @@ export class InsightController {
 
   @Get("sales-in-week")
   async GetSalesInWeek(
-    @Headers("branch-payload") branchPayload: string,
+    @BranchPayload() { branchId }: BranchPayloadDto,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const parsedBranchPayload = JSON.parse(
-        branchPayload || "{}"
-      ) as BranchPayloadDto;
-      if (!parsedBranchPayload) {
-        return res.status(500).json({
-          error:
-            "Failed to parse branch payload from `branch-payload` request header.",
-        });
-      }
-
-      const { branchId } = parsedBranchPayload;
-
       const salesInWeek = await this.insightService.GetSalesInWeek(branchId);
       if (salesInWeek instanceof Error) {
         console.error("Error occurred in `GetSalesInWeek`:", salesInWeek);
@@ -271,25 +199,12 @@ export class InsightController {
 
   @Get("sales-in-month")
   async GetSalesInMonth(
-    @Headers("branch-payload") branchPayload: string,
+    @BranchPayload() { branchId }: BranchPayloadDto,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const parsedBranchPayload = JSON.parse(
-        branchPayload || "{}"
-      ) as BranchPayloadDto;
-      if (!parsedBranchPayload) {
-        return res.status(500).json({
-          error:
-            "Failed to parse branch payload from `branch-payload` request header.",
-        });
-      }
-
-      const { branchId } = parsedBranchPayload;
-
       const salesInMonth = await this.insightService.GetSalesInMonth(branchId);
       if (salesInMonth instanceof Error) {
-        console.error("Error occurred in `GetSalesInMonth`:", salesInMonth);
         return res.status(500).json({ error: salesInMonth.message });
       }
 
@@ -329,25 +244,12 @@ export class InsightController {
 
   @Get("sales-in-year")
   async GetSalesInYear(
-    @Headers("branch-payload") branchPayload: string,
+    @BranchPayload() { branchId }: BranchPayloadDto,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const parsedBranchPayload = JSON.parse(
-        branchPayload || "{}"
-      ) as BranchPayloadDto;
-      if (!parsedBranchPayload) {
-        return res.status(500).json({
-          error:
-            "Failed to parse branch payload from `branch-payload` request header.",
-        });
-      }
-
-      const { branchId } = parsedBranchPayload;
-
       const salesInYear = await this.insightService.GetSalesInYear(branchId);
       if (salesInYear instanceof Error) {
-        console.error("Error occurred in `GetSalesInYear`:", salesInYear);
         return res.status(500).json({ error: salesInYear.message });
       }
 

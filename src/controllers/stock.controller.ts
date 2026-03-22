@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Headers, Put, Res } from "@nestjs/common";
+import { Body, Controller, Get, Put, Res } from "@nestjs/common";
 import { Response } from "express";
 
 import { StockService } from "../services/stock.service";
+import { BranchPayload } from "../decorators/branch-payload.decorator";
 
 import { EditQuantityDto } from "../dtos/stock.dto";
 import { BranchPayloadDto } from "../dtos/branch.dto";
@@ -12,23 +13,11 @@ export class StockController {
 
   @Put()
   async EditQuantity(
-    @Headers("Branch-Payload") branchPayload: string,
+    @BranchPayload() { branchId }: BranchPayloadDto,
     @Body() editQuantity: EditQuantityDto,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const parsedBranchPayload = JSON.parse(
-        branchPayload || "{}"
-      ) as BranchPayloadDto;
-      if (!parsedBranchPayload) {
-        return res.status(500).json({
-          message:
-            "Failed to parse branch payload from `branch-payload` request header.",
-        });
-      }
-
-      const { branchId } = parsedBranchPayload;
-
       const updatedQuantity = await this.stockService.UpdateQuantity({
         data: {
           quantity: editQuantity.quantity,
@@ -61,22 +50,10 @@ export class StockController {
 
   @Get()
   async GetBranchStocks(
-    @Headers("Branch-Payload") branchPayload: string,
+    @BranchPayload() { branchId }: BranchPayloadDto,
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const parsedBranchPayload = JSON.parse(
-        branchPayload || "{}"
-      ) as BranchPayloadDto;
-      if (!parsedBranchPayload) {
-        return res.status(500).json({
-          message:
-            "Failed to parse branch payload from `branch-payload` request header.",
-        });
-      }
-
-      const { branchId } = parsedBranchPayload;
-
       const branchStocks = await this.stockService.GetStocksByBranch({
         branchId: BigInt(branchId),
       });
