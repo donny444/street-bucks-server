@@ -73,6 +73,7 @@ model Menu {
   price           Float             @db.DoublePrecision
   category        Category
   imagePath       String            @unique
+  note            String?
   ingredient      Ingredient[]
   entry           Entry[]
 }
