@@ -1,0 +1,3 @@
+- milk: x2 cup
+- coffee beans: x1 cap
+- sugar: x1 tbsp

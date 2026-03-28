@@ -1,0 +1,6 @@
+- water: x1 cup
+- milk: x1 cup
+- coffee beans: x1 cap
+- sugar: x1 tbsp
+- cocoa powder: x1 tsp
+- ice: x1 glass

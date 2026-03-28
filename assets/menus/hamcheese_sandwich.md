@@ -1,0 +1,4 @@
+- sliced cheese: x1 pc
+- sliced ham: x1 pc
+- mayonnaise: x1 tbsp
+- sliced bread: x2 pc

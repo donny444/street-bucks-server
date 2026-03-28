@@ -1,0 +1,8 @@
+- condensed milk: x1 cup
+- sugar: x3 tbsp
+- unsalted butter: x1 tsp
+- egg: x1 pc
+- flour: x2 cup
+- whipped cream: x1 tbsp
+- orange jam: x2 tbsp
+- salt: x1 tsp

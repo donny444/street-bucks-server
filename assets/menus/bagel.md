@@ -1,0 +1,5 @@
+- water: x2 cup
+- yeast: x2 tsp
+- flour: x3 cup
+- sugar: x1 tbsp
+- salt: x2 tsp

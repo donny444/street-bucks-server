@@ -1,0 +1,4 @@
+- water: x2 cup
+- offee beans: x1 cap
+- sugar: x1 tbsp
+- ice: x1 glass

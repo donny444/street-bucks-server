@@ -1,0 +1,4 @@
+- milk: x2 cup
+- coffee beans: x1 cap
+- sugar: x1 tbsp
+- ice: x1 glass

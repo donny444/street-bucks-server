@@ -1,0 +1,2 @@
+- water: x1 cup
+- coffee beans: x1 cap
