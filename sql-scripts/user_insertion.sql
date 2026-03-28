@@ -97,3 +97,19 @@ insert into "User" ("email", "branchId", "firstName", "lastName", "password", "r
 ('mikaela.bis@streetbucks.com', 14, 'Mikaela', 'Bishop', '$2a$10$28Ra6W4Kx9xRy0NG76bAnu7zHiwq/cG1eI1fkYCt8GCeAZ3NQ7JWO', 'staff'),
 ('jordan.wal@streetbucks.com', 14, 'Jordan', 'Walsh', '$2a$10$28Ra6W4Kx9xRy0NG76bAnu7zHiwq/cG1eI1fkYCt8GCeAZ3NQ7JWO', 'manager'),
 ('daisy.ste@streetbucks.com', 14, 'Daisy', 'Stephens', '$2a$10$28Ra6W4Kx9xRy0NG76bAnu7zHiwq/cG1eI1fkYCt8GCeAZ3NQ7JWO', 'manager');
+
+insert into "User" ("email", "branchId", "firstName", "lastName", "password", "role") values
+('marcus.che@streetbucks.com', 1, 'Marcus', 'Chen', '$2a$10$28Ra6W4Kx9xRy0NG76bAnu7zHiwq/cG1eI1fkYCt8GCeAZ3NQ7JWO', 'administrator'),
+('rachel.kap@streetbucks.com', 2, 'Rachel', 'Kapoor', '$2a$10$28Ra6W4Kx9xRy0NG76bAnu7zHiwq/cG1eI1fkYCt8GCeAZ3NQ7JWO', 'administrator'),
+('kevin.obr@streetbucks.com', 3, 'Kevin', 'O''Brien', '$2a$10$28Ra6W4Kx9xRy0NG76bAnu7zHiwq/cG1eI1fkYCt8GCeAZ3NQ7JWO', 'administrator'),
+('jessica.mul@streetbucks.com', 4, 'Jessica', 'Müller', '$2a$10$28Ra6W4Kx9xRy0NG76bAnu7zHiwq/cG1eI1fkYCt8GCeAZ3NQ7JWO', 'administrator'),
+('thomas.lar@streetbucks.com', 5, 'Thomas', 'Larsson', '$2a$10$28Ra6W4Kx9xRy0NG76bAnu7zHiwq/cG1eI1fkYCt8GCeAZ3NQ7JWO', 'administrator'),
+('amanda.dub@streetbucks.com', 6, 'Amanda', 'Dubois', '$2a$10$28Ra6W4Kx9xRy0NG76bAnu7zHiwq/cG1eI1fkYCt8GCeAZ3NQ7JWO', 'administrator'),
+('christopher.sil@streetbucks.com', 7, 'Christopher', 'Silva', '$2a$10$28Ra6W4Kx9xRy0NG76bAnu7zHiwq/cG1eI1fkYCt8GCeAZ3NQ7JWO', 'administrator'),
+('michelle.sat@streetbucks.com', 8, 'Michelle', 'Sato', '$2a$10$28Ra6W4Kx9xRy0NG76bAnu7zHiwq/cG1eI1fkYCt8GCeAZ3NQ7JWO', 'administrator'),
+('brandon.kow@streetbucks.com', 9, 'Brandon', 'Kowalski', '$2a$10$28Ra6W4Kx9xRy0NG76bAnu7zHiwq/cG1eI1fkYCt8GCeAZ3NQ7JWO', 'administrator'),
+('sarah.ber@streetbucks.com', 10, 'Sarah', 'Bergström', '$2a$10$28Ra6W4Kx9xRy0NG76bAnu7zHiwq/cG1eI1fkYCt8GCeAZ3NQ7JWO', 'administrator'),
+('matthew.ros@streetbucks.com', 11, 'Matthew', 'Rossi', '$2a$10$28Ra6W4Kx9xRy0NG76bAnu7zHiwq/cG1eI1fkYCt8GCeAZ3NQ7JWO', 'administrator'),
+('lauren.pet@streetbucks.com', 12, 'Lauren', 'Petrov', '$2a$10$28Ra6W4Kx9xRy0NG76bAnu7zHiwq/cG1eI1fkYCt8GCeAZ3NQ7JWO', 'administrator'),
+('jonathan.nak@streetbucks.com', 13, 'Jonathan', 'Nakamura', '$2a$10$28Ra6W4Kx9xRy0NG76bAnu7zHiwq/cG1eI1fkYCt8GCeAZ3NQ7JWO', 'administrator'),
+('nicole.han@streetbucks.com', 14, 'Nicole', 'Hansen', '$2a$10$28Ra6W4Kx9xRy0NG76bAnu7zHiwq/cG1eI1fkYCt8GCeAZ3NQ7JWO', 'administrator');
