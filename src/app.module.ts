@@ -72,13 +72,10 @@ export class AppModule implements NestModule {
     );
 
     consumer.apply(AuthorizeManager).forRoutes(
-      // Stock entity
-      { path: "stocks/", method: RequestMethod.PUT }, // EditQuantity
-
       // User entity
       { path: "users/", method: RequestMethod.POST }, // RegisterUser
       { path: "users/:email", method: RequestMethod.PUT }, // EditUser
-      { path: "users/:email", method: RequestMethod.DELETE } // RemoveUser
+      { path: "users/:email/removal", method: RequestMethod.POST } // RemoveUser
     );
 
     consumer.apply(AuthorizeAdministrator).forRoutes(

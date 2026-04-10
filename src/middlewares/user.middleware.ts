@@ -4,15 +4,15 @@ import { Request, Response, NextFunction } from "express";
 import * as bcrypt from "bcryptjs";
 import { PrismaClient, $Enums } from "../../prisma/client";
 
-import { EditorDto } from "../dtos/user.dto";
+import { CredentialsDto } from "../dtos/user.dto";
 
 @Injectable()
 export class AuthenticateUser implements NestMiddleware {
   constructor(private readonly prisma: PrismaClient) {}
 
   async use(req: Request<any, any, any>, res: Response, next: NextFunction) {
-    const { email } = req.params as EditorDto;
-    const { password } = req.body as EditorDto;
+    const { email } = req.params as CredentialsDto;
+    const { password } = req.body as CredentialsDto;
 
     if (!email || !password) {
       return res.status(400).json({
@@ -50,11 +50,12 @@ export class AuthenticateUser implements NestMiddleware {
   }
 }
 
+@Injectable()
 export class AuthorizeManager implements NestMiddleware {
   constructor(private readonly prisma: PrismaClient) {}
 
   async use(req: Request<any, any, any>, res: Response, next: NextFunction) {
-    const { email, password } = req.body.editor as EditorDto;
+    const { email, password } = req.body.editor as CredentialsDto;
 
     if (!email || !password) {
       return res.status(400).json({
@@ -93,16 +94,17 @@ export class AuthorizeManager implements NestMiddleware {
 
       return next();
     } catch (error) {
-      console.error("Error in `AuthorizeUser` middleware:", error);
-      return res.status(500).json({ message: "Failed to authorize user." });
+      console.error("Error in `AuthorizeManager` middleware:", error);
+      return res.status(500).json({ message: "Failed to authorize manager." });
     }
   }
 }
 
+@Injectable()
 export class AuthorizeAdministrator implements NestMiddleware {
   constructor(private readonly prisma: PrismaClient) {}
   async use(req: Request<any, any, any>, res: Response, next: NextFunction) {
-    const { email, password } = req.body.editor as EditorDto;
+    const { email, password } = req.body.editor as CredentialsDto;
 
     if (!email || !password) {
       return res.status(400).json({
@@ -141,8 +143,10 @@ export class AuthorizeAdministrator implements NestMiddleware {
 
       return next();
     } catch (error) {
-      console.error("Error in `AuthorizeUser` middleware:", error);
-      return res.status(500).json({ message: "Failed to authorize user." });
+      console.error("Error in `AuthorizeAdministrator` middleware:", error);
+      return res
+        .status(500)
+        .json({ message: "Failed to authorize administrator." });
     }
   }
 }
