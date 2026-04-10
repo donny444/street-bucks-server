@@ -99,17 +99,80 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /insights/top-menus:
+  /insights/sales-this-week:
     get:
       tags:
         - Insights
-      summary: Retrieve insight about top selling menu items
-      operationId: getTopMenus
+      summary: Retrieve the number of orders placed this week
+      operationId: getSalesThisWeek
       parameters:
         - $ref: '#/components/parameters/BranchToken'
       responses:
         '200':
-          description: Top sold menus
+          description: Sales count for this week
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightSalesTodayResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /insights/sales-this-month:
+    get:
+      tags:
+        - Insights
+      summary: Retrieve the number of orders placed this month
+      operationId: getSalesThisMonth
+      parameters:
+        - $ref: '#/components/parameters/BranchToken'
+      responses:
+        '200':
+          description: Sales count for this month
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightSalesTodayResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /insights/top-menus-by-quantity:
+    get:
+      tags:
+        - Insights
+      summary: Retrieve top selling menu items ranked by quantity sold
+      operationId: getTopMenusByQuantity
+      parameters:
+        - $ref: '#/components/parameters/BranchToken'
+      responses:
+        '200':
+          description: Top 5 sold menus by quantity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsightTopMenusResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /insights/top-menus-by-revenue:
+    get:
+      tags:
+        - Insights
+      summary: Retrieve top selling menu items ranked by revenue
+      operationId: getTopMenusByRevenue
+      parameters:
+        - $ref: '#/components/parameters/BranchToken'
+      responses:
+        '200':
+          description: Top 5 sold menus by revenue
           content:
             application/json:
               schema:
@@ -794,9 +857,6 @@ paths:
       tags:
         - Users
       summary: Remove the specified user and related records
-      description: >-
-        Requires authorization via manager credentials in the request body (AuthorizeUser middleware).
-        Only users with MANAGER role can delete other users.
       operationId: deleteUser
       parameters:
         - in: path
@@ -806,12 +866,6 @@ paths:
           schema:
             type: string
             format: email
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeleteUserRequest'
       responses:
         '200':
           description: User deleted successfully
@@ -821,8 +875,6 @@ paths:
                 $ref: '#/components/schemas/SimpleMessageResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -1400,14 +1452,6 @@ components:
           enum:
             - STAFF
             - MANAGER
-        editor:
-          $ref: '#/components/schemas/EditorCredentials'
-          description: Manager credentials required for authorization.
-    DeleteUserRequest:
-      type: object
-      required:
-        - editor
-      properties:
         editor:
           $ref: '#/components/schemas/EditorCredentials'
           description: Manager credentials required for authorization.
