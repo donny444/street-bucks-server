@@ -7,17 +7,23 @@ export class RegisterDto {
   lastName!: string;
 }
 
+export class AttendaceRecordDto {
+  uuid!: string;
+  userId!: string;
+  dateTime!: Date;
+}
+
 export class EditUserDto {
   email!: string;
   firstName!: string;
   lastName!: string;
   role!: typeof $Enums.Role.STAFF | typeof $Enums.Role.MANAGER;
-  password!: string;
-  editor!: EditorDto;
+  password?: string;
+  editor!: CredentialsDto;
 }
 
 export class RemoveUserDto {
-  editor!: EditorDto;
+  editor!: CredentialsDto;
 }
 
 export class FindUserDto {
@@ -46,18 +52,12 @@ export class BranchUserDto {
   lastName!: string;
   email!: string;
   role!: $Enums.Role;
-  attendances?: {
+  attendances!: {
     dateTime: Date;
   }[];
-  attended?: boolean;
 }
 
-export class EditorDto {
-  email!: string;
-  password!: string;
-}
-
-export class UserCredentialsDto {
+export class CredentialsDto {
   email!: string;
   password!: string;
 }

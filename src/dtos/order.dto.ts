@@ -16,6 +16,7 @@ export class SerializedOrderDto {
 
 export class OrderDetailsDto {
   uuid!: string;
+  timestamp!: number;
   totalPrice!: number;
   entry!: {
     quantity: number;
