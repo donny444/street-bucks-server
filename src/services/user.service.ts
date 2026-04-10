@@ -8,6 +8,7 @@ import {
   BranchUserDto,
   FindUserDto,
   UserEntryDto,
+  AttendaceRecordDto,
 } from "../dtos/user.dto";
 
 @Injectable()
@@ -64,53 +65,45 @@ export class UserService {
     }
   }
 
-  async ToggleAttendance(
+  async InsertAttendance(
     where: Prisma.UserWhereUniqueInput
-  ): Promise<void | Error> {
+  ): Promise<void | AttendaceRecordDto | Error> {
     try {
       const startOfDay = new Date(new Date().setHours(0, 0, 0, 0));
       const endOfDay = new Date(new Date().setHours(23, 59, 59, 999));
 
       const userEmail = where.email as string;
 
-      const existedAttendance = await this.prisma.attendance.findFirst({
-        where: {
-          userId: userEmail,
-          dateTime: {
-            gte: startOfDay,
-            lte: endOfDay,
-          },
-        },
-      });
-
-      if (existedAttendance) {
-        try {
-          await this.prisma.attendance.deleteMany({
-            where: {
-              userId: existedAttendance.userId,
-              dateTime: {
-                gte: startOfDay,
-                lte: endOfDay,
-              },
+      try {
+        const existedAttendance = await this.prisma.attendance.findFirst({
+          where: {
+            userId: userEmail,
+            dateTime: {
+              gte: startOfDay,
+              lte: endOfDay,
             },
-          });
-        } catch (err) {
-          throw this.toError(
-            "Failed to delete today attendance of the user",
-            err
-          );
+          },
+        });
+
+        if (!existedAttendance) {
+          try {
+            await this.prisma.attendance.create({
+              data: { userId: userEmail },
+            });
+          } catch (err) {
+            throw this.toError(
+              "Failed to create today attendance for the user",
+              err
+            );
+          }
+        } else {
+          return existedAttendance;
         }
-      } else {
-        try {
-          await this.prisma.attendance.create({
-            data: { userId: userEmail },
-          });
-        } catch (err) {
-          throw this.toError(
-            "Failed to create today attendance for the user",
-            err
-          );
-        }
+      } catch (err) {
+        throw this.toError(
+          "Failed to check if today's attendance of the user exists",
+          err
+        );
       }
     } catch (err) {
       console.error("Error toggling attendance:", err);

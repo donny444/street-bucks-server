@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaClient, Prisma, Order } from "../../prisma/client";
 
-import PDFDocument from "pdfkit";
+import * as PDFKit from "pdfkit";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -229,6 +229,7 @@ export class OrderService {
         const order = await this.prisma.order.findUnique({
           select: {
             uuid: true,
+            timestamp: true,
             totalPrice: true,
             entry: {
               select: {
@@ -245,7 +246,16 @@ export class OrderService {
           where: where,
         });
 
-        return order;
+        if (!order) {
+          return null;
+        }
+
+        return {
+          uuid: order.uuid,
+          timestamp: Number(order.timestamp),
+          totalPrice: order.totalPrice,
+          entry: order.entry,
+        };
       } catch (err) {
         throw this.toError("Failed to find specific order", err);
       }
@@ -273,15 +283,23 @@ export class OrderService {
   async GenerateReceipt(receipt: ReceiptDto): Promise<string> {
     const receiptsDir = path.join(__dirname, "..", "..", "assets", "receipts");
 
+    console.log("[GenerateReceipt] __dirname:", __dirname);
+    console.log("[GenerateReceipt] receiptsDir:", receiptsDir);
+
     if (!fs.existsSync(receiptsDir)) {
+      console.log(
+        "[GenerateReceipt] Creating receipts directory:",
+        receiptsDir
+      );
       fs.mkdirSync(receiptsDir, { recursive: true });
     }
 
     const filePath = path.join(receiptsDir, `${receipt.uuid}.pdf`);
+    console.log("[GenerateReceipt] Creating PDF at:", filePath);
     const orderDate = new Date(receipt.timestamp);
 
     return new Promise((resolve, reject) => {
-      const doc = new PDFDocument({
+      const doc = new PDFKit({
         size: "A4",
         margin: 50,
         info: {
@@ -323,12 +341,29 @@ export class OrderService {
       let y = doc.y;
       for (const entry of receipt.entries) {
         const subtotal = entry.price * entry.quantity;
+        const priceStr = String(Number(entry.price).toFixed(2)) + " THB";
+        const subtotalStr = String(Number(subtotal).toFixed(2)) + " THB";
+        console.log("[GenerateReceipt] Entry data:", {
+          menuName: entry.menuName,
+          price: entry.price,
+          priceType: typeof entry.price,
+          quantity: entry.quantity,
+          subtotal: subtotal,
+          priceStr: priceStr,
+          subtotalStr: subtotalStr,
+        });
         doc.text(entry.menuName, 50, y);
-        doc.text(entry.quantity.toString(), 300, y);
-        doc.text(`฿${entry.price.toFixed(2)}`, 370, y);
-        doc.text(`฿${subtotal.toFixed(2)}`, 450, y);
+        doc.text(String(entry.quantity), 300, y);
+        doc.text(priceStr, 370, y);
+        doc.text(subtotalStr, 450, y);
         y += 20;
       }
+      const totalStr = String(Number(receipt.totalPrice).toFixed(2)) + " THB";
+      console.log("[GenerateReceipt] Total price:", {
+        totalPrice: receipt.totalPrice,
+        totalPriceType: typeof receipt.totalPrice,
+        totalStr: totalStr,
+      });
       doc.y = y;
       doc.moveDown();
 
@@ -340,7 +375,7 @@ export class OrderService {
       doc
         .font("Helvetica-Bold")
         .fontSize(12)
-        .text(`Total: ฿${receipt.totalPrice.toFixed(2)}`, {
+        .text("Total: " + totalStr, {
           align: "right",
         });
 
@@ -354,8 +389,15 @@ export class OrderService {
 
       doc.end();
 
-      writeStream.on("finish", () => resolve(filePath));
-      writeStream.on("error", reject);
+      writeStream.on("finish", () => {
+        console.log("[GenerateReceipt] PDF created successfully:", filePath);
+        console.log("[GenerateReceipt] File exists:", fs.existsSync(filePath));
+        resolve(filePath);
+      });
+      writeStream.on("error", (err) => {
+        console.error("[GenerateReceipt] Error writing PDF:", err);
+        reject(err);
+      });
     });
   }
 
@@ -368,6 +410,9 @@ export class OrderService {
       "receipts",
       `${uuid}.pdf`
     );
+    console.log("[GetReceiptPath] __dirname:", __dirname);
+    console.log("[GetReceiptPath] Looking for PDF at:", filePath);
+    console.log("[GetReceiptPath] File exists:", fs.existsSync(filePath));
     if (fs.existsSync(filePath)) {
       return filePath;
     }
