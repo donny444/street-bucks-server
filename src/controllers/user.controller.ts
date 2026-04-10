@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   Post,
@@ -22,10 +21,10 @@ import {
   RegisterDto,
   EditUserDto,
   UserEntryDto,
-  UserCredentialsDto,
+  CredentialsDto,
 } from "../dtos/user.dto";
 import { BranchPayloadDto } from "../dtos/branch.dto";
-import { $Enums } from "../../prisma/client";
+import { Prisma, $Enums } from "../../prisma/client";
 
 @Controller("users")
 export class UserController {
@@ -126,7 +125,23 @@ export class UserController {
           .json({ message: "User not found with the provided email." });
       }
 
-      await this.userService.ToggleAttendance({ email });
+      const insertedAttendance = await this.userService.InsertAttendance({
+        email,
+      });
+      if (insertedAttendance instanceof Error) {
+        console.error(
+          "Error occurred in `InsertAttendance`:",
+          insertedAttendance
+        );
+        return res
+          .status(500)
+          .json({ message: "Failed to record attendance for the user." });
+      }
+      if (insertedAttendance) {
+        return res.status(400).json({
+          message: "The user has been attendedfor today.",
+        });
+      }
 
       return res.json({
         message: `User: ${email} attendance status for today has been switched`,
@@ -139,7 +154,7 @@ export class UserController {
 
   @Post("sign-in/administrator")
   async SignInAdministrator(
-    @Body() credentials: UserCredentialsDto,
+    @Body() credentials: CredentialsDto,
     @Res() res: Response
   ): Promise<Response> {
     try {
@@ -207,45 +222,6 @@ export class UserController {
     }
   }
 
-  @Get(":email")
-  async GetUserForm(
-    @Param("email") email: string,
-    @Res() res: Response
-  ): Promise<Response> {
-    try {
-      const validEmail = this.validateEmail(email);
-      if (!validEmail) {
-        return res.status(400).json({
-          message:
-            "The email provided is not in valid format to receive the information of the user.",
-        });
-      }
-
-      const userForm = await this.userService.FindUserForm({ email });
-      if (userForm instanceof Error) {
-        console.error("Error occurred in `FindUserForm`:", userForm);
-        return res
-          .status(500)
-          .json({ message: "Failed to find form values of a user." });
-      }
-      if (!userForm) {
-        return res
-          .status(404)
-          .json({ message: "User not found with the provided email." });
-      }
-
-      return res.json({
-        message: `See the specific information of user: ${email}`,
-        user_form: userForm,
-      });
-    } catch (err) {
-      console.error("Error occurred in `GetUserForm`:", err);
-      return res
-        .status(500)
-        .json({ error: "Failed to get form values of a user." });
-    }
-  }
-
   @Get("search")
   async SearchUsersByName(
     @Query("name") name: string,
@@ -286,6 +262,45 @@ export class UserController {
     }
   }
 
+  @Get(":email")
+  async GetUserForm(
+    @Param("email") email: string,
+    @Res() res: Response
+  ): Promise<Response> {
+    try {
+      const validEmail = this.validateEmail(email);
+      if (!validEmail) {
+        return res.status(400).json({
+          message:
+            "The email provided is not in valid format to receive the information of the user.",
+        });
+      }
+
+      const userForm = await this.userService.FindUserForm({ email });
+      if (userForm instanceof Error) {
+        console.error("Error occurred in `FindUserForm`:", userForm);
+        return res
+          .status(500)
+          .json({ message: "Failed to find form values of a user." });
+      }
+      if (!userForm) {
+        return res
+          .status(404)
+          .json({ message: "User not found with the provided email." });
+      }
+
+      return res.json({
+        message: `See the specific information of user: ${email}`,
+        user_form: userForm,
+      });
+    } catch (err) {
+      console.error("Error occurred in `GetUserForm`:", err);
+      return res
+        .status(500)
+        .json({ error: "Failed to get form values of a user." });
+    }
+  }
+
   @Put(":email")
   async EditUser(
     @Param("email") email: string,
@@ -302,7 +317,7 @@ export class UserController {
 
       const { firstName, lastName, role, password } = userData;
       const newEmail = userData.email;
-      if (!newEmail || !firstName || !lastName || !role || !password) {
+      if (!newEmail || !firstName || !lastName || !role) {
         return res.status(400).json({
           message: "All input fields are required.",
         });
@@ -334,17 +349,29 @@ export class UserController {
         return res.status(404).json({ message: "User not found." });
       }
 
-      const newUserData = {
-        email,
-        firstName,
-        lastName,
-        password,
-        role,
-      };
+      let newUserData: Prisma.UserUncheckedUpdateInput;
+      if (password) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        newUserData = {
+          email: newEmail,
+          firstName,
+          lastName,
+          role,
+          password: hashedPassword,
+        };
+      } else {
+        newUserData = {
+          email: newEmail,
+          firstName,
+          lastName,
+          role,
+        };
+      }
 
       const updatedUser = await this.userService.UpdateUser({
-        where: { email },
         data: newUserData,
+        where: { email },
       });
       if (updatedUser instanceof Error) {
         console.error("Error occurred in `UpdateUser`:", updatedUser);
@@ -362,7 +389,7 @@ export class UserController {
     }
   }
 
-  @Delete(":email")
+  @Post(":email/removal")
   async RemoveUser(
     @Param("email") email: string,
     @Res() res: Response

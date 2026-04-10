@@ -6,7 +6,6 @@ import {
   Post,
   Param,
   Res,
-  Query,
 } from "@nestjs/common";
 import { Response } from "express";
 
@@ -50,16 +49,22 @@ export class OrderController {
       }
 
       if (orderDetails) {
-        await this.orderService.GenerateReceipt({
-          uuid: orderDetails.uuid,
-          timestamp: Number(order.timestamp),
-          totalPrice: orderDetails.totalPrice,
-          entries: orderDetails.entry.map((e) => ({
-            menuName: e.menu.name,
-            price: e.menu.price,
-            quantity: e.quantity,
-          })),
-        });
+        try {
+          const receiptPath = await this.orderService.GenerateReceipt({
+            uuid: orderDetails.uuid,
+            timestamp: Number(order.timestamp),
+            totalPrice: orderDetails.totalPrice,
+            entries: orderDetails.entry.map((e) => ({
+              menuName: e.menu.name,
+              price: e.menu.price,
+              quantity: e.quantity,
+            })),
+          });
+          console.log("[MakeOrder] Receipt generated at:", receiptPath);
+        } catch (receiptErr) {
+          console.error("[MakeOrder] Failed to generate receipt:", receiptErr);
+          // Continue with order creation even if receipt generation fails
+        }
       }
 
       return res.json({
@@ -120,9 +125,9 @@ export class OrderController {
     }
   }
 
-  @Get("find")
+  @Get(":uuid/find")
   async GetOrderByUuid(
-    @Query("uuid") uuid: string,
+    @Param("uuid") uuid: string,
     @Res() res: Response
   ): Promise<Response> {
     try {
@@ -141,7 +146,12 @@ export class OrderController {
 
       return res.json({
         message: `Found order with UUID: ${uuid}`,
-        found_order: foundOrder,
+        found_order: {
+          uuid: foundOrder.uuid,
+          branchId: Number(foundOrder.branchId),
+          timestamp: Number(foundOrder.timestamp),
+          totalPrice: foundOrder.totalPrice,
+        },
       });
     } catch (err) {
       console.error("Error occurred in `GetOrderByUuid`:", err);
@@ -151,7 +161,6 @@ export class OrderController {
 
   @Get(":uuid/receipt")
   GetReceipt(
-    @BranchPayload() { branchId }: BranchPayloadDto,
     @Param("uuid") uuid: string,
     @Res() res: Response
   ): Response | void {

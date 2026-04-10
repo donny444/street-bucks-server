@@ -163,7 +163,19 @@ export class InsightController {
         return res.status(500).json({ error: salesInWeek.message });
       }
 
+      const today = new Date();
+      const startOfWeek = new Date(today);
+      startOfWeek.setHours(0, 0, 0, 0);
+      startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+
       const counts: Map<string, number> = new Map();
+
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(startOfWeek);
+        date.setDate(startOfWeek.getDate() + i);
+        const dayAndMonth = `${date.getDate()}/${date.getMonth() + 1}`;
+        counts.set(dayAndMonth, 0);
+      }
 
       salesInWeek.forEach((sale) => {
         const date = new Date(sale.timestamp);
@@ -208,7 +220,22 @@ export class InsightController {
         return res.status(500).json({ error: salesInMonth.message });
       }
 
+      const now = new Date();
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const daysInMonth = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        0
+      ).getDate();
+
       const countMap: Map<string, number> = new Map();
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(firstDayOfMonth);
+        date.setDate(day);
+        const dayAndMonth = `${date.getDate()}/${date.getMonth() + 1}`;
+        countMap.set(dayAndMonth, 0);
+      }
 
       salesInMonth.forEach((sale) => {
         const date = new Date(sale.timestamp);
