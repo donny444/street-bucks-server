@@ -2,7 +2,7 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 DO $$
 DECLARE
-	target_orders integer := 1000;
+	target_orders integer := 50000;
 	i integer;
 	new_order_id uuid;
 	order_timestamp bigint;
@@ -33,6 +33,14 @@ BEGIN
 
 			INSERT INTO "Entry" ("orderId", "menuId", "quantity")
 			VALUES (new_order_id, menu_record.name, item_quantity);
+
+			-- Subtract stock based on ingredients needed for this menu item
+			UPDATE "Stock" s
+			SET "quantity" = s."quantity" - (ing."amount" * item_quantity)
+			FROM "Ingredient" ing
+			WHERE s."branchId" = branch_id
+			  AND s."recipeId" = ing."recipeId"
+			  AND ing."menuId" = menu_record.name;
 		END LOOP;
 
 		UPDATE "Order"
