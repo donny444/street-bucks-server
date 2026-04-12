@@ -4,7 +4,7 @@ import { PrismaClient, Prisma, Category, Menu } from "../../prisma/client";
 import { mkdir, writeFile, unlink } from "fs/promises";
 import { dirname } from "path";
 
-import { MenuInfoDto } from "src/dtos/menu.dto";
+import { MenuFormDto, MenuInfoDto } from "src/dtos/menu.dto";
 
 @Injectable()
 export class MenuService {
@@ -108,6 +108,33 @@ export class MenuService {
         return specificMenu;
       } catch (err) {
         throw this.toError("Error fetching specific menu:", err);
+      }
+    } catch (err) {
+      return err instanceof Error ? err : new Error(String(err));
+    }
+  }
+
+  async SelectMenuForm(name: string): Promise<MenuFormDto | null | Error> {
+    try {
+      try {
+        const menuForm = await this.prisma.menu.findUnique({
+          select: {
+            name: true,
+            price: true,
+            category: true,
+            ingredient: {
+              select: {
+                recipeId: true,
+                amount: true,
+              },
+            },
+          },
+          where: { name },
+        });
+
+        return menuForm;
+      } catch (err) {
+        throw this.toError("Error selecting menu form:", err);
       }
     } catch (err) {
       return err instanceof Error ? err : new Error(String(err));

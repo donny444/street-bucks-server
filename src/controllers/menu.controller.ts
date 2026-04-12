@@ -34,7 +34,7 @@ export class MenuController {
       }
 
       return res.json({
-        message: "Returns all available hot beverages",
+        message: "Returned all available hot beverages",
         menus: hotMenus,
       });
     } catch (err) {
@@ -57,7 +57,7 @@ export class MenuController {
       }
 
       return res.json({
-        message: "Returns all available iced beverages",
+        message: "Returned all available iced beverages",
         menus: icedMenus,
       });
     } catch (err) {
@@ -78,7 +78,7 @@ export class MenuController {
       }
 
       return res.json({
-        message: "Returns all available bakery menus",
+        message: "Returned all available bakery menus",
         menus: bakeryMenus,
       });
     } catch (err) {
@@ -102,7 +102,7 @@ export class MenuController {
       }
 
       return res.json({
-        message: "Returns all available menus",
+        message: "Returned all available menus",
         menus,
       });
     } catch (err) {
@@ -120,7 +120,7 @@ export class MenuController {
       const specificMenu = await this.menuService.GetSpecificMenu(name);
       if (!specificMenu) {
         return res.status(404).json({
-          error: `Menu: #${name} from the route parameter not found.`,
+          error: `Menu name from the route parameter not found.`,
         });
       }
       if (specificMenu instanceof Error) {
@@ -131,7 +131,7 @@ export class MenuController {
       }
 
       return res.json({
-        message: `Returns the menu: ${name}`,
+        message: `Returned the menu: ${name}`,
         menu: specificMenu,
       });
     } catch (err) {
@@ -139,6 +139,35 @@ export class MenuController {
       return res
         .status(500)
         .json({ error: "Failed to retrieve specific menu." });
+    }
+  }
+
+  @Get(":name/form")
+  async GetMenuForm(
+    @Param("name") name: string,
+    @Res() res: Response
+  ): Promise<Response> {
+    try {
+      const menuForm = await this.menuService.SelectMenuForm(name);
+      if (!menuForm) {
+        return res.status(404).json({
+          error: `Menu name from the route parameter not found.`,
+        });
+      }
+      if (menuForm instanceof Error) {
+        console.error("Error occurred in `SelectMenuForm`:", menuForm);
+        return res
+          .status(500)
+          .json({ error: "Failed to select the menu form." });
+      }
+
+      return res.json({
+        message: `Returned the menu form for menu: ${name}`,
+        menu_form: menuForm,
+      });
+    } catch (err) {
+      console.error("Error retrieving menu form:", err);
+      return res.status(500).json({ error: "Failed to retrieve menu form." });
     }
   }
 
@@ -158,7 +187,7 @@ export class MenuController {
       const specificMenu = await this.menuService.GetSpecificMenu(name);
       if (!specificMenu) {
         return res.status(404).json({
-          message: `Menu: #${name} from the route parameter not found.`,
+          message: `Menu name from the route parameter not found.`,
         });
       }
       if (specificMenu instanceof Error) {
@@ -180,7 +209,7 @@ export class MenuController {
       }
 
       return res.json({
-        message: `The menu: #${name} has been updated successfully.`,
+        message: `The menu has been updated successfully.`,
       });
     } catch (err) {
       console.error("Error occurred in `EditMenu`:", err);
@@ -300,7 +329,7 @@ export class MenuController {
       }
       if (!specificMenu) {
         return res.status(404).json({
-          message: `Menu: #${name} from the route parameter not found.`,
+          message: `Menu name from the route parameter not found.`,
         });
       }
 

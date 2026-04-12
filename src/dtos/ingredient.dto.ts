@@ -3,3 +3,8 @@ export class EditAmountDto {
   recipeId!: string;
   amount!: number;
 }
+
+export class MenuIngredientDto {
+  recipeId!: string;
+  amount!: number;
+}
