@@ -122,12 +122,6 @@ export class MenuService {
             name: true,
             price: true,
             category: true,
-            ingredient: {
-              select: {
-                recipeId: true,
-                amount: true,
-              },
-            },
           },
           where: { name },
         });

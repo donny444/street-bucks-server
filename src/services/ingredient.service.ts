@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaClient, Prisma } from "../../prisma/client";
+import { MenuIngredientDto } from "src/dtos/ingredient.dto";
 
 @Injectable()
 export class IngredientService {
@@ -32,6 +33,25 @@ export class IngredientService {
           err
         );
       }
+    } catch (err) {
+      return err instanceof Error ? err : new Error(String(err));
+    }
+  }
+
+  async SelectMenuIngredients(
+    menuId: string
+  ): Promise<MenuIngredientDto[] | null | Error> {
+    try {
+      const menuIngredients = await this.prisma.ingredient.findMany({
+        select: {
+          recipeId: true,
+          amount: true,
+        },
+        where: {
+          menuId,
+        },
+      });
+      return menuIngredients;
     } catch (err) {
       return err instanceof Error ? err : new Error(String(err));
     }
