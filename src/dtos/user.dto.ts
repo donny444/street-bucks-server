@@ -61,3 +61,7 @@ export class CredentialsDto {
   email!: string;
   password!: string;
 }
+
+export class UserPayloadDto {
+  email!: string;
+}

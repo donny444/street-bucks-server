@@ -1,7 +1,10 @@
 import { Injectable, NestMiddleware } from "@nestjs/common";
 import { Request, Response, NextFunction } from "express";
+
 import { verify as jwtVerify } from "jsonwebtoken";
+
 import { PrismaClient } from "../../prisma/client";
+
 import { BranchPayloadDto } from "../dtos/branch.dto";
 
 @Injectable()

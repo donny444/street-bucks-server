@@ -142,7 +142,7 @@ export class MenuController {
     }
   }
 
-  @Get(":name/form")
+  @Post("form/:name")
   async GetMenuForm(
     @Param("name") name: string,
     @Res() res: Response
@@ -308,7 +308,7 @@ export class MenuController {
     }
   }
 
-  @Delete(":name")
+  @Delete("remove/:name")
   async RemoveMenu(
     @Param("name") name: string,
     @Res() res: Response

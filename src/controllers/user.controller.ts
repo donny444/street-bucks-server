@@ -15,7 +15,7 @@ import * as bcrypt from "bcryptjs";
 import { sign as jwtSign } from "jsonwebtoken";
 
 import { UserService } from "../services/user.service";
-import { BranchPayload } from "../decorators/branch-payload.decorator";
+import { BranchPayload } from "../decorators/branch.decorator";
 
 import {
   RegisterDto,
@@ -152,7 +152,7 @@ export class UserController {
     }
   }
 
-  @Post("sign-in/administrator")
+  @Post("administrator/sign-in")
   async SignInAdministrator(
     @Body() credentials: CredentialsDto,
     @Res() res: Response
@@ -389,7 +389,7 @@ export class UserController {
     }
   }
 
-  @Post(":email/removal")
+  @Post("remove/:email")
   async RemoveUser(
     @Param("email") email: string,
     @Res() res: Response

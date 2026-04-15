@@ -72,23 +72,42 @@ export class AppModule implements NestModule {
     );
 
     consumer.apply(AuthorizeManager).forRoutes(
+      // Ingredient entity
+      { path: "ingredients/", method: RequestMethod.PUT }, // EditAmounts
+
       // User entity
       { path: "users/", method: RequestMethod.POST }, // RegisterUser
       { path: "users/:email", method: RequestMethod.PUT }, // EditUser
-      { path: "users/:email/removal", method: RequestMethod.POST } // RemoveUser
+      { path: "users/remove/:email", method: RequestMethod.POST } // RemoveUser
     );
 
     consumer.apply(AuthorizeAdministrator).forRoutes(
+      // Branch entity
+      { path: "branches/", method: RequestMethod.POST }, // CreateBranch
+
       // Menu entity
+      { path: "menus/", method: RequestMethod.GET }, // GetAllMenus
+      { path: "menus/form/:name", method: RequestMethod.GET }, // GetMenuForm
       { path: "menus/", method: RequestMethod.PUT }, // EditMenu
       { path: "menus/", method: RequestMethod.POST }, // AddMenu
+      { path: "menus/remove/:name", method: RequestMethod.POST }, // RemoveMenu
+
+      // Order entity
+      { path: "orders/find/:uuid", method: RequestMethod.GET }, // GetOrderByUuid
 
       // Recipe entity
       { path: "recipes/", method: RequestMethod.POST }, // AddRecipe
-      { path: "recipes/:name", method: RequestMethod.PUT } // EditRecipe
+      { path: "recipes/:name", method: RequestMethod.PUT }, // EditRecipe
+      { path: "recipes/:name", method: RequestMethod.DELETE }, // RemoveRecipe
+
+      // User entity
+      { path: "users/search", method: RequestMethod.GET } // SearchUsersByName
     );
 
     consumer.apply(AuthorizeBranch).forRoutes(
+      // Ingredient entity
+      { path: "ingredients/", method: RequestMethod.PUT }, // EditAmounts
+
       // Insight entity
       { path: "insights/sales-today", method: RequestMethod.GET }, // GetSalesToday
       { path: "insights/sales-this-week", method: RequestMethod.GET }, // GetSalesThisWeek
@@ -102,8 +121,8 @@ export class AppModule implements NestModule {
       // Order entity
       { path: "orders/", method: RequestMethod.POST }, // MakeOrder
       { path: "orders/", method: RequestMethod.GET }, // GetTodayOrders
-      { path: "orders/:uuid", method: RequestMethod.GET }, // GetSpecificOrder
-      { path: "orders/:uuid/receipt", method: RequestMethod.GET }, // GetReceipt
+      { path: "orders/:uuid", method: RequestMethod.GET }, // GetOrderDetails
+      { path: "orders/receipt/:uuid", method: RequestMethod.GET }, // GetReceipt
 
       // Stock entity
       { path: "stocks/", method: RequestMethod.PUT }, // EditQuantity

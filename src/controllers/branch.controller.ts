@@ -1,26 +1,15 @@
 import { Body, Controller, Get, HttpCode, Post, Res } from "@nestjs/common";
 import { Response } from "express";
 
-import { Branch } from "../../prisma/client";
-
 import * as bcrypt from "bcryptjs";
 import { sign as jwtSign } from "jsonwebtoken";
 
 import { BranchService } from "../services/branch.service";
-
-import {
-  SignInDto,
-  SerializedBranchId,
-  CreateBranchDto,
-} from "../dtos/branch.dto";
+import { SignInDto, CreateBranchDto } from "../dtos/branch.dto";
 
 @Controller("branches")
 export class BranchController {
   constructor(private readonly branchService: BranchService) {}
-
-  serializeBranchId(branch: Branch): SerializedBranchId {
-    return Number(branch.id);
-  }
 
   @Post("sign-in")
   async SignInBranch(

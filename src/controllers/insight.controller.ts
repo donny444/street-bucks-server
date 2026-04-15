@@ -2,7 +2,9 @@ import { Controller, Get, Res } from "@nestjs/common";
 import { Response } from "express";
 
 import { InsightService } from "../services/insight.service";
-import { BranchPayload } from "../decorators/branch-payload.decorator";
+
+import { BranchPayload } from "../decorators/branch.decorator";
+
 import { BranchPayloadDto } from "../dtos/branch.dto";
 
 @Controller("insights")

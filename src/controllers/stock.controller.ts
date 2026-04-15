@@ -2,7 +2,7 @@ import { Body, Controller, Get, Put, Res } from "@nestjs/common";
 import { Response } from "express";
 
 import { StockService } from "../services/stock.service";
-import { BranchPayload } from "../decorators/branch-payload.decorator";
+import { BranchPayload } from "../decorators/branch.decorator";
 
 import { EditQuantityDto } from "../dtos/stock.dto";
 import { BranchPayloadDto } from "../dtos/branch.dto";

@@ -10,7 +10,7 @@ import {
 import { Response } from "express";
 
 import { OrderService } from "../services/order.service";
-import { BranchPayload } from "../decorators/branch-payload.decorator";
+import { BranchPayload } from "../decorators/branch.decorator";
 
 import { OrderedMenuDto } from "../dtos/order.dto";
 import { BranchPayloadDto } from "../dtos/branch.dto";
@@ -125,7 +125,7 @@ export class OrderController {
     }
   }
 
-  @Get(":uuid/find")
+  @Get("find/:uuid")
   async GetOrderByUuid(
     @Param("uuid") uuid: string,
     @Res() res: Response
@@ -159,7 +159,7 @@ export class OrderController {
     }
   }
 
-  @Get(":uuid/receipt")
+  @Get("receipt/:uuid")
   GetReceipt(
     @Param("uuid") uuid: string,
     @Res() res: Response

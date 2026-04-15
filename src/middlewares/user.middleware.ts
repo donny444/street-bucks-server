@@ -2,9 +2,11 @@ import { Injectable, NestMiddleware } from "@nestjs/common";
 import { Request, Response, NextFunction } from "express";
 
 import * as bcrypt from "bcryptjs";
+import { verify as jwtVerify } from "jsonwebtoken";
+
 import { PrismaClient, $Enums } from "../../prisma/client";
 
-import { CredentialsDto } from "../dtos/user.dto";
+import { CredentialsDto, UserPayloadDto } from "../dtos/user.dto";
 
 @Injectable()
 export class AuthenticateUser implements NestMiddleware {
@@ -54,8 +56,12 @@ export class AuthenticateUser implements NestMiddleware {
 export class AuthorizeManager implements NestMiddleware {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async use(req: Request<any, any, any>, res: Response, next: NextFunction) {
-    const { email, password } = req.body.editor as CredentialsDto;
+  async use(
+    req: Request<any, any, { editor: CredentialsDto }>,
+    res: Response,
+    next: NextFunction
+  ) {
+    const { email, password } = req.body.editor;
 
     if (!email || !password) {
       return res.status(400).json({
@@ -104,46 +110,49 @@ export class AuthorizeManager implements NestMiddleware {
 export class AuthorizeAdministrator implements NestMiddleware {
   constructor(private readonly prisma: PrismaClient) {}
   async use(req: Request<any, any, any>, res: Response, next: NextFunction) {
-    const { email, password } = req.body.editor as CredentialsDto;
+    const adminToken = req.headers["admin-token"] as string;
 
-    if (!email || !password) {
-      return res.status(400).json({
-        message: "Email and password of editor are required.",
+    if (!adminToken) {
+      return res.status(401).json({
+        message: "admin-token header is missing.",
       });
     }
 
     try {
-      const editor = await this.prisma.user.findUnique({
+      const jwtSecret = process.env.BRANCH_JWT_SECRET;
+      if (!jwtSecret) {
+        console.error("Missing JWT secret for branch authorization");
+        return res.status(500).json({ error: "Failed to authorize branch." });
+      }
+
+      const decoded = jwtVerify(adminToken, jwtSecret) as UserPayloadDto;
+
+      const administrator = await this.prisma.user.findUnique({
         select: {
           role: true,
-          password: true,
         },
         where: {
-          email,
+          email: decoded.email,
         },
       });
-      if (!editor) {
-        return res
-          .status(404)
-          .json({ message: "Editor not found with the provided email." });
+      if (!administrator) {
+        return res.status(404).json({
+          message: "Administrator not found with the provided email.",
+        });
       }
 
-      const correctPassword = await bcrypt.compare(password, editor.password);
-      if (!correctPassword) {
-        return res
-          .status(401)
-          .json({ message: "Incorrect password for editor." });
-      }
-
-      if (editor.role !== $Enums.Role.ADMINISTRATOR) {
+      if (administrator.role !== $Enums.Role.ADMINISTRATOR) {
         return res
           .status(401)
           .json({ message: "Only administrators are authorized" });
       }
 
       return next();
-    } catch (error) {
-      console.error("Error in `AuthorizeAdministrator` middleware:", error);
+    } catch (err) {
+      console.error("Error in `AuthorizeAdministrator` middleware:", err);
+      if (err instanceof Error && err.name === "TokenExpiredError") {
+        return res.status(401).json({ message: "Branch token has expired." });
+      }
       return res
         .status(500)
         .json({ message: "Failed to authorize administrator." });

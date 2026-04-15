@@ -1,14 +1,12 @@
-export type SignInDto = {
-  branchId: number;
-  password: string;
-};
+export class SignInDto {
+  branchId!: number;
+  password!: string;
+}
 
-export type SerializedBranchId = number;
+export class BranchPayloadDto {
+  branchId!: number;
+}
 
-export type BranchPayloadDto = {
-  branchId: number;
-};
-
-export type CreateBranchDto = {
-  password: string;
-};
+export class CreateBranchDto {
+  password!: string;
+}
