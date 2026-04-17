@@ -58,26 +58,46 @@ export class IngredientController {
         await this.ingredientService.SelectMenuIngredients(menuId);
       if (menuIngredients instanceof Error) {
         console.error(
-          "Error occurred in `GetMenuIngredients`:",
+          "Error occurred in `SelectMenuIngredients`:",
           menuIngredients
         );
         return res
           .status(500)
-          .json({ error: "Failed to get ingredient list of the menu." });
+          .json({ error: "Failed to select menu ingredients." });
       }
       if (menuIngredients === null) {
         return res.status(404).json({ error: "The menu has no ingredients." });
       }
 
       return res.json({
-        message: "Ingredient list of the menu has been retrieved.",
+        message: "Menu ingredient has been retrieved.",
         menu_ingredients: menuIngredients,
       });
     } catch (err) {
       console.error("Error occurred in `GetMenuIngredients`:", err);
-      return res
-        .status(500)
-        .json({ error: "Failed to get ingredient list of the menu." });
+      return res.status(500).json({ error: "Failed to get menu ingredients." });
+    }
+  }
+
+  @Get()
+  async GetIngredientList(@Res() res: Response): Promise<Response> {
+    try {
+      const ingredientList =
+        await this.ingredientService.SelectIngredientList();
+      if (ingredientList instanceof Error) {
+        console.error("Error occurred in `GetIngredientList`:", ingredientList);
+        return res
+          .status(500)
+          .json({ error: "Failed to select ingredient list." });
+      }
+
+      return res.json({
+        message: "Ingredient list has been retrieved.",
+        ingredient_list: ingredientList,
+      });
+    } catch (err) {
+      console.error("Error occurred in `GetIngredientList`:", err);
+      return res.status(500).json({ error: "Failed to get ingredient list." });
     }
   }
 }

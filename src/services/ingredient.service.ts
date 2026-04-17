@@ -56,4 +56,21 @@ export class IngredientService {
       return err instanceof Error ? err : new Error(String(err));
     }
   }
+
+  async SelectIngredientList(): Promise<string[] | Error> {
+    try {
+      const ingredients = await this.prisma.ingredient.findMany({
+        select: {
+          recipeId: true,
+        },
+        orderBy: {
+          recipeId: "asc",
+        },
+        distinct: ["recipeId"],
+      });
+      return ingredients.map((i) => i.recipeId);
+    } catch (err) {
+      return err instanceof Error ? err : new Error(String(err));
+    }
+  }
 }
