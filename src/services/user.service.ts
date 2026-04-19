@@ -239,7 +239,7 @@ export class UserService {
     }
   }
 
-  async GetUsersByBranch(
+  async SelectUsersByBranch(
     where: Prisma.UserWhereInput
   ): Promise<BranchUserDto[] | Error> {
     try {

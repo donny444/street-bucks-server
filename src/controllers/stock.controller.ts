@@ -54,11 +54,14 @@ export class StockController {
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const branchStocks = await this.stockService.GetStocksByBranch({
+      const branchStocks = await this.stockService.SelectStocksByBranch({
         branchId: BigInt(branchId),
       });
       if (branchStocks instanceof Error) {
-        console.error("Error occurred in `GetStocksByBranch`:", branchStocks);
+        console.error(
+          "Error occurred in `SelectStocksByBranch`:",
+          branchStocks
+        );
         return res.status(500).json({
           message: "Failed to get the stock information of the branch.",
         });

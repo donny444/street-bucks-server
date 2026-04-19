@@ -16,7 +16,7 @@ export class MenuService {
     );
   }
 
-  async GetHotMenus(): Promise<MenuInfoDto[] | Error> {
+  async SelectHotMenus(): Promise<MenuInfoDto[] | Error> {
     try {
       try {
         const hotMenus = await this.prisma.menu.findMany({
@@ -37,7 +37,7 @@ export class MenuService {
     }
   }
 
-  async GetIcedMenus(): Promise<MenuInfoDto[] | Error> {
+  async SelectIcedMenus(): Promise<MenuInfoDto[] | Error> {
     try {
       try {
         const icedMenus = await this.prisma.menu.findMany({
@@ -58,7 +58,7 @@ export class MenuService {
     }
   }
 
-  async GetBakeryMenus(): Promise<MenuInfoDto[] | Error> {
+  async SelectBakeryMenus(): Promise<MenuInfoDto[] | Error> {
     try {
       try {
         const bakeryMenus = await this.prisma.menu.findMany({
@@ -79,7 +79,7 @@ export class MenuService {
     }
   }
 
-  async FindMenus(): Promise<Menu[] | Error> {
+  async SelectMenus(): Promise<Menu[] | Error> {
     try {
       try {
         const menus = await this.prisma.menu.findMany();
@@ -93,7 +93,7 @@ export class MenuService {
     }
   }
 
-  async GetSpecificMenu(name: string): Promise<MenuInfoDto | null | Error> {
+  async FindSpecificMenu(name: string): Promise<MenuInfoDto | null | Error> {
     try {
       try {
         const specificMenu = await this.prisma.menu.findUnique({
@@ -114,7 +114,7 @@ export class MenuService {
     }
   }
 
-  async SelectMenuForm(name: string): Promise<MenuFormDto | null | Error> {
+  async FindMenuForm(name: string): Promise<MenuFormDto | null | Error> {
     try {
       try {
         const menuForm = await this.prisma.menu.findUnique({

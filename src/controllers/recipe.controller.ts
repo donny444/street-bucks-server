@@ -25,9 +25,9 @@ export class RecipeController {
   @Get()
   async GetRecipes(@Res() res: Response): Promise<Response> {
     try {
-      const recipes = await this.recipeService.FindRecipes();
+      const recipes = await this.recipeService.SelectRecipes();
       if (recipes instanceof Error) {
-        console.error("Error occurred in `FindRecipes`:", recipes);
+        console.error("Error occurred in `SelectRecipes`:", recipes);
         return res.status(500).json({ message: "Failed to retrieve recipes." });
       }
 

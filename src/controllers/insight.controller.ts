@@ -17,9 +17,9 @@ export class InsightController {
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const salesToday = await this.insightService.GetSalesToday(branchId);
+      const salesToday = await this.insightService.CountSalesToday(branchId);
       if (salesToday instanceof Error) {
-        console.error("Error occurred in `GetSalesToday`:", salesToday);
+        console.error("Error occurred in `CountSalesToday`:", salesToday);
         return res.status(500).json({ error: salesToday.message });
       }
 
@@ -42,9 +42,9 @@ export class InsightController {
   ): Promise<Response> {
     try {
       const salesThisWeek =
-        await this.insightService.GetSalesThisWeek(branchId);
+        await this.insightService.CountSalesThisWeek(branchId);
       if (salesThisWeek instanceof Error) {
-        console.error("Error occurred in `GetSalesThisWeek`:", salesThisWeek);
+        console.error("Error occurred in `CountSalesThisWeek`:", salesThisWeek);
         return res.status(500).json({ error: salesThisWeek.message });
       }
 
@@ -67,9 +67,12 @@ export class InsightController {
   ): Promise<Response> {
     try {
       const salesThisMonth =
-        await this.insightService.GetSalesThisMonth(branchId);
+        await this.insightService.CountSalesThisMonth(branchId);
       if (salesThisMonth instanceof Error) {
-        console.error("Error occurred in `GetSalesThisMonth`:", salesThisMonth);
+        console.error(
+          "Error occurred in `CountSalesThisMonth`:",
+          salesThisMonth
+        );
         return res.status(500).json({ error: salesThisMonth.message });
       }
 
@@ -92,10 +95,10 @@ export class InsightController {
   ): Promise<Response> {
     try {
       const topMenusByQuantity =
-        await this.insightService.GetTopMenusByQuantity(branchId);
+        await this.insightService.FindTopMenusByQuantity(branchId);
       if (topMenusByQuantity instanceof Error) {
         console.error(
-          "Error occurred in `GetTopMenusByQuantity`:",
+          "Error occurred in `FindTopMenusByQuantity`:",
           topMenusByQuantity
         );
         return res.status(500).json({ error: topMenusByQuantity.message });
@@ -126,10 +129,10 @@ export class InsightController {
   ): Promise<Response> {
     try {
       const topMenusByRevenue =
-        await this.insightService.GetTopMenusByRevenue(branchId);
+        await this.insightService.FindTopMenusByRevenue(branchId);
       if (topMenusByRevenue instanceof Error) {
         console.error(
-          "Error occurred in `GetTopMenusByRevenue`:",
+          "Error occurred in `FindTopMenusByRevenue`:",
           topMenusByRevenue
         );
         return res.status(500).json({ error: topMenusByRevenue.message });
@@ -159,9 +162,9 @@ export class InsightController {
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const salesInWeek = await this.insightService.GetSalesInWeek(branchId);
+      const salesInWeek = await this.insightService.SelectSalesInWeek(branchId);
       if (salesInWeek instanceof Error) {
-        console.error("Error occurred in `GetSalesInWeek`:", salesInWeek);
+        console.error("Error occurred in `SelectSalesInWeek`:", salesInWeek);
         return res.status(500).json({ error: salesInWeek.message });
       }
 
@@ -217,8 +220,10 @@ export class InsightController {
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const salesInMonth = await this.insightService.GetSalesInMonth(branchId);
+      const salesInMonth =
+        await this.insightService.SelectSalesInMonth(branchId);
       if (salesInMonth instanceof Error) {
+        console.error("Error occurred in `SelectSalesInMonth`:", salesInMonth);
         return res.status(500).json({ error: salesInMonth.message });
       }
 
@@ -277,8 +282,9 @@ export class InsightController {
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const salesInYear = await this.insightService.GetSalesInYear(branchId);
+      const salesInYear = await this.insightService.SelectSalesInYear(branchId);
       if (salesInYear instanceof Error) {
+        console.error("Error occurred in `SelectSalesInYear`:", salesInYear);
         return res.status(500).json({ error: salesInYear.message });
       }
 

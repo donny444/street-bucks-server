@@ -434,11 +434,11 @@ export class UserController {
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const branchUsers = await this.userService.GetUsersByBranch({
+      const branchUsers = await this.userService.SelectUsersByBranch({
         branchId: BigInt(branchId),
       });
       if (branchUsers instanceof Error) {
-        console.error("Error occurred in `GetUsersByBranch`:", branchUsers);
+        console.error("Error occurred in `SelectUsersByBranch`:", branchUsers);
         return res
           .status(500)
           .json({ message: "Failed to retrieve the users of the branch." });

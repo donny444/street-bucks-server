@@ -33,7 +33,7 @@ export class RecipeService {
     }
   }
 
-  async FindRecipes(): Promise<Recipe[] | Error> {
+  async SelectRecipes(): Promise<Recipe[] | Error> {
     try {
       try {
         const recipes = await this.prisma.recipe.findMany();

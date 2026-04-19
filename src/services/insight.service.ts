@@ -36,7 +36,7 @@ export class InsightService {
     );
   }
 
-  async GetSalesToday(branchId: number): Promise<SalesCountDto | Error> {
+  async CountSalesToday(branchId: number): Promise<SalesCountDto | Error> {
     try {
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
@@ -67,7 +67,7 @@ export class InsightService {
     // return this.serializeOrders(salesToday);
   }
 
-  async GetSalesThisWeek(branchId: number): Promise<SalesCountDto | Error> {
+  async CountSalesThisWeek(branchId: number): Promise<SalesCountDto | Error> {
     try {
       const now = new Date();
       const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
@@ -98,7 +98,7 @@ export class InsightService {
     }
   }
 
-  async GetSalesThisMonth(branchId: number): Promise<SalesCountDto | Error> {
+  async CountSalesThisMonth(branchId: number): Promise<SalesCountDto | Error> {
     try {
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -128,7 +128,7 @@ export class InsightService {
     }
   }
 
-  async GetTopMenusByQuantity(
+  async FindTopMenusByQuantity(
     branchId: number
   ): Promise<TopMenusByQuantityDto[] | Error> {
     try {
@@ -170,7 +170,7 @@ export class InsightService {
     }
   }
 
-  async GetTopMenusByRevenue(
+  async FindTopMenusByRevenue(
     branchId: number
   ): Promise<TopMenusByRevenueDto[] | Error> {
     try {
@@ -227,7 +227,7 @@ export class InsightService {
     }
   }
 
-  async GetSalesInWeek(
+  async SelectSalesInWeek(
     branchId: number
   ): Promise<SerializedSalesInPeriodDto[] | Error> {
     try {
@@ -263,7 +263,7 @@ export class InsightService {
     }
   }
 
-  async GetSalesInMonth(
+  async SelectSalesInMonth(
     branchId: number
   ): Promise<SerializedSalesInPeriodDto[] | Error> {
     try {
@@ -297,7 +297,9 @@ export class InsightService {
     }
   }
 
-  async GetSalesInYear(branchId: number): Promise<SaleByCategoryDto[] | Error> {
+  async SelectSalesInYear(
+    branchId: number
+  ): Promise<SaleByCategoryDto[] | Error> {
     try {
       const now = new Date();
       const firstDayOfYear = new Date(now.getFullYear(), 0, 1);

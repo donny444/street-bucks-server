@@ -83,9 +83,9 @@ export class OrderController {
     @Res() res: Response
   ): Promise<Response> {
     try {
-      const todayOrders = await this.orderService.GetTodayOrders(branchId);
+      const todayOrders = await this.orderService.SelectTodayOrders(branchId);
       if (todayOrders instanceof Error) {
-        console.error("Error occurred in `GetTodayOrders`:", todayOrders);
+        console.error("Error occurred in `SelectTodayOrders`:", todayOrders);
         return res.status(500).json({ error: todayOrders.message });
       }
 
@@ -169,7 +169,7 @@ export class OrderController {
         return res.status(400).json({ error: "Order UUID is required." });
       }
 
-      const receiptPath = this.orderService.GetReceiptPath(uuid);
+      const receiptPath = this.orderService.MakeReceiptPath(uuid);
       if (!receiptPath) {
         return res.status(404).json({ error: "Receipt not found." });
       }

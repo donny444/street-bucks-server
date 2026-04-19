@@ -38,7 +38,7 @@ export class IngredientService {
     }
   }
 
-  async SelectMenuIngredients(
+  async FindMenuIngredients(
     menuId: string
   ): Promise<MenuIngredientDto[] | null | Error> {
     try {

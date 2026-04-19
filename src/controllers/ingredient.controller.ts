@@ -55,10 +55,10 @@ export class IngredientController {
   ): Promise<Response> {
     try {
       const menuIngredients =
-        await this.ingredientService.SelectMenuIngredients(menuId);
+        await this.ingredientService.FindMenuIngredients(menuId);
       if (menuIngredients instanceof Error) {
         console.error(
-          "Error occurred in `SelectMenuIngredients`:",
+          "Error occurred in `FindMenuIngredients`:",
           menuIngredients
         );
         return res
@@ -85,7 +85,10 @@ export class IngredientController {
       const ingredientList =
         await this.ingredientService.SelectIngredientList();
       if (ingredientList instanceof Error) {
-        console.error("Error occurred in `GetIngredientList`:", ingredientList);
+        console.error(
+          "Error occurred in `SelectIngredientList`:",
+          ingredientList
+        );
         return res
           .status(500)
           .json({ error: "Failed to select ingredient list." });

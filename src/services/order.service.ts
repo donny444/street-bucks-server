@@ -178,7 +178,7 @@ export class OrderService {
     }
   }
 
-  async GetTodayOrders(
+  async SelectTodayOrders(
     branchId: number
   ): Promise<SerializedOrderDto[] | Error> {
     try {
@@ -401,7 +401,7 @@ export class OrderService {
     });
   }
 
-  GetReceiptPath(uuid: string): string | null {
+  MakeReceiptPath(uuid: string): string | null {
     const filePath = path.join(
       __dirname,
       "..",

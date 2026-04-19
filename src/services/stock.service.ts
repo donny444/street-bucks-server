@@ -31,7 +31,7 @@ export class StockService {
     }
   }
 
-  async GetStocksByBranch(
+  async SelectStocksByBranch(
     where: Prisma.StockWhereInput
   ): Promise<recipeQuantityDto[] | Error> {
     try {
