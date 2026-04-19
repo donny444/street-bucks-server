@@ -8,8 +8,10 @@ RUN npm install --save
 
 COPY . .
 
+RUN npx prisma generate
+
 EXPOSE 8085
 
 RUN npm run build
 
-CMD ["npm", "start:prod"]
+CMD ["npm", "run", "start:prod"]
