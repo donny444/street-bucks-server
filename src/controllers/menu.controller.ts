@@ -142,7 +142,7 @@ export class MenuController {
     }
   }
 
-  @Post("form/:name")
+  @Get("form/:name")
   async GetMenuForm(
     @Param("name") name: string,
     @Res() res: Response

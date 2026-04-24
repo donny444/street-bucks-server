@@ -90,7 +90,7 @@ export class AppModule implements NestModule {
       { path: "menus/form/:name", method: RequestMethod.GET }, // GetMenuForm
       { path: "menus/", method: RequestMethod.PUT }, // EditMenu
       { path: "menus/", method: RequestMethod.POST }, // AddMenu
-      { path: "menus/remove/:name", method: RequestMethod.POST }, // RemoveMenu
+      { path: "menus/remove/:name", method: RequestMethod.DELETE }, // RemoveMenu
 
       // Order entity
       { path: "orders/find/:uuid", method: RequestMethod.GET }, // GetOrderByUuid

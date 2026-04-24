@@ -4,15 +4,17 @@ info:
   version: 1.0.0
   description: >-
     OpenAPI specification for the Street Bucks NestJS backend. It documents
-    the available endpoints exposed by the menu, order, user, insight, branch, stock, and recipe controllers.
+    the available endpoints exposed by the menu, order, user, insight, branch, stock, recipe, ingredient, and asset controllers.
 servers:
   - url: http://localhost:8085
     description: Local development server
 tags:
   - name: Assets
-    description: Static file serving endpoints for menus, receipts, and recipes.
+    description: Static file serving endpoints for menus and recipes.
   - name: Branches
     description: Branch authentication and management endpoints.
+  - name: Ingredients
+    description: Ingredient management endpoints.
   - name: Insights
     description: Insight and analytics endpoints. Requires branch authorization.
   - name: Menus
@@ -25,33 +27,68 @@ tags:
     description: Stock/inventory management endpoints. Requires branch authorization.
   - name: Users
     description: User administration and attendance endpoints.
-  - name: Ingredients
-    description: Ingredient management endpoints.
 paths:
-  /branches:
-    post:
+  # ── Assets ──────────────────────────────────────────────────────────────
+  /assets/menus/{filename}:
+    get:
       tags:
-        - Branches
-      summary: Create a new branch
-      operationId: createBranch
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateBranchRequest'
+        - Assets
+      summary: Retrieve a menu image by filename
+      operationId: getMenuImage
+      parameters:
+        - in: path
+          name: filename
+          required: true
+          schema:
+            type: string
+          description: The filename of the menu image (e.g., espresso.png).
       responses:
-        '201':
-          description: Branch created successfully
+        '200':
+          description: Menu image file
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Menu image not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SimpleMessageResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /branches/signin:
+  /assets/recipes/{filename}:
+    get:
+      tags:
+        - Assets
+      summary: Retrieve a recipe image by filename
+      operationId: getRecipeImage
+      parameters:
+        - in: path
+          name: filename
+          required: true
+          schema:
+            type: string
+          description: The filename of the recipe image (e.g., espresso_shot.png).
+      responses:
+        '200':
+          description: Recipe image file
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Recipe image not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  # ── Branches ────────────────────────────────────────────────────────────
+  /branches/sign-in:
     post:
       tags:
         - Branches
@@ -78,6 +115,106 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /branches:
+    post:
+      tags:
+        - Branches
+      summary: Create a new branch
+      description: Requires admin-token header (AuthorizeAdministrator middleware).
+      operationId: createBranch
+      parameters:
+        - $ref: '#/components/parameters/AdminToken'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBranchRequest'
+      responses:
+        '200':
+          description: Branch created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleMessageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  # ── Ingredients ─────────────────────────────────────────────────────────
+  /ingredients:
+    get:
+      tags:
+        - Ingredients
+      summary: List all ingredients
+      operationId: getIngredientList
+      responses:
+        '200':
+          description: Ingredient list retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngredientListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags:
+        - Ingredients
+      summary: Update amounts of ingredients for menus
+      description: >-
+        Requires branch-token header (AuthorizeBranch middleware) and manager
+        editor credentials in the request body (AuthorizeManager middleware).
+      operationId: editIngredientAmounts
+      parameters:
+        - $ref: '#/components/parameters/BranchToken'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/EditAmountRequest'
+      responses:
+        '200':
+          description: Ingredient amounts updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleMessageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /ingredients/{name}:
+    get:
+      tags:
+        - Ingredients
+      summary: Retrieve ingredients for a specific menu
+      operationId: getMenuIngredients
+      parameters:
+        - in: path
+          name: name
+          required: true
+          description: Name of the menu to get ingredients for.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Menu ingredients retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuIngredientsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  # ── Insights ────────────────────────────────────────────────────────────
   /insights/sales-today:
     get:
       tags:
@@ -92,11 +229,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InsightSalesTodayResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: '#/components/schemas/InsightSalesCountResponse'
         '500':
           $ref: '#/components/responses/InternalServerError'
   /insights/sales-this-week:
@@ -113,11 +246,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InsightSalesTodayResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: '#/components/schemas/InsightSalesCountResponse'
         '500':
           $ref: '#/components/responses/InternalServerError'
   /insights/sales-this-month:
@@ -134,11 +263,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InsightSalesTodayResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: '#/components/schemas/InsightSalesCountResponse'
         '500':
           $ref: '#/components/responses/InternalServerError'
   /insights/top-menus-by-quantity:
@@ -156,10 +281,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InsightTopMenusResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
   /insights/top-menus-by-revenue:
@@ -177,10 +298,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InsightTopMenusResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
   /insights/sales-in-week:
@@ -198,10 +315,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InsightSalesSeriesResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
   /insights/sales-in-month:
@@ -219,17 +332,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InsightSalesSeriesResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
   /insights/sales-in-year:
     get:
       tags:
         - Insights
-      summary: Retrieve sales counts grouped by menu type for each month of the current year
+      summary: Retrieve sales counts grouped by menu category for each month of the current year
       operationId: getSalesInYear
       parameters:
         - $ref: '#/components/parameters/BranchToken'
@@ -240,12 +349,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InsightSalesByCategoryResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  # ── Menus ───────────────────────────────────────────────────────────────
   /menus/hot:
     get:
       tags:
@@ -291,49 +397,52 @@ paths:
                 $ref: '#/components/schemas/MenuListResponse'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /menus:
-    post:
+  /menus/form/{name}:
+    get:
       tags:
         - Menus
-      summary: Add a new menu item with an image
-      description: >-
-        Requires authorization via administrator credentials in the request body (AuthorizeAdministrator middleware).
-        Only users with ADMINISTRATOR role can add new menus.
-      operationId: addMenu
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              required:
-                - name
-                - price
-                - category
-                - file
-                - editor
-              properties:
-                name:
-                  type: string
-                  description: Name of the menu item.
-                price:
-                  type: number
-                  format: float
-                  minimum: 0
-                  description: Price of the menu item.
-                category:
-                  type: string
-                  description: Category of the menu (e.g., hot, iced, bakery).
-                file:
-                  type: string
-                  format: binary
-                  description: Image file for the menu (jpg, jpeg, png, gif, webp).
-                editor:
-                  type: string
-                  description: JSON string containing administrator credentials {email, password}.
+      summary: Retrieve the edit form data for a specific menu
+      description: Requires admin-token header (AuthorizeAdministrator middleware).
+      operationId: getMenuForm
+      parameters:
+        - $ref: '#/components/parameters/AdminToken'
+        - in: path
+          name: name
+          required: true
+          description: Name of the menu.
+          schema:
+            type: string
       responses:
-        '201':
-          description: Menu added successfully
+        '200':
+          description: Menu form data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuFormResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /menus/remove/{name}:
+    delete:
+      tags:
+        - Menus
+      summary: Remove a menu item and its associated image
+      description: Requires admin-token header (AuthorizeAdministrator middleware).
+      operationId: removeMenu
+      parameters:
+        - $ref: '#/components/parameters/AdminToken'
+        - in: path
+          name: name
+          required: true
+          description: Name of the menu to remove.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Menu removed successfully
           content:
             application/json:
               schema:
@@ -342,12 +451,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '409':
-          description: Menu with the provided name already exists
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiError'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
   /menus/{name}:
@@ -378,11 +483,10 @@ paths:
       tags:
         - Menus
       summary: Update a specific menu by its name
-      description: >-
-        Requires authorization via administrator credentials in the request body (AuthorizeAdministrator middleware).
-        Only users with ADMINISTRATOR role can update menus.
+      description: Requires admin-token header (AuthorizeAdministrator middleware).
       operationId: editMenuByName
       parameters:
+        - $ref: '#/components/parameters/AdminToken'
         - in: path
           name: name
           required: true
@@ -410,6 +514,87 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /menus:
+    get:
+      tags:
+        - Menus
+      summary: List all available menus
+      description: Requires admin-token header (AuthorizeAdministrator middleware).
+      operationId: listAllMenus
+      parameters:
+        - $ref: '#/components/parameters/AdminToken'
+      responses:
+        '200':
+          description: All menus currently available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Menus
+      summary: Add a new menu item with an image
+      description: Requires admin-token header (AuthorizeAdministrator middleware).
+      operationId: addMenu
+      parameters:
+        - $ref: '#/components/parameters/AdminToken'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - name
+                - price
+                - category
+                - file
+              properties:
+                name:
+                  type: string
+                  description: Name of the menu item.
+                price:
+                  type: number
+                  format: double
+                  minimum: 0
+                  description: Price of the menu item.
+                category:
+                  type: string
+                  enum:
+                    - HOT
+                    - ICED
+                    - BAKERY
+                  description: Category of the menu.
+                file:
+                  type: string
+                  format: binary
+                  description: Image file for the menu (jpg, jpeg, png, gif, webp).
+      responses:
+        '201':
+          description: Menu added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleMessageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Menu with the provided name already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  # ── Orders ──────────────────────────────────────────────────────────────
   /orders:
     post:
       tags:
@@ -428,16 +613,12 @@ paths:
               items:
                 $ref: '#/components/schemas/OrderRequestItem'
       responses:
-        '201':
+        '200':
           description: Order created successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/OrderCreatedResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
     get:
@@ -455,21 +636,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OrderListResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /orders/{uuid}:
+  /orders/find/{uuid}:
     get:
       tags:
         - Orders
-      summary: Retrieve details for a specific order
-      description: Requires a valid branch-token header for authorization.
+      summary: Find an order by UUID without branch scope restriction
+      description: Requires admin-token header (AuthorizeAdministrator middleware).
       operationId: getOrderByUuid
       parameters:
-        - $ref: '#/components/parameters/BranchToken'
+        - $ref: '#/components/parameters/AdminToken'
         - in: path
           name: uuid
           required: true
@@ -479,18 +656,20 @@ paths:
             format: uuid
       responses:
         '200':
-          description: Order details or informational message when not found
+          description: Found order information
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OrderDetailResponse'
+                $ref: '#/components/schemas/OrderFoundResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /orders/{uuid}/receipt:
+  /orders/receipt/{uuid}:
     get:
       tags:
         - Orders
@@ -520,15 +699,55 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /orders/{uuid}:
+    get:
+      tags:
+        - Orders
+      summary: Retrieve details for a specific order
+      description: Requires a valid branch-token header for authorization.
+      operationId: getOrderDetails
+      parameters:
+        - $ref: '#/components/parameters/BranchToken'
+        - in: path
+          name: uuid
+          required: true
+          description: Order identifier (UUID).
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetailResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  # ── Recipes ─────────────────────────────────────────────────────────────
   /recipes:
+    get:
+      tags:
+        - Recipes
+      summary: List all available recipes
+      operationId: listRecipes
+      responses:
+        '200':
+          description: All recipes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipeListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     post:
       tags:
         - Recipes
       summary: Add a new recipe with an image
-      description: >-
-        Requires authorization via administrator credentials in the request body (AuthorizeAdministrator middleware).
-        Only users with ADMINISTRATOR role can add new recipes.
+      description: Requires admin-token header (AuthorizeAdministrator middleware).
       operationId: addRecipe
+      parameters:
+        - $ref: '#/components/parameters/AdminToken'
       requestBody:
         required: true
         content:
@@ -539,7 +758,6 @@ paths:
                 - name
                 - unit
                 - file
-                - editor
               properties:
                 name:
                   type: string
@@ -551,9 +769,6 @@ paths:
                   type: string
                   format: binary
                   description: Image file for the recipe (jpg, jpeg, png, gif, webp).
-                editor:
-                  type: string
-                  description: JSON string containing administrator credentials {email, password}.
       responses:
         '201':
           description: Recipe added successfully
@@ -570,7 +785,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiError'
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           $ref: '#/components/responses/InternalServerError'
   /recipes/{name}:
@@ -578,11 +793,10 @@ paths:
       tags:
         - Recipes
       summary: Update a recipe by its name
-      description: >-
-        Requires authorization via administrator credentials in the request body (AuthorizeAdministrator middleware).
-        Only users with ADMINISTRATOR role can update recipes.
+      description: Requires admin-token header (AuthorizeAdministrator middleware).
       operationId: editRecipeByName
       parameters:
+        - $ref: '#/components/parameters/AdminToken'
         - in: path
           name: name
           required: true
@@ -606,16 +820,52 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
         '409':
           description: Recipe with the new name already exists
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiError'
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - Recipes
+      summary: Remove a recipe by its name
+      description: >-
+        Requires admin-token header (AuthorizeAdministrator middleware).
+        Will fail with 403 if the recipe is used as an ingredient in any menu.
+      operationId: removeRecipe
+      parameters:
+        - $ref: '#/components/parameters/AdminToken'
+        - in: path
+          name: name
+          required: true
+          description: Name of the recipe to remove.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Recipe removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleMessageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Recipe is used as an ingredient in existing menus
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  # ── Stocks ──────────────────────────────────────────────────────────────
   /stocks:
     get:
       tags:
@@ -632,19 +882,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BranchStocksResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
     put:
       tags:
         - Stocks
       summary: Update stock quantity for a recipe at the branch
-      description: >-
-        Requires both branch-token header (AuthorizeBranch middleware) and manager credentials
-        in the request body (AuthorizeManager middleware). Only users with MANAGER role can update stock.
+      description: Requires a valid branch-token header for authorization.
       operationId: editStockQuantity
       parameters:
         - $ref: '#/components/parameters/BranchToken'
@@ -653,7 +897,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EditQuantityWithEditorRequest'
+              $ref: '#/components/schemas/EditQuantityRequest'
       responses:
         '200':
           description: Stock quantity updated successfully
@@ -661,81 +905,97 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleMessageResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /ingredients:
-    put:
-      tags:
-        - Ingredients
-      summary: Update amounts of ingredients for menus
-      operationId: editIngredientAmounts
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/EditAmountRequest'
-      responses:
-        '200':
-          description: Ingredient amounts updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SimpleMessageResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /users:
-    get:
-      tags:
-        - Users
-      summary: Get all users for the branch
-      description: Requires a valid branch-token header for authorization.
-      operationId: getBranchUsers
-      parameters:
-        - $ref: '#/components/parameters/BranchToken'
-      responses:
-        '200':
-          description: Users for the branch
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BranchUsersResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+  # ── Users ───────────────────────────────────────────────────────────────
+  /users/administrator/sign-in:
     post:
       tags:
         - Users
-      summary: Register a new user
-      description: >-
-        Requires both branch-token header (AuthorizeBranch middleware for branch context) and
-        manager credentials in the request body (AuthorizeManager middleware).
-        Only users with MANAGER role can register new users.
-      operationId: registerUser
-      parameters:
-        - $ref: '#/components/parameters/BranchToken'
+      summary: Sign in as an administrator and receive a JWT token
+      operationId: signInAdministrator
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegisterUserWithEditorRequest'
+              $ref: '#/components/schemas/CredentialsRequest'
       responses:
-        '201':
-          description: User registered successfully
+        '200':
+          description: Administrator signed in successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignInAdministratorResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: User does not have administrator privileges
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /users/search:
+    get:
+      tags:
+        - Users
+      summary: Search for users by first or last name
+      description: Requires admin-token header (AuthorizeAdministrator middleware).
+      operationId: searchUsersByName
+      parameters:
+        - $ref: '#/components/parameters/AdminToken'
+        - in: query
+          name: name
+          required: true
+          description: Name to search for.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Users matching the search
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchUsersResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /users/remove/{email}:
+    post:
+      tags:
+        - Users
+      summary: Remove the specified user and related records
+      description: >-
+        Requires manager editor credentials in the request body (AuthorizeManager middleware).
+      operationId: removeUser
+      parameters:
+        - in: path
+          name: email
+          required: true
+          description: Email address of the user to remove.
+          schema:
+            type: string
+            format: email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManagerAuthRequest'
+      responses:
+        '200':
+          description: User removed successfully
           content:
             application/json:
               schema:
@@ -744,12 +1004,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '409':
-          description: User with the provided email already exists
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiError'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
   /users/{email}:
@@ -776,7 +1032,7 @@ paths:
             schema:
               $ref: '#/components/schemas/AuthenticateRequest'
       responses:
-        '201':
+        '200':
           description: Attendance status toggled
           content:
             application/json:
@@ -793,8 +1049,8 @@ paths:
     get:
       tags:
         - Users
-      summary: Retrieve information for the specified user
-      operationId: getUserByEmail
+      summary: Retrieve form data for the specified user
+      operationId: getUserForm
       parameters:
         - in: path
           name: email
@@ -805,11 +1061,11 @@ paths:
             format: email
       responses:
         '200':
-          description: User information
+          description: User form data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserInfoResponse'
+                $ref: '#/components/schemas/UserFormResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -821,8 +1077,7 @@ paths:
         - Users
       summary: Update an existing user's information
       description: >-
-        Requires authorization via manager credentials in the request body (AuthorizeUser middleware).
-        Only users with MANAGER role can update other users.
+        Requires manager editor credentials in the request body (AuthorizeManager middleware).
       operationId: updateUser
       parameters:
         - in: path
@@ -853,84 +1108,53 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-    delete:
+  /users:
+    get:
       tags:
         - Users
-      summary: Remove the specified user and related records
-      operationId: deleteUser
+      summary: Get all users for the branch
+      description: Requires a valid branch-token header for authorization.
+      operationId: getBranchUsers
       parameters:
-        - in: path
-          name: email
-          required: true
-          description: Email address of the user to delete.
-          schema:
-            type: string
-            format: email
+        - $ref: '#/components/parameters/BranchToken'
       responses:
         '200':
-          description: User deleted successfully
+          description: Users for the branch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BranchUsersResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Users
+      summary: Register a new user
+      description: >-
+        Requires branch-token header (AuthorizeBranch middleware for branch context) and
+        manager editor credentials in the request body (AuthorizeManager middleware).
+      operationId: registerUser
+      parameters:
+        - $ref: '#/components/parameters/BranchToken'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequest'
+      responses:
+        '200':
+          description: User registered successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimpleMessageResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /assets/menus/{filename}:
-    get:
-      tags:
-        - Assets
-      summary: Retrieve a menu image by filename
-      operationId: getMenuImage
-      parameters:
-        - in: path
-          name: filename
-          required: true
-          schema:
-            type: string
-          description: The filename of the menu image (e.g., espresso.png)
-      responses:
-        '200':
-          description: Menu image file
-          content:
-            image/*:
-              schema:
-                type: string
-                format: binary
-        '404':
-          description: Menu image not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /assets/recipes/{filename}:
-    get:
-      tags:
-        - Assets
-      summary: Retrieve a recipe file by filename
-      operationId: getRecipe
-      parameters:
-        - in: path
-          name: filename
-          required: true
-          schema:
-            type: string
-          description: The filename of the recipe document
-      responses:
-        '200':
-          description: Recipe file
-          content:
-            application/octet-stream:
-              schema:
-                type: string
-                format: binary
-        '404':
-          description: Recipe not found
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: User with the provided email already exists
           content:
             application/json:
               schema:
@@ -943,21 +1167,18 @@ components:
       in: header
       name: branch-token
       required: true
-      description: JWT token for branch authorization obtained from /branches/signin.
+      description: JWT token for branch authorization obtained from POST /branches/sign-in.
+      schema:
+        type: string
+    AdminToken:
+      in: header
+      name: admin-token
+      required: true
+      description: JWT token for administrator authorization obtained from POST /users/administrator/sign-in.
       schema:
         type: string
   schemas:
-    ApiError:
-      type: object
-      description: Error response payload.
-      properties:
-        error:
-          type: string
-          description: Error message describing what went wrong.
-        message:
-          type: string
-          description: Additional context about the error.
-      additionalProperties: false
+    # ── Common ──────────────────────────────────────────────────────────
     ErrorResponse:
       type: object
       properties:
@@ -975,15 +1196,29 @@ components:
         message:
           type: string
           description: Human readable message.
-    CreateBranchRequest:
+    EditorCredentials:
       type: object
       required:
+        - email
         - password
       properties:
+        email:
+          type: string
+          format: email
+          description: Email of the editor (manager).
         password:
           type: string
           minLength: 1
-          description: Password for the new branch.
+          description: Password of the editor for authorization.
+    ManagerAuthRequest:
+      type: object
+      required:
+        - editor
+      properties:
+        editor:
+          $ref: '#/components/schemas/EditorCredentials'
+          description: Manager credentials required for authorization.
+    # ── Branch ──────────────────────────────────────────────────────────
     SignInBranchRequest:
       type: object
       required:
@@ -1008,8 +1243,67 @@ components:
           type: string
         token:
           type: string
-          description: JWT token for subsequent authenticated requests.
-    InsightSalesTodayResponse:
+          description: JWT token for subsequent authenticated requests via branch-token header.
+    CreateBranchRequest:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          minLength: 1
+          description: Password for the new branch.
+    # ── Ingredient ──────────────────────────────────────────────────────
+    EditAmountRequest:
+      type: object
+      required:
+        - menuId
+        - recipeId
+        - amount
+      properties:
+        menuId:
+          type: string
+          description: Menu name identifier.
+        recipeId:
+          type: string
+          description: Recipe name identifier.
+        amount:
+          type: integer
+          format: int32
+          minimum: 0
+          description: New amount for the ingredient.
+    IngredientListResponse:
+      type: object
+      required:
+        - message
+        - ingredient_list
+      properties:
+        message:
+          type: string
+        ingredient_list:
+          type: array
+          items:
+            type: object
+    MenuIngredientsResponse:
+      type: object
+      required:
+        - message
+        - menu_ingredients
+      properties:
+        message:
+          type: string
+        menu_ingredients:
+          type: array
+          items:
+            type: object
+            properties:
+              recipeId:
+                type: string
+              amount:
+                type: integer
+                format: int32
+    # ── Insight ─────────────────────────────────────────────────────────
+    InsightSalesCountResponse:
       type: object
       required:
         - message
@@ -1021,20 +1315,8 @@ components:
           type: integer
           format: int32
           minimum: 0
-          description: Number of orders placed today.
-    TopMenuInsightItem:
-      type: object
-      required:
-        - menuName
-        - totalQuantity
-      properties:
-        menuName:
-          type: string
-        totalQuantity:
-          type: integer
-          format: int32
-          minimum: 0
-    TopMenuInsightChart:
+          description: Number of orders in the period.
+    InsightChartData:
       type: object
       required:
         - labels
@@ -1047,9 +1329,7 @@ components:
         data:
           type: array
           items:
-            type: integer
-            format: int32
-            minimum: 0
+            type: number
     InsightTopMenusResponse:
       type: object
       required:
@@ -1059,27 +1339,7 @@ components:
         message:
           type: string
         insight:
-          oneOf:
-            - type: array
-              items:
-                $ref: '#/components/schemas/TopMenuInsightItem'
-            - $ref: '#/components/schemas/TopMenuInsightChart'
-    InsightSeries:
-      type: object
-      required:
-        - labels
-        - data
-      properties:
-        labels:
-          type: array
-          items:
-            type: string
-        data:
-          type: array
-          items:
-            type: integer
-            format: int32
-            minimum: 0
+          $ref: '#/components/schemas/InsightChartData'
     InsightSalesSeriesResponse:
       type: object
       required:
@@ -1089,7 +1349,7 @@ components:
         message:
           type: string
         insight:
-          $ref: '#/components/schemas/InsightSeries'
+          $ref: '#/components/schemas/InsightChartData'
     SalesByCategoryItem:
       type: object
       required:
@@ -1098,6 +1358,7 @@ components:
       properties:
         label:
           type: string
+          description: Menu category (e.g., HOT, ICED, BAKERY).
         data:
           type: array
           maxItems: 12
@@ -1105,6 +1366,7 @@ components:
             type: integer
             format: int32
             minimum: 0
+          description: Monthly sales counts (index 0 = January).
     InsightSalesByCategoryResponse:
       type: object
       required:
@@ -1117,25 +1379,31 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SalesByCategoryItem'
+    # ── Menu ────────────────────────────────────────────────────────────
     MenuSummary:
       type: object
       required:
-        - id
         - name
         - price
-        - fileName
+        - imagePath
       properties:
-        id:
-          type: integer
-          format: int64
         name:
           type: string
         price:
           type: number
-          format: float
+          format: double
           minimum: 0
-        fileName:
+        category:
           type: string
+          enum:
+            - HOT
+            - ICED
+            - BAKERY
+        imagePath:
+          type: string
+        note:
+          type: string
+          nullable: true
     MenuListResponse:
       type: object
       required:
@@ -1158,42 +1426,54 @@ components:
           type: string
         menu:
           $ref: '#/components/schemas/MenuSummary'
-    EditMenuRequest:
+    MenuForm:
       type: object
       required:
-        - editor
+        - name
+        - price
+        - category
+      properties:
+        name:
+          type: string
+        price:
+          type: number
+          format: double
+          minimum: 0
+        category:
+          type: string
+          enum:
+            - HOT
+            - ICED
+            - BAKERY
+    MenuFormResponse:
+      type: object
+      required:
+        - message
+        - menu_form
+      properties:
+        message:
+          type: string
+        menu_form:
+          $ref: '#/components/schemas/MenuForm'
+    EditMenuRequest:
+      type: object
       properties:
         name:
           type: string
           description: Updated name of the menu.
         price:
           type: number
-          format: float
+          format: double
           minimum: 0
           description: Updated price of the menu.
-        type:
+        category:
           type: string
-          description: Updated type/category of the menu.
-        fileName:
-          type: string
-          description: Updated file name for the menu image.
-        editor:
-          $ref: '#/components/schemas/EditorCredentials'
-          description: Administrator credentials required for authorization.
-    EditorCredentials:
-      type: object
-      required:
-        - email
-        - password
-      properties:
-        email:
-          type: string
-          format: email
-          description: Email of the editor (manager/admin).
-        password:
-          type: string
-          minLength: 1
-          description: Password of the editor for authorization.
+          enum:
+            - HOT
+            - ICED
+            - BAKERY
+          description: Updated category of the menu.
+    # ── Order ───────────────────────────────────────────────────────────
     OrderRequestItem:
       type: object
       required:
@@ -1201,8 +1481,8 @@ components:
         - quantity
       properties:
         menuId:
-          type: integer
-          format: int64
+          type: string
+          description: Menu name identifier.
         quantity:
           type: integer
           format: int32
@@ -1231,9 +1511,10 @@ components:
         timestamp:
           type: integer
           format: int64
+          description: Unix timestamp in milliseconds.
         totalPrice:
           type: number
-          format: float
+          format: double
           minimum: 0
     OrderListResponse:
       type: object
@@ -1267,23 +1548,23 @@ components:
               type: string
             price:
               type: number
-              format: float
+              format: double
               minimum: 0
     OrderDetail:
       type: object
       required:
         - uuid
         - totalPrice
-        - OrderMenu
+        - entry
       properties:
         uuid:
           type: string
           format: uuid
         totalPrice:
           type: number
-          format: float
+          format: double
           minimum: 0
-        OrderMenu:
+        entry:
           type: array
           items:
             $ref: '#/components/schemas/OrderMenuItem'
@@ -1296,6 +1577,70 @@ components:
           type: string
         order:
           $ref: '#/components/schemas/OrderDetail'
+    OrderFoundResponse:
+      type: object
+      required:
+        - message
+        - found_order
+      properties:
+        message:
+          type: string
+        found_order:
+          type: object
+          required:
+            - uuid
+            - branchId
+            - timestamp
+            - totalPrice
+          properties:
+            uuid:
+              type: string
+              format: uuid
+            branchId:
+              type: integer
+              format: int64
+            timestamp:
+              type: integer
+              format: int64
+              description: Unix timestamp in milliseconds.
+            totalPrice:
+              type: number
+              format: double
+              minimum: 0
+    # ── Recipe ──────────────────────────────────────────────────────────
+    RecipeListResponse:
+      type: object
+      required:
+        - recipes
+      properties:
+        recipes:
+          type: array
+          items:
+            type: object
+            required:
+              - name
+              - unit
+              - imagePath
+            properties:
+              name:
+                type: string
+              unit:
+                type: string
+              imagePath:
+                type: string
+    EditRecipeRequest:
+      type: object
+      required:
+        - name
+        - unit
+      properties:
+        name:
+          type: string
+          description: Updated name for the recipe.
+        unit:
+          type: string
+          description: Updated unit for the recipe.
+    # ── Stock ───────────────────────────────────────────────────────────
     EditQuantityRequest:
       type: object
       required:
@@ -1303,158 +1648,13 @@ components:
         - quantity
       properties:
         recipeId:
-          type: integer
-          format: int64
-          description: Recipe identifier for the stock item.
+          type: string
+          description: Recipe name identifier for the stock item.
         quantity:
           type: integer
           format: int32
           minimum: 0
           description: New quantity for the stock.
-    EditQuantityWithEditorRequest:
-      type: object
-      required:
-        - recipeId
-        - quantity
-        - editor
-      properties:
-        recipeId:
-          type: integer
-          format: int64
-          description: Recipe identifier for the stock item.
-        quantity:
-          type: integer
-          format: int32
-          minimum: 0
-          description: New quantity for the stock.
-        editor:
-          $ref: '#/components/schemas/EditorCredentials'
-          description: Manager credentials required for authorization.
-    RegisterUserRequest:
-      type: object
-      required:
-        - email
-        - firstName
-        - lastName
-        - password
-      properties:
-        email:
-          type: string
-          format: email
-          description: Email address for the new user.
-        firstName:
-          type: string
-          minLength: 1
-        lastName:
-          type: string
-          minLength: 1
-        password:
-          type: string
-          minLength: 1
-        branchId:
-          type: integer
-          format: int64
-          minimum: 1
-          default: 1
-          description: Branch ID to assign the user to.
-    RegisterUserWithEditorRequest:
-      type: object
-      required:
-        - email
-        - firstName
-        - lastName
-        - password
-        - editor
-      properties:
-        email:
-          type: string
-          format: email
-          description: Email address for the new user.
-        firstName:
-          type: string
-          minLength: 1
-        lastName:
-          type: string
-          minLength: 1
-        password:
-          type: string
-          minLength: 1
-        editor:
-          $ref: '#/components/schemas/EditorCredentials'
-          description: Manager credentials required for authorization.
-    ManagerAuthRequest:
-      type: object
-      required:
-        - editor
-      properties:
-        editor:
-          $ref: '#/components/schemas/EditorCredentials'
-          description: Manager credentials required for authorization.
-    AuthenticateRequest:
-      type: object
-      required:
-        - password
-      properties:
-        password:
-          type: string
-          minLength: 1
-          description: User password for authentication.
-    UserInfo:
-      type: object
-      required:
-        - email
-        - firstName
-        - lastName
-      properties:
-        email:
-          type: string
-          format: email
-        firstName:
-          type: string
-        lastName:
-          type: string
-        branchId:
-          type: integer
-          format: int64
-          minimum: 1
-        role:
-          type: string
-          enum:
-            - STAFF
-            - MANAGER
-            - ADMINISTRATOR
-    UserInfoResponse:
-      type: object
-      required:
-        - message
-        - userInfo
-      properties:
-        message:
-          type: string
-        userInfo:
-          $ref: '#/components/schemas/UserInfo'
-    EditUserRequest:
-      type: object
-      required:
-        - editor
-      properties:
-        firstName:
-          type: string
-          minLength: 1
-        lastName:
-          type: string
-          minLength: 1
-        password:
-          type: string
-          minLength: 1
-        role:
-          type: string
-          enum:
-            - STAFF
-            - MANAGER
-        editor:
-          $ref: '#/components/schemas/EditorCredentials'
-          description: Manager credentials required for authorization.
     BranchStockItem:
       type: object
       required:
@@ -1468,13 +1668,9 @@ components:
         recipe:
           type: object
           required:
-            - id
             - name
             - unit
           properties:
-            id:
-              type: integer
-              format: int64
             name:
               type: string
             unit:
@@ -1493,6 +1689,163 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BranchStockItem'
+    # ── User ────────────────────────────────────────────────────────────
+    CredentialsRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 1
+    AuthenticateRequest:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          minLength: 1
+          description: User password for authentication.
+    SignInAdministratorResponse:
+      type: object
+      required:
+        - message
+        - token
+      properties:
+        message:
+          type: string
+        token:
+          type: string
+          description: JWT token for subsequent authenticated requests via admin-token header.
+    RegisterUserRequest:
+      type: object
+      required:
+        - email
+        - firstName
+        - lastName
+        - password
+        - editor
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email address for the new user.
+        firstName:
+          type: string
+          minLength: 1
+        lastName:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+        editor:
+          $ref: '#/components/schemas/EditorCredentials'
+          description: Manager credentials required for authorization.
+    EditUserRequest:
+      type: object
+      required:
+        - email
+        - firstName
+        - lastName
+        - role
+        - editor
+      properties:
+        email:
+          type: string
+          format: email
+          description: Updated email address.
+        firstName:
+          type: string
+          minLength: 1
+        lastName:
+          type: string
+          minLength: 1
+        role:
+          type: string
+          enum:
+            - STAFF
+            - MANAGER
+        password:
+          type: string
+          minLength: 1
+          description: Optional updated password.
+        editor:
+          $ref: '#/components/schemas/EditorCredentials'
+          description: Manager credentials required for authorization.
+    UserForm:
+      type: object
+      required:
+        - email
+        - firstName
+        - lastName
+        - role
+      properties:
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+          enum:
+            - STAFF
+            - MANAGER
+            - ADMINISTRATOR
+    UserFormResponse:
+      type: object
+      required:
+        - message
+        - user_form
+      properties:
+        message:
+          type: string
+        user_form:
+          $ref: '#/components/schemas/UserForm'
+    UserEntry:
+      type: object
+      required:
+        - email
+        - firstName
+        - lastName
+        - role
+        - branchId
+      properties:
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+          enum:
+            - STAFF
+            - MANAGER
+            - ADMINISTRATOR
+        branchId:
+          type: integer
+          format: int64
+    SearchUsersResponse:
+      type: object
+      required:
+        - message
+        - found_users
+      properties:
+        message:
+          type: string
+        found_users:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserEntry'
     BranchUserItem:
       type: object
       required:
@@ -1529,62 +1882,28 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BranchUserItem'
-    EditAmountRequest:
-      type: object
-      required:
-        - menuId
-        - recipeId
-        - amount
-      properties:
-        menuId:
-          type: string
-          description: Menu identifier.
-        recipeId:
-          type: string
-          description: Recipe identifier.
-        amount:
-          type: number
-          format: float
-          minimum: 0
-          description: New amount for the ingredient.
-    EditRecipeRequest:
-      type: object
-      required:
-        - name
-        - unit
-        - editor
-      properties:
-        name:
-          type: string
-          description: Updated name for the recipe.
-        unit:
-          type: string
-          description: Updated unit for the recipe.
-        editor:
-          $ref: '#/components/schemas/EditorCredentials'
-          description: Administrator credentials required for authorization.
   responses:
     BadRequest:
       description: Client error due to invalid input.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ApiError'
+            $ref: '#/components/schemas/ErrorResponse'
     Unauthorized:
       description: Authentication or authorization failed.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ApiError'
+            $ref: '#/components/schemas/ErrorResponse'
     NotFound:
       description: Requested resource was not found.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ApiError'
+            $ref: '#/components/schemas/ErrorResponse'
     InternalServerError:
       description: Unexpected server error.
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ApiError'
+            $ref: '#/components/schemas/ErrorResponse'
