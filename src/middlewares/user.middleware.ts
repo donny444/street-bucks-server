@@ -119,10 +119,10 @@ export class AuthorizeAdministrator implements NestMiddleware {
     }
 
     try {
-      const jwtSecret = process.env.BRANCH_JWT_SECRET;
+      const jwtSecret = process.env.ADMIN_JWT_SECRET;
       if (!jwtSecret) {
-        console.error("Missing JWT secret for branch authorization");
-        return res.status(500).json({ error: "Failed to authorize branch." });
+        console.error("Missing JWT secret for admin authorization");
+        return res.status(500).json({ error: "Failed to authorize admin." });
       }
 
       const decoded = jwtVerify(adminToken, jwtSecret) as UserPayloadDto;
@@ -151,7 +151,7 @@ export class AuthorizeAdministrator implements NestMiddleware {
     } catch (err) {
       console.error("Error in `AuthorizeAdministrator` middleware:", err);
       if (err instanceof Error && err.name === "TokenExpiredError") {
-        return res.status(401).json({ message: "Branch token has expired." });
+        return res.status(401).json({ message: "Admin token has expired." });
       }
       return res
         .status(500)

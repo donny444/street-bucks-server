@@ -200,10 +200,10 @@ export class UserController {
         });
       }
 
-      const jwtSecret = process.env.BRANCH_JWT_SECRET;
+      const jwtSecret = process.env.ADMIN_JWT_SECRET;
       if (!jwtSecret) {
-        console.error("Missing JWT secret for branch sign-in");
-        return res.status(500).json({ error: "Error signing in a branch." });
+        console.error("Missing JWT secret for admin sign-in");
+        return res.status(500).json({ error: "Error signing in as admin." });
       }
 
       const jwtPayload = { email };
