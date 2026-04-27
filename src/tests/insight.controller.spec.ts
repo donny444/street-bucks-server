@@ -8,14 +8,14 @@ describe("InsightController", () => {
   let insightService: InsightService;
 
   const mockInsightService = {
-    GetSalesToday: jest.fn(),
-    GetSalesThisWeek: jest.fn(),
-    GetSalesThisMonth: jest.fn(),
-    GetTopMenusByQuantity: jest.fn(),
-    GetTopMenusByRevenue: jest.fn(),
-    GetSalesInWeek: jest.fn(),
-    GetSalesInMonth: jest.fn(),
-    GetSalesInYear: jest.fn(),
+    CountSalesToday: jest.fn(),
+    CountSalesThisWeek: jest.fn(),
+    CountSalesThisMonth: jest.fn(),
+    FindTopMenusByQuantity: jest.fn(),
+    FindTopMenusByRevenue: jest.fn(),
+    SelectSalesInWeek: jest.fn(),
+    SelectSalesInMonth: jest.fn(),
+    SelectSalesInYear: jest.fn(),
   };
 
   const mockResponse = () => {
@@ -48,15 +48,15 @@ describe("InsightController", () => {
   });
 
   describe("GetSalesToday", () => {
-    const branchPayload = JSON.stringify({ branchId: 1 });
+    const branchPayload = { branchId: 1 };
 
     it("should return today's sales count", async () => {
-      mockInsightService.GetSalesToday.mockResolvedValue(15);
+      mockInsightService.CountSalesToday.mockResolvedValue(15);
 
       const res = mockResponse();
       await insightController.GetSalesToday(branchPayload, res);
 
-      expect(mockInsightService.GetSalesToday).toHaveBeenCalledWith(1);
+      expect(mockInsightService.CountSalesToday).toHaveBeenCalledWith(1);
       expect(res.json).toHaveBeenCalledWith({
         message: "See today's menu sales.",
         insight: 15,
@@ -64,7 +64,7 @@ describe("InsightController", () => {
     });
 
     it("should return 500 when service returns Error", async () => {
-      mockInsightService.GetSalesToday.mockResolvedValue(new Error("DB Error"));
+      mockInsightService.CountSalesToday.mockResolvedValue(new Error("DB Error"));
 
       const res = mockResponse();
       await insightController.GetSalesToday(branchPayload, res);
@@ -76,7 +76,7 @@ describe("InsightController", () => {
     });
 
     it("should return 500 on exception", async () => {
-      mockInsightService.GetSalesToday.mockRejectedValue(new Error("DB Error"));
+      mockInsightService.CountSalesToday.mockRejectedValue(new Error("DB Error"));
 
       const res = mockResponse();
       await insightController.GetSalesToday(branchPayload, res);
@@ -89,15 +89,15 @@ describe("InsightController", () => {
   });
 
   describe("GetSalesThisWeek", () => {
-    const branchPayload = JSON.stringify({ branchId: 1 });
+    const branchPayload = { branchId: 1 };
 
     it("should return this week's sales count", async () => {
-      mockInsightService.GetSalesThisWeek.mockResolvedValue(75);
+      mockInsightService.CountSalesThisWeek.mockResolvedValue(75);
 
       const res = mockResponse();
       await insightController.GetSalesThisWeek(branchPayload, res);
 
-      expect(mockInsightService.GetSalesThisWeek).toHaveBeenCalledWith(1);
+      expect(mockInsightService.CountSalesThisWeek).toHaveBeenCalledWith(1);
       expect(res.json).toHaveBeenCalledWith({
         message: "See this week's menu sales.",
         insight: 75,
@@ -105,7 +105,7 @@ describe("InsightController", () => {
     });
 
     it("should return 500 when service returns Error", async () => {
-      mockInsightService.GetSalesThisWeek.mockResolvedValue(
+      mockInsightService.CountSalesThisWeek.mockResolvedValue(
         new Error("DB Error")
       );
 
@@ -116,7 +116,7 @@ describe("InsightController", () => {
     });
 
     it("should return 500 on exception", async () => {
-      mockInsightService.GetSalesThisWeek.mockRejectedValue(
+      mockInsightService.CountSalesThisWeek.mockRejectedValue(
         new Error("DB Error")
       );
 
@@ -131,15 +131,15 @@ describe("InsightController", () => {
   });
 
   describe("GetSalesThisMonth", () => {
-    const branchPayload = JSON.stringify({ branchId: 1 });
+    const branchPayload = { branchId: 1 };
 
     it("should return this month's sales count", async () => {
-      mockInsightService.GetSalesThisMonth.mockResolvedValue(200);
+      mockInsightService.CountSalesThisMonth.mockResolvedValue(200);
 
       const res = mockResponse();
       await insightController.GetSalesThisMonth(branchPayload, res);
 
-      expect(mockInsightService.GetSalesThisMonth).toHaveBeenCalledWith(1);
+      expect(mockInsightService.CountSalesThisMonth).toHaveBeenCalledWith(1);
       expect(res.json).toHaveBeenCalledWith({
         message: "See this month's menu sales.",
         insight: 200,
@@ -147,7 +147,7 @@ describe("InsightController", () => {
     });
 
     it("should return 500 when service returns Error", async () => {
-      mockInsightService.GetSalesThisMonth.mockResolvedValue(
+      mockInsightService.CountSalesThisMonth.mockResolvedValue(
         new Error("DB Error")
       );
 
@@ -158,7 +158,7 @@ describe("InsightController", () => {
     });
 
     it("should return 500 on exception", async () => {
-      mockInsightService.GetSalesThisMonth.mockRejectedValue(
+      mockInsightService.CountSalesThisMonth.mockRejectedValue(
         new Error("DB Error")
       );
 
@@ -173,7 +173,7 @@ describe("InsightController", () => {
   });
 
   describe("GetTopMenusByQuantity", () => {
-    const branchPayload = JSON.stringify({ branchId: 1 });
+    const branchPayload = { branchId: 1 };
 
     it("should return top 5 menus by quantity successfully", async () => {
       const topMenus = [
@@ -181,12 +181,12 @@ describe("InsightController", () => {
         { menuName: "Mocha", totalQuantity: 40 },
         { menuName: "Espresso", totalQuantity: 30 },
       ];
-      mockInsightService.GetTopMenusByQuantity.mockResolvedValue(topMenus);
+      mockInsightService.FindTopMenusByQuantity.mockResolvedValue(topMenus);
 
       const res = mockResponse();
       await insightController.GetTopMenusByQuantity(branchPayload, res);
 
-      expect(mockInsightService.GetTopMenusByQuantity).toHaveBeenCalledWith(1);
+      expect(mockInsightService.FindTopMenusByQuantity).toHaveBeenCalledWith(1);
       expect(res.json).toHaveBeenCalledWith({
         message: "Retrieved top 5 sold menus by quantity.",
         insight: {
@@ -197,7 +197,7 @@ describe("InsightController", () => {
     });
 
     it("should return 500 when service returns Error", async () => {
-      mockInsightService.GetTopMenusByQuantity.mockResolvedValue(
+      mockInsightService.FindTopMenusByQuantity.mockResolvedValue(
         new Error("DB Error")
       );
 
@@ -208,7 +208,7 @@ describe("InsightController", () => {
     });
 
     it("should return 500 on exception", async () => {
-      mockInsightService.GetTopMenusByQuantity.mockRejectedValue(
+      mockInsightService.FindTopMenusByQuantity.mockRejectedValue(
         new Error("DB Error")
       );
 
@@ -223,7 +223,7 @@ describe("InsightController", () => {
   });
 
   describe("GetTopMenusByRevenue", () => {
-    const branchPayload = JSON.stringify({ branchId: 1 });
+    const branchPayload = { branchId: 1 };
 
     it("should return top 5 menus by revenue successfully", async () => {
       const topMenus = [
@@ -231,12 +231,12 @@ describe("InsightController", () => {
         { menuName: "Mocha", totalRevenue: 4000 },
         { menuName: "Espresso", totalRevenue: 3000 },
       ];
-      mockInsightService.GetTopMenusByRevenue.mockResolvedValue(topMenus);
+      mockInsightService.FindTopMenusByRevenue.mockResolvedValue(topMenus);
 
       const res = mockResponse();
       await insightController.GetTopMenusByRevenue(branchPayload, res);
 
-      expect(mockInsightService.GetTopMenusByRevenue).toHaveBeenCalledWith(1);
+      expect(mockInsightService.FindTopMenusByRevenue).toHaveBeenCalledWith(1);
       expect(res.json).toHaveBeenCalledWith({
         message: "Retrieved top 5 sold menus by revenue.",
         insight: {
@@ -247,7 +247,7 @@ describe("InsightController", () => {
     });
 
     it("should return 500 when service returns Error", async () => {
-      mockInsightService.GetTopMenusByRevenue.mockResolvedValue(
+      mockInsightService.FindTopMenusByRevenue.mockResolvedValue(
         new Error("DB Error")
       );
 
@@ -258,7 +258,7 @@ describe("InsightController", () => {
     });
 
     it("should return 500 on exception", async () => {
-      mockInsightService.GetTopMenusByRevenue.mockRejectedValue(
+      mockInsightService.FindTopMenusByRevenue.mockRejectedValue(
         new Error("DB Error")
       );
 
@@ -273,7 +273,7 @@ describe("InsightController", () => {
   });
 
   describe("GetSalesInWeek", () => {
-    const branchPayload = JSON.stringify({ branchId: 1 });
+    const branchPayload = { branchId: 1 };
 
     it("should return weekly sales data", async () => {
       const now = Date.now();
@@ -281,14 +281,14 @@ describe("InsightController", () => {
         { timestamp: now },
         { timestamp: now - 86400000 },
       ];
-      mockInsightService.GetSalesInWeek.mockResolvedValue(salesData);
+      mockInsightService.SelectSalesInWeek.mockResolvedValue(salesData);
 
       const res = mockResponse();
       await insightController.GetSalesInWeek(branchPayload, res);
 
-      expect(mockInsightService.GetSalesInWeek).toHaveBeenCalledWith(1);
+      expect(mockInsightService.SelectSalesInWeek).toHaveBeenCalledWith(1);
       expect(res.json).toHaveBeenCalled();
-      const jsonCall = (res.json as jest.Mock).mock.calls[0][0];
+      const jsonCall = jest.mocked(res.json).mock.calls[0][0];
       expect(jsonCall.message).toBe(
         "See counts of sales for every day in this week."
       );
@@ -297,7 +297,7 @@ describe("InsightController", () => {
     });
 
     it("should return 500 when service returns Error", async () => {
-      mockInsightService.GetSalesInWeek.mockResolvedValue(
+      mockInsightService.SelectSalesInWeek.mockResolvedValue(
         new Error("DB Error")
       );
 
@@ -308,7 +308,7 @@ describe("InsightController", () => {
     });
 
     it("should return 500 on exception", async () => {
-      mockInsightService.GetSalesInWeek.mockRejectedValue(
+      mockInsightService.SelectSalesInWeek.mockRejectedValue(
         new Error("DB Error")
       );
 
@@ -323,7 +323,7 @@ describe("InsightController", () => {
   });
 
   describe("GetSalesInMonth", () => {
-    const branchPayload = JSON.stringify({ branchId: 1 });
+    const branchPayload = { branchId: 1 };
 
     it("should return monthly sales data", async () => {
       const now = Date.now();
@@ -331,14 +331,14 @@ describe("InsightController", () => {
         { timestamp: now },
         { timestamp: now - 86400000 },
       ];
-      mockInsightService.GetSalesInMonth.mockResolvedValue(salesData);
+      mockInsightService.SelectSalesInMonth.mockResolvedValue(salesData);
 
       const res = mockResponse();
       await insightController.GetSalesInMonth(branchPayload, res);
 
-      expect(mockInsightService.GetSalesInMonth).toHaveBeenCalledWith(1);
+      expect(mockInsightService.SelectSalesInMonth).toHaveBeenCalledWith(1);
       expect(res.json).toHaveBeenCalled();
-      const jsonCall = (res.json as jest.Mock).mock.calls[0][0];
+      const jsonCall = jest.mocked(res.json).mock.calls[0][0];
       expect(jsonCall.message).toBe(
         "See counts of sales for every day in this month."
       );
@@ -347,7 +347,7 @@ describe("InsightController", () => {
     });
 
     it("should return 500 when service returns Error", async () => {
-      mockInsightService.GetSalesInMonth.mockResolvedValue(
+      mockInsightService.SelectSalesInMonth.mockResolvedValue(
         new Error("DB Error")
       );
 
@@ -358,7 +358,7 @@ describe("InsightController", () => {
     });
 
     it("should return 500 on exception", async () => {
-      mockInsightService.GetSalesInMonth.mockRejectedValue(
+      mockInsightService.SelectSalesInMonth.mockRejectedValue(
         new Error("DB Error")
       );
 
@@ -373,7 +373,7 @@ describe("InsightController", () => {
   });
 
   describe("GetSalesInYear", () => {
-    const branchPayload = JSON.stringify({ branchId: 1 });
+    const branchPayload = { branchId: 1 };
 
     it("should return yearly sales data by category", async () => {
       const now = Date.now();
@@ -387,23 +387,24 @@ describe("InsightController", () => {
           menu: { category: "ICED" },
         },
       ];
-      mockInsightService.GetSalesInYear.mockResolvedValue(salesData);
+      mockInsightService.SelectSalesInYear.mockResolvedValue(salesData);
 
       const res = mockResponse();
       await insightController.GetSalesInYear(branchPayload, res);
 
-      expect(mockInsightService.GetSalesInYear).toHaveBeenCalledWith(1);
+      expect(mockInsightService.SelectSalesInYear).toHaveBeenCalledWith(1);
       expect(res.json).toHaveBeenCalled();
-      const jsonCall = (res.json as jest.Mock).mock.calls[0][0];
+      const jsonCall = jest.mocked(res.json).mock.calls[0][0];
       expect(jsonCall.message).toBe(
-        "See counts of sales by category for this year."
+        "See counts of sales for every month in this year."
       );
-      expect(jsonCall.insight).toHaveProperty("labels");
-      expect(jsonCall.insight).toHaveProperty("data");
+      expect(Array.isArray(jsonCall.insight)).toBe(true);
+      expect(jsonCall.insight[0]).toHaveProperty("label");
+      expect(jsonCall.insight[0]).toHaveProperty("data");
     });
 
     it("should return 500 when service returns Error", async () => {
-      mockInsightService.GetSalesInYear.mockResolvedValue(
+      mockInsightService.SelectSalesInYear.mockResolvedValue(
         new Error("DB Error")
       );
 
@@ -414,7 +415,7 @@ describe("InsightController", () => {
     });
 
     it("should return 500 on exception", async () => {
-      mockInsightService.GetSalesInYear.mockRejectedValue(
+      mockInsightService.SelectSalesInYear.mockRejectedValue(
         new Error("DB Error")
       );
 

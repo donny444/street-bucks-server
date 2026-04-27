@@ -133,7 +133,7 @@ describe("OrderService", () => {
     });
   });
 
-  describe("GetTodayOrders", () => {
+  describe("SelectTodayOrders", () => {
     it("should return today's orders successfully", async () => {
       const mockOrders = [
         { uuid: "order-1", timestamp: BigInt(Date.now()), totalPrice: 100 },
@@ -141,7 +141,7 @@ describe("OrderService", () => {
       ];
       mockPrismaClient.order.findMany.mockResolvedValue(mockOrders);
 
-      const result = await orderService.GetTodayOrders(1);
+      const result = await orderService.SelectTodayOrders(1);
 
       expect(mockPrismaClient.order.findMany).toHaveBeenCalled();
       expect(result).toHaveLength(2);
@@ -150,34 +150,40 @@ describe("OrderService", () => {
     it("should return Error on database failure", async () => {
       mockPrismaClient.order.findMany.mockRejectedValue(new Error("DB Error"));
 
-      const result = await orderService.GetTodayOrders(1);
+      const result = await orderService.SelectTodayOrders(1);
 
       expect(result).toBeInstanceOf(Error);
     });
   });
 
-  describe("GetSpecificOrder", () => {
+  describe("FindOrderDetails", () => {
     it("should return a specific order successfully", async () => {
       const mockOrder = {
         uuid: "order-uuid-123",
+        timestamp: BigInt(1704067200000),
         totalPrice: 150,
-        Entry: [{ menuId: "Hot Latte", quantity: 2 }],
+        entry: [{ quantity: 2, menu: { name: "Hot Latte", price: 50 } }],
       };
       mockPrismaClient.order.findUnique.mockResolvedValue(mockOrder);
 
-      const result = await orderService.GetSpecificOrder({
+      const result = await orderService.FindOrderDetails({
         uuid: "order-uuid-123",
         branchId: BigInt(1),
       });
 
       expect(mockPrismaClient.order.findUnique).toHaveBeenCalled();
-      expect(result).toEqual(mockOrder);
+      expect(result).toEqual({
+        uuid: "order-uuid-123",
+        timestamp: 1704067200000,
+        totalPrice: 150,
+        entry: [{ quantity: 2, menu: { name: "Hot Latte", price: 50 } }],
+      });
     });
 
     it("should return null when order not found", async () => {
       mockPrismaClient.order.findUnique.mockResolvedValue(null);
 
-      const result = await orderService.GetSpecificOrder({
+      const result = await orderService.FindOrderDetails({
         uuid: "nonexistent",
         branchId: BigInt(1),
       });
@@ -188,7 +194,7 @@ describe("OrderService", () => {
     it("should return Error on database failure", async () => {
       mockPrismaClient.order.findUnique.mockRejectedValue(new Error("DB Error"));
 
-      const result = await orderService.GetSpecificOrder({
+      const result = await orderService.FindOrderDetails({
         uuid: "order-uuid-123",
         branchId: BigInt(1),
       });

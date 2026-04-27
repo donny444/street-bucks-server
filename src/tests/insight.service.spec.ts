@@ -42,11 +42,11 @@ describe("InsightService", () => {
     expect(insightService).toBeDefined();
   });
 
-  describe("GetSalesToday", () => {
+  describe("CountSalesToday", () => {
     it("should return today's sales count", async () => {
       mockPrismaClient.order.count.mockResolvedValue(15);
 
-      const result = await insightService.GetSalesToday(1);
+      const result = await insightService.CountSalesToday(1);
 
       expect(mockPrismaClient.order.count).toHaveBeenCalled();
       expect(result).toBe(15);
@@ -55,17 +55,17 @@ describe("InsightService", () => {
     it("should return Error on database failure", async () => {
       mockPrismaClient.order.count.mockRejectedValue(new Error("DB Error"));
 
-      const result = await insightService.GetSalesToday(1);
+      const result = await insightService.CountSalesToday(1);
 
       expect(result).toBeInstanceOf(Error);
     });
   });
 
-  describe("GetSalesThisWeek", () => {
+  describe("CountSalesThisWeek", () => {
     it("should return this week's sales count", async () => {
       mockPrismaClient.order.count.mockResolvedValue(50);
 
-      const result = await insightService.GetSalesThisWeek(1);
+      const result = await insightService.CountSalesThisWeek(1);
 
       expect(mockPrismaClient.order.count).toHaveBeenCalled();
       expect(result).toBe(50);
@@ -74,17 +74,17 @@ describe("InsightService", () => {
     it("should return Error on database failure", async () => {
       mockPrismaClient.order.count.mockRejectedValue(new Error("DB Error"));
 
-      const result = await insightService.GetSalesThisWeek(1);
+      const result = await insightService.CountSalesThisWeek(1);
 
       expect(result).toBeInstanceOf(Error);
     });
   });
 
-  describe("GetSalesThisMonth", () => {
+  describe("CountSalesThisMonth", () => {
     it("should return this month's sales count", async () => {
       mockPrismaClient.order.count.mockResolvedValue(200);
 
-      const result = await insightService.GetSalesThisMonth(1);
+      const result = await insightService.CountSalesThisMonth(1);
 
       expect(mockPrismaClient.order.count).toHaveBeenCalled();
       expect(result).toBe(200);
@@ -93,13 +93,13 @@ describe("InsightService", () => {
     it("should return Error on database failure", async () => {
       mockPrismaClient.order.count.mockRejectedValue(new Error("DB Error"));
 
-      const result = await insightService.GetSalesThisMonth(1);
+      const result = await insightService.CountSalesThisMonth(1);
 
       expect(result).toBeInstanceOf(Error);
     });
   });
 
-  describe("GetTopMenusByQuantity", () => {
+  describe("FindTopMenusByQuantity", () => {
     it("should return top 5 menus by quantity", async () => {
       const mockTopMenus = [
         { menuName: "Latte", totalQuantity: 50 },
@@ -124,7 +124,7 @@ describe("InsightService", () => {
         return callback(mockPrismaTx);
       });
 
-      const result = await insightService.GetTopMenusByQuantity(1);
+      const result = await insightService.FindTopMenusByQuantity(1);
 
       expect(mockPrismaClient.$transaction).toHaveBeenCalled();
       expect(result).toEqual(mockTopMenus);
@@ -133,13 +133,13 @@ describe("InsightService", () => {
     it("should return Error on database failure", async () => {
       mockPrismaClient.$transaction.mockRejectedValue(new Error("DB Error"));
 
-      const result = await insightService.GetTopMenusByQuantity(1);
+      const result = await insightService.FindTopMenusByQuantity(1);
 
       expect(result).toBeInstanceOf(Error);
     });
   });
 
-  describe("GetSalesInWeek", () => {
+  describe("SelectSalesInWeek", () => {
     it("should return sales data for the week", async () => {
       const mockSales = [
         { timestamp: BigInt(1704067200000) },
@@ -147,7 +147,7 @@ describe("InsightService", () => {
       ];
       mockPrismaClient.order.findMany.mockResolvedValue(mockSales);
 
-      const result = await insightService.GetSalesInWeek(1);
+      const result = await insightService.SelectSalesInWeek(1);
 
       expect(mockPrismaClient.order.findMany).toHaveBeenCalled();
       expect(Array.isArray(result)).toBe(true);
@@ -156,13 +156,13 @@ describe("InsightService", () => {
     it("should return Error on database failure", async () => {
       mockPrismaClient.order.findMany.mockRejectedValue(new Error("DB Error"));
 
-      const result = await insightService.GetSalesInWeek(1);
+      const result = await insightService.SelectSalesInWeek(1);
 
       expect(result).toBeInstanceOf(Error);
     });
   });
 
-  describe("GetSalesInMonth", () => {
+  describe("SelectSalesInMonth", () => {
     it("should return sales data for the month", async () => {
       const mockSales = [
         { timestamp: BigInt(1704067200000) },
@@ -170,7 +170,7 @@ describe("InsightService", () => {
       ];
       mockPrismaClient.order.findMany.mockResolvedValue(mockSales);
 
-      const result = await insightService.GetSalesInMonth(1);
+      const result = await insightService.SelectSalesInMonth(1);
 
       expect(mockPrismaClient.order.findMany).toHaveBeenCalled();
       expect(Array.isArray(result)).toBe(true);
@@ -179,13 +179,13 @@ describe("InsightService", () => {
     it("should return Error on database failure", async () => {
       mockPrismaClient.order.findMany.mockRejectedValue(new Error("DB Error"));
 
-      const result = await insightService.GetSalesInMonth(1);
+      const result = await insightService.SelectSalesInMonth(1);
 
       expect(result).toBeInstanceOf(Error);
     });
   });
 
-  describe("GetSalesInYear", () => {
+  describe("SelectSalesInYear", () => {
     it("should return sales data by category for the year", async () => {
       const mockSales = [
         { order: { timestamp: BigInt(1704067200000) }, menu: { category: "HOT" } },
@@ -193,7 +193,7 @@ describe("InsightService", () => {
       ];
       mockPrismaClient.entry.findMany.mockResolvedValue(mockSales);
 
-      const result = await insightService.GetSalesInYear(1);
+      const result = await insightService.SelectSalesInYear(1);
 
       expect(mockPrismaClient.entry.findMany).toHaveBeenCalled();
       expect(Array.isArray(result)).toBe(true);
@@ -202,7 +202,7 @@ describe("InsightService", () => {
     it("should return Error on database failure", async () => {
       mockPrismaClient.entry.findMany.mockRejectedValue(new Error("DB Error"));
 
-      const result = await insightService.GetSalesInYear(1);
+      const result = await insightService.SelectSalesInYear(1);
 
       expect(result).toBeInstanceOf(Error);
     });

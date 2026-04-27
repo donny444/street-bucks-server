@@ -73,11 +73,12 @@ describe("RecipeService", () => {
 
       const result = await recipeService.InsertRecipe({
         name: "coffee",
+        unit: "ml",
         imagePath: "coffee.png",
       });
 
       expect(mockPrismaClient.recipe.create).toHaveBeenCalledWith({
-        data: { name: "coffee", imagePath: "coffee.png" },
+        data: { name: "coffee", unit: "ml", imagePath: "coffee.png" },
       });
       expect(result).toBeUndefined();
     });
@@ -87,6 +88,7 @@ describe("RecipeService", () => {
 
       const result = await recipeService.InsertRecipe({
         name: "coffee",
+        unit: "ml",
         imagePath: "coffee.png",
       });
 

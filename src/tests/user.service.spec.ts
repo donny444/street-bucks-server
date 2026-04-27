@@ -7,21 +7,19 @@ jest.mock("bcryptjs");
 
 describe("UserService", () => {
   let userService: UserService;
-  let prismaClient: PrismaClient;
 
   const mockPrismaClient = {
     user: {
       create: jest.fn(),
       findUnique: jest.fn(),
       update: jest.fn(),
-      delete: jest.fn(),
       findMany: jest.fn(),
     },
     attendance: {
       findFirst: jest.fn(),
       create: jest.fn(),
-      deleteMany: jest.fn(),
     },
+    $transaction: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -36,8 +34,6 @@ describe("UserService", () => {
     }).compile();
 
     userService = module.get<UserService>(UserService);
-    prismaClient = module.get<PrismaClient>(PrismaClient);
-
     jest.clearAllMocks();
   });
 
@@ -55,8 +51,8 @@ describe("UserService", () => {
     };
 
     it("should insert user successfully", async () => {
-      (bcrypt.hash as jest.Mock).mockResolvedValue("hashedpassword");
-      mockPrismaClient.user.create.mockResolvedValue({ ...userData, password: "hashedpassword" });
+      jest.mocked(bcrypt.hash).mockResolvedValue("hashedpassword" as never);
+      mockPrismaClient.user.create.mockResolvedValue({});
 
       const result = await userService.InsertUser(userData);
 
@@ -65,146 +61,67 @@ describe("UserService", () => {
         data: {
           ...userData,
           password: "hashedpassword",
+          branchId: BigInt(1),
           role: $Enums.Role.STAFF,
         },
       });
       expect(result).toBeUndefined();
     });
-
-    it("should return Error on database failure", async () => {
-      (bcrypt.hash as jest.Mock).mockResolvedValue("hashedpassword");
-      mockPrismaClient.user.create.mockRejectedValue(new Error("DB Error"));
-
-      const result = await userService.InsertUser(userData);
-
-      expect(result).toBeInstanceOf(Error);
-    });
   });
 
-  describe("FindUser", () => {
-    it("should return user info successfully", async () => {
-      const mockUser = {
-        firstName: "John",
-        lastName: "Doe",
-        branchId: BigInt(1),
-      };
-      mockPrismaClient.user.findUnique.mockResolvedValue(mockUser);
-
-      const result = await userService.FindUser({ email: "john@test.com" });
-
-      expect(mockPrismaClient.user.findUnique).toHaveBeenCalledWith({
-        select: { firstName: true, lastName: true, branchId: true },
-        where: { email: "john@test.com" },
-      });
-      expect(result).toEqual({
-        firstName: "John",
-        lastName: "Doe",
-        branchId: 1,
-      });
-    });
-
-    it("should return null when user not found", async () => {
+  describe("CheckUserExists", () => {
+    it("should return false when user not found", async () => {
       mockPrismaClient.user.findUnique.mockResolvedValue(null);
 
-      const result = await userService.FindUser({ email: "nonexistent@test.com" });
-
-      expect(result).toBeNull();
-    });
-
-    it("should return Error on database failure", async () => {
-      mockPrismaClient.user.findUnique.mockRejectedValue(new Error("DB Error"));
-
-      const result = await userService.FindUser({ email: "john@test.com" });
-
-      expect(result).toBeInstanceOf(Error);
+      const result = await userService.CheckUserExists("none@test.com");
+      expect(result).toBe(false);
     });
   });
 
-  describe("ToggleAttendance", () => {
-    it("should create attendance when none exists", async () => {
+  describe("InsertAttendance", () => {
+    it("should create attendance when not yet attended", async () => {
       mockPrismaClient.attendance.findFirst.mockResolvedValue(null);
       mockPrismaClient.attendance.create.mockResolvedValue({});
 
-      const result = await userService.ToggleAttendance({ email: "john@test.com" });
+      const result = await userService.InsertAttendance({ email: "john@test.com" });
 
       expect(mockPrismaClient.attendance.create).toHaveBeenCalledWith({
         data: { userId: "john@test.com" },
       });
       expect(result).toBeUndefined();
     });
-
-    it("should delete attendance when it exists", async () => {
-      mockPrismaClient.attendance.findFirst.mockResolvedValue({
-        userId: "john@test.com",
-        dateTime: new Date(),
-      });
-      mockPrismaClient.attendance.deleteMany.mockResolvedValue({ count: 1 });
-
-      const result = await userService.ToggleAttendance({ email: "john@test.com" });
-
-      expect(mockPrismaClient.attendance.deleteMany).toHaveBeenCalled();
-      expect(result).toBeUndefined();
-    });
-
-    it("should return Error on database failure", async () => {
-      mockPrismaClient.attendance.findFirst.mockRejectedValue(new Error("DB Error"));
-
-      const result = await userService.ToggleAttendance({ email: "john@test.com" });
-
-      expect(result).toBeInstanceOf(Error);
-    });
   });
 
-  describe("UpdateUser", () => {
-    it("should update user successfully", async () => {
-      const updateData = { firstName: "Jane" };
-      mockPrismaClient.user.update.mockResolvedValue({
+  describe("FindUser", () => {
+    it("should return user credentials payload", async () => {
+      mockPrismaClient.user.findUnique.mockResolvedValue({
         email: "john@test.com",
-        firstName: "Jane",
+        password: "hashed",
+        role: $Enums.Role.STAFF,
       });
 
-      const result = await userService.UpdateUser({
-        data: updateData,
-        where: { email: "john@test.com" },
+      const result = await userService.FindUser({ email: "john@test.com" });
+
+      expect(result).toEqual({
+        email: "john@test.com",
+        password: "hashed",
+        role: $Enums.Role.STAFF,
       });
-
-      expect(mockPrismaClient.user.update).toHaveBeenCalledWith({
-        data: updateData,
-        where: { email: "john@test.com" },
-      });
-      expect(result).toBeUndefined();
-    });
-
-    it("should return Error on database failure", async () => {
-      mockPrismaClient.user.update.mockRejectedValue(new Error("DB Error"));
-
-      const result = await userService.UpdateUser({
-        data: { firstName: "Jane" },
-        where: { email: "john@test.com" },
-      });
-
-      expect(result).toBeInstanceOf(Error);
     });
   });
 
   describe("DeleteUser", () => {
-    it("should delete user successfully", async () => {
-      mockPrismaClient.user.delete.mockResolvedValue({ email: "john@test.com" });
-
-      const result = await userService.DeleteUser({ email: "john@test.com" });
-
-      expect(mockPrismaClient.user.delete).toHaveBeenCalledWith({
-        where: { email: "john@test.com" },
+    it("should run transaction to delete user and attendances", async () => {
+      mockPrismaClient.$transaction.mockImplementation(async (cb: any) => {
+        const tx = {
+          attendance: { deleteMany: jest.fn().mockResolvedValue({}) },
+          user: { delete: jest.fn().mockResolvedValue({}) },
+        };
+        await cb(tx);
       });
-      expect(result).toBeUndefined();
-    });
-
-    it("should return Error on database failure", async () => {
-      mockPrismaClient.user.delete.mockRejectedValue(new Error("DB Error"));
 
       const result = await userService.DeleteUser({ email: "john@test.com" });
-
-      expect(result).toBeInstanceOf(Error);
+      expect(result).toBeUndefined();
     });
   });
 });

@@ -81,7 +81,7 @@ describe("StockService", () => {
     });
   });
 
-  describe("GetStocksByBranch", () => {
+  describe("SelectStocksByBranch", () => {
     it("should return stocks for a branch", async () => {
       const mockStocks = [
         { recipeId: "coffee", quantity: 100 },
@@ -89,7 +89,7 @@ describe("StockService", () => {
       ];
       mockPrismaClient.stock.findMany.mockResolvedValue(mockStocks);
 
-      const result = await stockService.GetStocksByBranch({
+      const result = await stockService.SelectStocksByBranch({
         branchId: BigInt(1),
       });
 
@@ -100,11 +100,11 @@ describe("StockService", () => {
     it("should return Error on database failure", async () => {
       mockPrismaClient.stock.findMany.mockRejectedValue(new Error("DB Error"));
 
-      const result = await stockService.GetStocksByBranch({
-        branchId: BigInt(1),
-      });
-
-      expect(result).toBeInstanceOf(Error);
+      await expect(
+        stockService.SelectStocksByBranch({
+          branchId: BigInt(1),
+        })
+      ).rejects.toThrow("DB Error");
     });
   });
 });

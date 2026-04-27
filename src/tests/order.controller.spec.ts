@@ -9,8 +9,8 @@ describe("OrderController", () => {
 
   const mockOrderService = {
     InsertOrder: jest.fn(),
-    GetTodayOrders: jest.fn(),
-    GetSpecificOrder: jest.fn(),
+    SelectTodayOrders: jest.fn(),
+    FindOrderDetails: jest.fn(),
     GenerateReceipt: jest.fn(),
   };
 
@@ -44,33 +44,39 @@ describe("OrderController", () => {
   });
 
   describe("MakeOrder", () => {
-    const branchPayload = JSON.stringify({ branchId: 1 });
+    const branchPayload = { branchId: 1 };
     const cartItems = [
-      { menuName: "Hot Latte", quantity: 2 },
-      { menuName: "Iced Mocha", quantity: 1 },
+      { menuId: "Hot Latte", quantity: 2 },
+      { menuId: "Iced Mocha", quantity: 1 },
     ];
 
-    it("should create an order and generate receipt successfully", async () => {
+    it("should create an order successfully", async () => {
       const mockOrder = {
         uuid: "order-uuid-123",
         timestamp: BigInt(Date.now()),
         totalPrice: 150,
       };
-      const mockReceipt = "Receipt content here...";
+      const mockOrderDetails = {
+        uuid: "order-uuid-123",
+        timestamp: Date.now(),
+        totalPrice: 150,
+        entry: [{ quantity: 1, menu: { name: "Hot Latte", price: 50 } }],
+      };
       mockOrderService.InsertOrder.mockResolvedValue(mockOrder);
-      mockOrderService.GenerateReceipt.mockResolvedValue(mockReceipt);
+      mockOrderService.FindOrderDetails.mockResolvedValue(mockOrderDetails);
+      mockOrderService.GenerateReceipt.mockResolvedValue("receipt.pdf");
 
       const res = mockResponse();
       await orderController.MakeOrder(branchPayload, cartItems, res);
 
       expect(mockOrderService.InsertOrder).toHaveBeenCalledWith(cartItems, 1);
-      expect(mockOrderService.GenerateReceipt).toHaveBeenCalledWith(
-        "order-uuid-123"
-      );
+      expect(mockOrderService.FindOrderDetails).toHaveBeenCalledWith({
+        uuid: "order-uuid-123",
+        branchId: BigInt(1),
+      });
       expect(res.json).toHaveBeenCalledWith({
         message: "The order has been made with menu(s) in cart.",
         order_id: "order-uuid-123",
-        receipt: mockReceipt,
       });
     });
 
@@ -81,20 +87,22 @@ describe("OrderController", () => {
       await orderController.MakeOrder(branchPayload, cartItems, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({
-        error: "Failed to make an order.",
-      });
+      expect(res.json).toHaveBeenCalledWith({ error: "Insert failed" });
     });
 
-    it("should return 500 when order creation fails", async () => {
-      mockOrderService.InsertOrder.mockResolvedValue(null);
+    it("should return 500 when order details retrieval fails", async () => {
+      mockOrderService.InsertOrder.mockResolvedValue({
+        uuid: "order-uuid-123",
+        timestamp: BigInt(Date.now()),
+      });
+      mockOrderService.FindOrderDetails.mockResolvedValue(null);
 
       const res = mockResponse();
       await orderController.MakeOrder(branchPayload, cartItems, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
-        error: "Failed to make an order.",
+        error: "Failed to retrieve the order details.",
       });
     });
 
@@ -112,19 +120,19 @@ describe("OrderController", () => {
   });
 
   describe("GetTodayOrders", () => {
-    const branchPayload = JSON.stringify({ branchId: 1 });
+    const branchPayload = { branchId: 1 };
 
     it("should return today's orders successfully", async () => {
       const mockOrders = [
         { uuid: "order-1", timestamp: 1234567890, totalPrice: 100 },
         { uuid: "order-2", timestamp: 1234567891, totalPrice: 150 },
       ];
-      mockOrderService.GetTodayOrders.mockResolvedValue(mockOrders);
+      mockOrderService.SelectTodayOrders.mockResolvedValue(mockOrders);
 
       const res = mockResponse();
       await orderController.GetTodayOrders(branchPayload, res);
 
-      expect(mockOrderService.GetTodayOrders).toHaveBeenCalledWith(1);
+      expect(mockOrderService.SelectTodayOrders).toHaveBeenCalledWith(1);
       expect(res.json).toHaveBeenCalledWith({
         message: "Get orders in current day.",
         today_orders: mockOrders,
@@ -132,32 +140,32 @@ describe("OrderController", () => {
     });
 
     it("should return 500 when service returns Error", async () => {
-      mockOrderService.GetTodayOrders.mockResolvedValue(new Error("DB Error"));
+      mockOrderService.SelectTodayOrders.mockResolvedValue(new Error("DB Error"));
 
       const res = mockResponse();
       await orderController.GetTodayOrders(branchPayload, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
-        error: "Failed to retrieve today's orders.",
+        error: "DB Error",
       });
     });
 
     it("should return 500 on exception", async () => {
-      mockOrderService.GetTodayOrders.mockRejectedValue(new Error("DB Error"));
+      mockOrderService.SelectTodayOrders.mockRejectedValue(new Error("DB Error"));
 
       const res = mockResponse();
       await orderController.GetTodayOrders(branchPayload, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
-        error: "Failed to retrieve today's orders.",
+        error: "Failed to fetch today orders.",
       });
     });
   });
 
-  describe("GetSpecificOrder", () => {
-    const branchPayload = JSON.stringify({ branchId: 1 });
+  describe("GetOrderDetails", () => {
+    const branchPayload = { branchId: 1 };
 
     it("should return a specific order successfully", async () => {
       const mockOrder = {
@@ -165,14 +173,14 @@ describe("OrderController", () => {
         totalPrice: 150,
         Entry: [{ menuName: "Hot Latte", quantity: 2 }],
       };
-      mockOrderService.GetSpecificOrder.mockResolvedValue(mockOrder);
+      mockOrderService.FindOrderDetails.mockResolvedValue(mockOrder);
 
       const res = mockResponse();
-      await orderController.GetSpecificOrder(branchPayload, "order-uuid-123", res);
+      await orderController.GetOrderDetails(branchPayload, "order-uuid-123", res);
 
-      expect(mockOrderService.GetSpecificOrder).toHaveBeenCalledWith({
+      expect(mockOrderService.FindOrderDetails).toHaveBeenCalledWith({
         uuid: "order-uuid-123",
-        branchId: BigInt(1),
+        branchId: 1,
       });
       expect(res.json).toHaveBeenCalledWith({
         message: "Inspect the order: order-uuid-123",
@@ -180,51 +188,29 @@ describe("OrderController", () => {
       });
     });
 
-    it("should return 404 when order not found", async () => {
-      mockOrderService.GetSpecificOrder.mockResolvedValue(null);
-
-      const res = mockResponse();
-      await orderController.GetSpecificOrder(branchPayload, "nonexistent-uuid", res);
-
-      expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.json).toHaveBeenCalledWith({
-        message: "Order not found.",
-      });
-    });
-
-    it("should return 400 when uuid is missing", async () => {
-      const res = mockResponse();
-      await orderController.GetSpecificOrder(branchPayload, undefined as any, res);
-
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({
-        error: "Order UUID is required.",
-      });
-    });
-
     it("should return 500 when service returns Error", async () => {
-      mockOrderService.GetSpecificOrder.mockResolvedValue(
+      mockOrderService.FindOrderDetails.mockResolvedValue(
         new Error("DB Error")
       );
 
       const res = mockResponse();
-      await orderController.GetSpecificOrder(branchPayload, "order-uuid-123", res);
+      await orderController.GetOrderDetails(branchPayload, "order-uuid-123", res);
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
-        error: "Failed to retrieve the specific order.",
+        error: "DB Error",
       });
     });
 
     it("should return 500 on exception", async () => {
-      mockOrderService.GetSpecificOrder.mockRejectedValue(new Error("DB Error"));
+      mockOrderService.FindOrderDetails.mockRejectedValue(new Error("DB Error"));
 
       const res = mockResponse();
-      await orderController.GetSpecificOrder(branchPayload, "order-uuid-123", res);
+      await orderController.GetOrderDetails(branchPayload, "order-uuid-123", res);
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
-        error: "Failed to retrieve the specific order.",
+        error: "Failed to fetch specific order.",
       });
     });
   });

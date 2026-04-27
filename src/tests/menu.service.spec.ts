@@ -35,7 +35,7 @@ describe("MenuService", () => {
     expect(menuService).toBeDefined();
   });
 
-  describe("GetHotMenus", () => {
+  describe("SelectHotMenus", () => {
     it("should return hot menus successfully", async () => {
       const mockMenus = [
         { name: "Hot Latte", price: 50, imagePath: "latte.png" },
@@ -43,7 +43,7 @@ describe("MenuService", () => {
       ];
       mockPrismaClient.menu.findMany.mockResolvedValue(mockMenus);
 
-      const result = await menuService.GetHotMenus();
+      const result = await menuService.SelectHotMenus();
 
       expect(mockPrismaClient.menu.findMany).toHaveBeenCalledWith({
         select: { name: true, price: true, imagePath: true },
@@ -55,20 +55,20 @@ describe("MenuService", () => {
     it("should return Error on database failure", async () => {
       mockPrismaClient.menu.findMany.mockRejectedValue(new Error("DB Error"));
 
-      const result = await menuService.GetHotMenus();
+      const result = await menuService.SelectHotMenus();
 
       expect(result).toBeInstanceOf(Error);
     });
   });
 
-  describe("GetIcedMenus", () => {
+  describe("SelectIcedMenus", () => {
     it("should return iced menus successfully", async () => {
       const mockMenus = [
         { name: "Iced Mocha", price: 60, imagePath: "mocha.png" },
       ];
       mockPrismaClient.menu.findMany.mockResolvedValue(mockMenus);
 
-      const result = await menuService.GetIcedMenus();
+      const result = await menuService.SelectIcedMenus();
 
       expect(mockPrismaClient.menu.findMany).toHaveBeenCalledWith({
         select: { name: true, price: true, imagePath: true },
@@ -80,20 +80,20 @@ describe("MenuService", () => {
     it("should return Error on database failure", async () => {
       mockPrismaClient.menu.findMany.mockRejectedValue(new Error("DB Error"));
 
-      const result = await menuService.GetIcedMenus();
+      const result = await menuService.SelectIcedMenus();
 
       expect(result).toBeInstanceOf(Error);
     });
   });
 
-  describe("GetBakeryMenus", () => {
+  describe("SelectBakeryMenus", () => {
     it("should return bakery menus successfully", async () => {
       const mockMenus = [
         { name: "Croissant", price: 40, imagePath: "croissant.png" },
       ];
       mockPrismaClient.menu.findMany.mockResolvedValue(mockMenus);
 
-      const result = await menuService.GetBakeryMenus();
+      const result = await menuService.SelectBakeryMenus();
 
       expect(mockPrismaClient.menu.findMany).toHaveBeenCalledWith({
         select: { name: true, price: true, imagePath: true },
@@ -105,13 +105,13 @@ describe("MenuService", () => {
     it("should return Error on database failure", async () => {
       mockPrismaClient.menu.findMany.mockRejectedValue(new Error("DB Error"));
 
-      const result = await menuService.GetBakeryMenus();
+      const result = await menuService.SelectBakeryMenus();
 
       expect(result).toBeInstanceOf(Error);
     });
   });
 
-  describe("GetSpecificMenu", () => {
+  describe("FindSpecificMenu", () => {
     it("should return a specific menu successfully", async () => {
       const mockMenu = {
         name: "Hot Latte",
@@ -121,9 +121,10 @@ describe("MenuService", () => {
       };
       mockPrismaClient.menu.findUnique.mockResolvedValue(mockMenu);
 
-      const result = await menuService.GetSpecificMenu("Hot Latte");
+      const result = await menuService.FindSpecificMenu("Hot Latte");
 
       expect(mockPrismaClient.menu.findUnique).toHaveBeenCalledWith({
+        select: { name: true, price: true, imagePath: true },
         where: { name: "Hot Latte" },
       });
       expect(result).toEqual(mockMenu);
@@ -132,7 +133,7 @@ describe("MenuService", () => {
     it("should return null when menu not found", async () => {
       mockPrismaClient.menu.findUnique.mockResolvedValue(null);
 
-      const result = await menuService.GetSpecificMenu("NonExistent");
+      const result = await menuService.FindSpecificMenu("NonExistent");
 
       expect(result).toBeNull();
     });
@@ -140,7 +141,7 @@ describe("MenuService", () => {
     it("should return Error on database failure", async () => {
       mockPrismaClient.menu.findUnique.mockRejectedValue(new Error("DB Error"));
 
-      const result = await menuService.GetSpecificMenu("Hot Latte");
+      const result = await menuService.FindSpecificMenu("Hot Latte");
 
       expect(result).toBeInstanceOf(Error);
     });
@@ -149,8 +150,7 @@ describe("MenuService", () => {
   describe("UpdateMenu", () => {
     it("should update menu successfully", async () => {
       const updateData = { price: 55 };
-      const updatedMenu = { name: "Hot Latte", price: 55, imagePath: "latte.png" };
-      mockPrismaClient.menu.update.mockResolvedValue(updatedMenu);
+      mockPrismaClient.menu.update.mockResolvedValue({});
 
       const result = await menuService.UpdateMenu({
         data: updateData,
@@ -161,7 +161,7 @@ describe("MenuService", () => {
         data: updateData,
         where: { name: "Hot Latte" },
       });
-      expect(result).toEqual(updatedMenu);
+      expect(result).toBeUndefined();
     });
 
     it("should return Error on database failure", async () => {

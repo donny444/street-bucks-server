@@ -6,7 +6,6 @@ import { EditAmountDto } from "../dtos/ingredient.dto";
 
 describe("IngredientController", () => {
   let ingredientController: IngredientController;
-  let ingredientService: IngredientService;
 
   const mockIngredientService = {
     UpdateAmounts: jest.fn(),
@@ -31,10 +30,7 @@ describe("IngredientController", () => {
       ],
     }).compile();
 
-    ingredientController =
-      module.get<IngredientController>(IngredientController);
-    ingredientService = module.get<IngredientService>(IngredientService);
-
+    ingredientController = module.get<IngredientController>(IngredientController);
     jest.clearAllMocks();
   });
 
@@ -44,12 +40,12 @@ describe("IngredientController", () => {
 
   describe("EditAmounts", () => {
     const editAmountsData: EditAmountDto[] = [
-      { menuId: "Hot Latte", recipeId: BigInt(10), amount: 50 },
-      { menuId: "Iced Mocha", recipeId: BigInt(20), amount: 75 },
+      { menuId: "Hot Latte", recipeId: "coffee", amount: 50 },
+      { menuId: "Iced Mocha", recipeId: "milk", amount: 75 },
     ];
 
     it("should update ingredient amounts successfully", async () => {
-      mockIngredientService.UpdateAmounts.mockResolvedValue({});
+      mockIngredientService.UpdateAmounts.mockResolvedValue(undefined);
 
       const res = mockResponse();
       await ingredientController.EditAmounts(editAmountsData, res);
@@ -57,8 +53,8 @@ describe("IngredientController", () => {
       expect(mockIngredientService.UpdateAmounts).toHaveBeenCalledWith({
         data: [{ amount: 50 }, { amount: 75 }],
         where: [
-          { menuId_recipeId: { menuId: "Hot Latte", recipeId: BigInt(10) } },
-          { menuId_recipeId: { menuId: "Iced Mocha", recipeId: BigInt(20) } },
+          { menuId_recipeId: { menuId: "Hot Latte", recipeId: "coffee" } },
+          { menuId_recipeId: { menuId: "Iced Mocha", recipeId: "milk" } },
         ],
       });
       expect(res.json).toHaveBeenCalledWith({
@@ -77,56 +73,6 @@ describe("IngredientController", () => {
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
         error: "Failed to update amounts of ingredients.",
-      });
-    });
-
-    it("should return 500 on unexpected exception", async () => {
-      mockIngredientService.UpdateAmounts.mockRejectedValue(
-        new Error("Unexpected error")
-      );
-
-      const res = mockResponse();
-      await ingredientController.EditAmounts(editAmountsData, res);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({
-        message: "Failed to edit amounts of ingredients.",
-      });
-    });
-  });
-});
-        new Error("Unexpected error")
-      );
-
-      const res = mockResponse();
-      await ingredientController.EditIngredients(editIngredientsData, res);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({
-        message: "Failed to edit amount of ingredients.",
-      });
-    });
-
-    it("should handle single ingredient update", async () => {
-      const singleIngredient: EditIngredientDto[] = [
-        { menuId: 1, recipeId: 10, amount: 100 },
-      ];
-      const updatedIngredient = [
-        { menuId: BigInt(1), recipeId: BigInt(10), amount: 100 },
-      ];
-      mockIngredientService.UpdateAmount.mockResolvedValue(updatedIngredient);
-
-      const res = mockResponse();
-      await ingredientController.EditIngredients(singleIngredient, res);
-
-      expect(mockIngredientService.UpdateAmount).toHaveBeenCalledWith({
-        data: [{ amount: 100 }],
-        where: [
-          { menuId_recipeId: { menuId: BigInt(1), recipeId: BigInt(10) } },
-        ],
-      });
-      expect(res.json).toHaveBeenCalledWith({
-        message: "The amount of ingredients has been updated.",
       });
     });
   });

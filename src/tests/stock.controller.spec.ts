@@ -9,7 +9,7 @@ describe("StockController", () => {
 
   const mockStockService = {
     UpdateQuantity: jest.fn(),
-    GetStocksByBranch: jest.fn(),
+    SelectStocksByBranch: jest.fn(),
   };
 
   const mockResponse = () => {
@@ -42,8 +42,8 @@ describe("StockController", () => {
   });
 
   describe("EditQuantity", () => {
-    const branchPayload = JSON.stringify({ branchId: 1 });
-    const editQuantityData = { recipeId: BigInt(5), quantity: 100 };
+    const branchPayload = { branchId: 1 };
+    const editQuantityData = { recipeId: "coffee", quantity: 100 };
 
     it("should update stock quantity successfully", async () => {
       mockStockService.UpdateQuantity.mockResolvedValue({
@@ -60,7 +60,7 @@ describe("StockController", () => {
         where: {
           branchId_recipeId: {
             branchId: BigInt(1),
-            recipeId: BigInt(5),
+            recipeId: "coffee",
           },
         },
       });
@@ -96,19 +96,19 @@ describe("StockController", () => {
   });
 
   describe("GetBranchStocks", () => {
-    const branchPayload = JSON.stringify({ branchId: 1 });
+    const branchPayload = { branchId: 1 };
 
     it("should return branch stocks successfully", async () => {
       const mockStocks = [
         { recipeId: BigInt(1), quantity: 100 },
         { recipeId: BigInt(2), quantity: 50 },
       ];
-      mockStockService.GetStocksByBranch.mockResolvedValue(mockStocks);
+      mockStockService.SelectStocksByBranch.mockResolvedValue(mockStocks);
 
       const res = mockResponse();
       await stockController.GetBranchStocks(branchPayload, res);
 
-      expect(mockStockService.GetStocksByBranch).toHaveBeenCalledWith({
+      expect(mockStockService.SelectStocksByBranch).toHaveBeenCalledWith({
         branchId: BigInt(1),
       });
       expect(res.json).toHaveBeenCalledWith({
@@ -117,8 +117,8 @@ describe("StockController", () => {
       });
     });
 
-    it("should return 500 when GetStocksByBranch returns Error", async () => {
-      mockStockService.GetStocksByBranch.mockResolvedValue(
+    it("should return 500 when SelectStocksByBranch returns Error", async () => {
+      mockStockService.SelectStocksByBranch.mockResolvedValue(
         new Error("DB Error")
       );
 
@@ -132,7 +132,7 @@ describe("StockController", () => {
     });
 
     it("should return 500 on exception", async () => {
-      mockStockService.GetStocksByBranch.mockRejectedValue(
+      mockStockService.SelectStocksByBranch.mockRejectedValue(
         new Error("DB Error")
       );
 

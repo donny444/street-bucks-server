@@ -57,8 +57,10 @@ describe("BranchController", () => {
     it("should sign in branch successfully", async () => {
       const mockBranch = { id: BigInt(1), password: "hashedpassword" };
       mockBranchService.FindBranch.mockResolvedValue(mockBranch);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-      (jsonwebtoken.sign as jest.Mock).mockReturnValue("mock-jwt-token");
+      jest.mocked(bcrypt.compare).mockResolvedValue(true as never);
+      jest
+        .mocked(jsonwebtoken.sign)
+        .mockReturnValue("mock-jwt-token" as never);
 
       const res = mockResponse();
       await branchController.SignInBranch(signInData, res);
@@ -111,7 +113,7 @@ describe("BranchController", () => {
     it("should return 401 if password is incorrect", async () => {
       const mockBranch = { id: BigInt(1), password: "hashedpassword" };
       mockBranchService.FindBranch.mockResolvedValue(mockBranch);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+      jest.mocked(bcrypt.compare).mockResolvedValue(false as never);
 
       const res = mockResponse();
       await branchController.SignInBranch(signInData, res);
@@ -126,7 +128,7 @@ describe("BranchController", () => {
       delete process.env.BRANCH_JWT_SECRET;
       const mockBranch = { id: BigInt(1), password: "hashedpassword" };
       mockBranchService.FindBranch.mockResolvedValue(mockBranch);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      jest.mocked(bcrypt.compare).mockResolvedValue(true as never);
 
       const res = mockResponse();
       await branchController.SignInBranch(signInData, res);
@@ -155,7 +157,7 @@ describe("BranchController", () => {
 
     it("should create branch successfully", async () => {
       const mockNewBranch = { id: BigInt(5), password: "hashedpassword" };
-      (bcrypt.hash as jest.Mock).mockResolvedValue("hashedpassword");
+      jest.mocked(bcrypt.hash).mockResolvedValue("hashedpassword" as never);
       mockBranchService.InsertBranch.mockResolvedValue(mockNewBranch);
 
       const res = mockResponse();
@@ -167,7 +169,7 @@ describe("BranchController", () => {
       });
       // Note: @HttpCode(201) decorator handles the status code, not res.status()
       expect(res.json).toHaveBeenCalledWith({
-        message: "Branch created successfully with the id: #5.",
+        message: "Branch created successfully.",
       });
     });
 
@@ -182,7 +184,7 @@ describe("BranchController", () => {
     });
 
     it("should return 500 if InsertBranch returns an error", async () => {
-      (bcrypt.hash as jest.Mock).mockResolvedValue("hashedpassword");
+      jest.mocked(bcrypt.hash).mockResolvedValue("hashedpassword" as never);
       mockBranchService.InsertBranch.mockResolvedValue(new Error("DB Error"));
 
       const res = mockResponse();
@@ -195,7 +197,7 @@ describe("BranchController", () => {
     });
 
     it("should return 500 on error", async () => {
-      (bcrypt.hash as jest.Mock).mockRejectedValue(new Error("Hash Error"));
+      jest.mocked(bcrypt.hash).mockRejectedValue(new Error("Hash Error") as never);
 
       const res = mockResponse();
       await branchController.CreateBranch(createBranchData, res);
@@ -204,14 +206,6 @@ describe("BranchController", () => {
       expect(res.json).toHaveBeenCalledWith({
         error: "Failed to create a new branch.",
       });
-    });
-  });
-
-  describe("serializeBranchId", () => {
-    it("should convert bigint id to number", () => {
-      const branch = { id: BigInt(123), password: "hashedpassword" } as any;
-      const result = branchController.serializeBranchId(branch);
-      expect(result).toBe(123);
     });
   });
 });

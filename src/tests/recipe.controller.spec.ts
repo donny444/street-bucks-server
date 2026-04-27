@@ -11,6 +11,7 @@ describe("RecipeController", () => {
   const mockRecipeService = {
     CheckRecipeExists: jest.fn(),
     InsertRecipe: jest.fn(),
+    CreateRecipeImage: jest.fn(),
   };
 
   const mockResponse = () => {
@@ -62,18 +63,15 @@ describe("RecipeController", () => {
     const addRecipeDto: AddRecipeDto = {
       name: "Espresso",
       unit: "ml",
+      file: {} as File,
+      editor: { email: "admin@test.com", password: "pw" },
     };
 
     it("should add a new recipe successfully", async () => {
       const file = mockFile();
-      const newRecipe = {
-        id: BigInt(1),
-        name: "Espresso",
-        unit: "ml",
-        imagePath: "espresso.png",
-      };
       mockRecipeService.CheckRecipeExists.mockResolvedValue(false);
-      mockRecipeService.InsertRecipe.mockResolvedValue(newRecipe);
+      mockRecipeService.InsertRecipe.mockResolvedValue(undefined);
+      mockRecipeService.CreateRecipeImage.mockResolvedValue(undefined);
 
       const res = mockResponse();
       await recipeController.AddRecipe(addRecipeDto, file, res);
@@ -86,8 +84,10 @@ describe("RecipeController", () => {
         unit: "ml",
         imagePath: "espresso.png",
       });
+      expect(mockRecipeService.CreateRecipeImage).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith({
-        message: "New recipe added.",
+        message: "New recipe has been added.",
       });
     });
 
@@ -156,7 +156,7 @@ describe("RecipeController", () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
-        error: "Failed to add a new recipe.",
+        message: "Failed to insert a new recipe",
       });
     });
 
@@ -171,7 +171,7 @@ describe("RecipeController", () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
-        error: "Failed to add a new recipe.",
+        message: "Failed to add a new recipe.",
       });
     });
   });
