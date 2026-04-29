@@ -42,7 +42,7 @@ export class RecipeController {
   @UseInterceptors(
     FileInterceptor("file", {
       storage: diskStorage({
-        destination: "../src/assets/recipes",
+        destination: "./assets/recipes",
         filename: (req, file, callback) => {
           const uniqueSuffix =
             Date.now() + "-" + Math.round(Math.random() * 1e9);
