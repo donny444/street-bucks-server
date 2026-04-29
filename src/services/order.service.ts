@@ -19,11 +19,11 @@ export class OrderService {
 
   private accumulatePrice(
     orderedMenus: OrderedMenuDto[],
-    menuPrices: MenuPriceDto[]
+    menuPrices: MenuPriceDto[],
   ): number {
     return orderedMenus.reduce((acc, orderedMenu) => {
       const matchedMenu = menuPrices.find(
-        (eachMenu) => eachMenu.name === orderedMenu.menuId
+        (eachMenu) => eachMenu.name === orderedMenu.menuId,
       );
       return acc + (matchedMenu ? matchedMenu.price * orderedMenu.quantity : 0);
     }, 0);
@@ -31,13 +31,13 @@ export class OrderService {
 
   private toError(tag: string, err: unknown): Error {
     return new Error(
-      `${tag}: ${err instanceof Error ? err.message : String(err)}`
+      `${tag}: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
 
   async InsertOrder(
     orderedMenus: OrderedMenuDto[],
-    branchId: number
+    branchId: number,
   ): Promise<Order | Error> {
     try {
       const extractedMenuIds = orderedMenus.map((item) => item.menuId);
@@ -68,7 +68,7 @@ export class OrderService {
         }
 
         const quantityByMenu = new Map(
-          orderedMenus.map((e) => [e.menuId, e.quantity])
+          orderedMenus.map((e) => [e.menuId, e.quantity]),
         );
         const requiredByRecipe = new Map<string, number>();
         for (const ing of ingredients) {
@@ -77,7 +77,7 @@ export class OrderService {
           if (needed > 0) {
             requiredByRecipe.set(
               ing.recipeId,
-              (requiredByRecipe.get(ing.recipeId) ?? 0) + needed
+              (requiredByRecipe.get(ing.recipeId) ?? 0) + needed,
             );
           }
         }
@@ -99,7 +99,7 @@ export class OrderService {
         }
 
         const stockByRecipe = new Map(
-          currentStocks.map((s) => [s.recipeId, s.quantity])
+          currentStocks.map((s) => [s.recipeId, s.quantity]),
         );
 
         const insufficientStocks: {
@@ -123,9 +123,9 @@ export class OrderService {
             `Insufficient stock for recipes: ${insufficientStocks
               .map(
                 (s) =>
-                  `${s.recipeId} (required: ${s.required}, available: ${s.available})`
+                  `${s.recipeId} (required: ${s.required}, available: ${s.available})`,
               )
-              .join(", ")}`
+              .join(", ")}`,
           );
         }
 
@@ -137,8 +137,8 @@ export class OrderService {
                   branchId_recipeId: { branchId: BigInt(branchId), recipeId },
                 },
                 data: { quantity: { decrement: qty } },
-              })
-            )
+              }),
+            ),
           );
         } catch (err) {
           throw this.toError("Failed to decrement stock", err);
@@ -179,7 +179,7 @@ export class OrderService {
   }
 
   async SelectTodayOrders(
-    branchId: number
+    branchId: number,
   ): Promise<SerializedOrderDto[] | Error> {
     try {
       const startOfDay = new Date().setHours(0, 0, 0, 0);
@@ -222,7 +222,7 @@ export class OrderService {
   }
 
   async FindOrderDetails(
-    where: Prisma.OrderWhereUniqueInput
+    where: Prisma.OrderWhereUniqueInput,
   ): Promise<OrderDetailsDto | null | Error> {
     try {
       try {
@@ -289,7 +289,7 @@ export class OrderService {
     if (!fs.existsSync(receiptsDir)) {
       console.log(
         "[GenerateReceipt] Creating receipts directory:",
-        receiptsDir
+        receiptsDir,
       );
       fs.mkdirSync(receiptsDir, { recursive: true });
     }
@@ -408,7 +408,7 @@ export class OrderService {
       "..",
       "assets",
       "receipts",
-      `${uuid}.pdf`
+      `${uuid}.pdf`,
     );
     console.log("[GetReceiptPath] __dirname:", __dirname);
     console.log("[GetReceiptPath] Looking for PDF at:", filePath);

@@ -83,7 +83,9 @@ describe("UserService", () => {
       mockPrismaClient.attendance.findFirst.mockResolvedValue(null);
       mockPrismaClient.attendance.create.mockResolvedValue({});
 
-      const result = await userService.InsertAttendance({ email: "john@test.com" });
+      const result = await userService.InsertAttendance({
+        email: "john@test.com",
+      });
 
       expect(mockPrismaClient.attendance.create).toHaveBeenCalledWith({
         data: { userId: "john@test.com" },

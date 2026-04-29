@@ -114,7 +114,7 @@ export class MenuController {
   @Get(":name")
   async GetSpecificMenu(
     @Res() res: Response,
-    @Param("name") name: string
+    @Param("name") name: string,
   ): Promise<Response> {
     try {
       const specificMenu = await this.menuService.FindSpecificMenu(name);
@@ -145,7 +145,7 @@ export class MenuController {
   @Get("form/:name")
   async GetMenuForm(
     @Param("name") name: string,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const menuForm = await this.menuService.FindMenuForm(name);
@@ -175,7 +175,7 @@ export class MenuController {
   async EditMenu(
     @Param("name") name: string,
     @Body() editMenu: EditMenuDto,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       if (!editMenu) {
@@ -237,12 +237,12 @@ export class MenuController {
         }
         callback(null, true);
       },
-    })
+    }),
   )
   async AddMenu(
     @Body() addMenu: EditMenuDto,
     @UploadedFile() uploadedFile: Express.Multer.File,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       if (!addMenu.name || !addMenu.price || !addMenu.category) {
@@ -292,7 +292,7 @@ export class MenuController {
 
       const buffer = await this.menuService.CreateMenuImage(
         uploadedFile,
-        fileName
+        fileName,
       );
       if (buffer instanceof Error) {
         console.error("Error occurred in `CreateMenuImage` service:", buffer);
@@ -311,7 +311,7 @@ export class MenuController {
   @Delete("remove/:name")
   async RemoveMenu(
     @Param("name") name: string,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       if (!name) {
@@ -340,7 +340,7 @@ export class MenuController {
       }
 
       const deletedImage = await this.menuService.DeleteMenuImage(
-        specificMenu.imagePath
+        specificMenu.imagePath,
       );
       if (deletedImage instanceof Error) {
         console.error("Error occurred in `DeleteMenuImage`:", deletedImage);

@@ -14,7 +14,7 @@ export class BranchController {
   @Post("sign-in")
   async SignInBranch(
     @Body() signInData: SignInDto,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const { branchId, password } = signInData;
@@ -38,7 +38,7 @@ export class BranchController {
 
       const correctPassword = await bcrypt.compare(
         password,
-        branchInfo.password
+        branchInfo.password,
       );
       if (!correctPassword) {
         return res
@@ -67,7 +67,7 @@ export class BranchController {
   @HttpCode(201)
   async CreateBranch(
     @Body() branchData: CreateBranchDto,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const { password } = branchData;

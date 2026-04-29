@@ -40,7 +40,7 @@ export class UserController {
   async RegisterUser(
     @BranchPayload() { branchId }: BranchPayloadDto,
     @Body() userData: RegisterDto,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const { email, password, firstName, lastName } = userData;
@@ -101,7 +101,7 @@ export class UserController {
   @HttpCode(201)
   async AttendUser(
     @Param("email") email: string,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const validEmail = this.validateEmail(email);
@@ -131,7 +131,7 @@ export class UserController {
       if (insertedAttendance instanceof Error) {
         console.error(
           "Error occurred in `InsertAttendance`:",
-          insertedAttendance
+          insertedAttendance,
         );
         return res
           .status(500)
@@ -155,7 +155,7 @@ export class UserController {
   @Post("administrator/sign-in")
   async SignInAdministrator(
     @Body() credentials: CredentialsDto,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const { email, password } = credentials;
@@ -225,7 +225,7 @@ export class UserController {
   @Get("search")
   async SearchUsersByName(
     @Query("name") name: string,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       if (!name) {
@@ -265,7 +265,7 @@ export class UserController {
   @Get(":email")
   async GetUserForm(
     @Param("email") email: string,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const validEmail = this.validateEmail(email);
@@ -305,7 +305,7 @@ export class UserController {
   async EditUser(
     @Param("email") email: string,
     @Body() userData: EditUserDto,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const validEmail = this.validateEmail(email);
@@ -392,7 +392,7 @@ export class UserController {
   @Post("remove/:email")
   async RemoveUser(
     @Param("email") email: string,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const validEmail = this.validateEmail(email);
@@ -431,7 +431,7 @@ export class UserController {
   @Get()
   async GetBranchUsers(
     @BranchPayload() { branchId }: BranchPayloadDto,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const branchUsers = await this.userService.SelectUsersByBranch({

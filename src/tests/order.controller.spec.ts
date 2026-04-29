@@ -81,7 +81,9 @@ describe("OrderController", () => {
     });
 
     it("should return 500 when InsertOrder returns Error", async () => {
-      mockOrderService.InsertOrder.mockResolvedValue(new Error("Insert failed"));
+      mockOrderService.InsertOrder.mockResolvedValue(
+        new Error("Insert failed"),
+      );
 
       const res = mockResponse();
       await orderController.MakeOrder(branchPayload, cartItems, res);
@@ -140,7 +142,9 @@ describe("OrderController", () => {
     });
 
     it("should return 500 when service returns Error", async () => {
-      mockOrderService.SelectTodayOrders.mockResolvedValue(new Error("DB Error"));
+      mockOrderService.SelectTodayOrders.mockResolvedValue(
+        new Error("DB Error"),
+      );
 
       const res = mockResponse();
       await orderController.GetTodayOrders(branchPayload, res);
@@ -152,7 +156,9 @@ describe("OrderController", () => {
     });
 
     it("should return 500 on exception", async () => {
-      mockOrderService.SelectTodayOrders.mockRejectedValue(new Error("DB Error"));
+      mockOrderService.SelectTodayOrders.mockRejectedValue(
+        new Error("DB Error"),
+      );
 
       const res = mockResponse();
       await orderController.GetTodayOrders(branchPayload, res);
@@ -176,7 +182,11 @@ describe("OrderController", () => {
       mockOrderService.FindOrderDetails.mockResolvedValue(mockOrder);
 
       const res = mockResponse();
-      await orderController.GetOrderDetails(branchPayload, "order-uuid-123", res);
+      await orderController.GetOrderDetails(
+        branchPayload,
+        "order-uuid-123",
+        res,
+      );
 
       expect(mockOrderService.FindOrderDetails).toHaveBeenCalledWith({
         uuid: "order-uuid-123",
@@ -190,11 +200,15 @@ describe("OrderController", () => {
 
     it("should return 500 when service returns Error", async () => {
       mockOrderService.FindOrderDetails.mockResolvedValue(
-        new Error("DB Error")
+        new Error("DB Error"),
       );
 
       const res = mockResponse();
-      await orderController.GetOrderDetails(branchPayload, "order-uuid-123", res);
+      await orderController.GetOrderDetails(
+        branchPayload,
+        "order-uuid-123",
+        res,
+      );
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
@@ -203,10 +217,16 @@ describe("OrderController", () => {
     });
 
     it("should return 500 on exception", async () => {
-      mockOrderService.FindOrderDetails.mockRejectedValue(new Error("DB Error"));
+      mockOrderService.FindOrderDetails.mockRejectedValue(
+        new Error("DB Error"),
+      );
 
       const res = mockResponse();
-      await orderController.GetOrderDetails(branchPayload, "order-uuid-123", res);
+      await orderController.GetOrderDetails(
+        branchPayload,
+        "order-uuid-123",
+        res,
+      );
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({

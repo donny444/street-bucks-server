@@ -56,7 +56,9 @@ describe("RecipeService", () => {
     });
 
     it("should return Error on database failure", async () => {
-      mockPrismaClient.recipe.findUnique.mockRejectedValue(new Error("DB Error"));
+      mockPrismaClient.recipe.findUnique.mockRejectedValue(
+        new Error("DB Error"),
+      );
 
       const result = await recipeService.CheckRecipeExists("coffee");
 

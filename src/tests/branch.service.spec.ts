@@ -57,7 +57,9 @@ describe("BranchService", () => {
     });
 
     it("should return Error on database failure", async () => {
-      mockPrismaClient.branch.findUnique.mockRejectedValue(new Error("DB Error"));
+      mockPrismaClient.branch.findUnique.mockRejectedValue(
+        new Error("DB Error"),
+      );
 
       const result = await branchService.FindBranch({ id: BigInt(1) });
 
@@ -72,7 +74,9 @@ describe("BranchService", () => {
         password: "hashedpassword",
       });
 
-      const result = await branchService.InsertBranch({ password: "hashedpassword" });
+      const result = await branchService.InsertBranch({
+        password: "hashedpassword",
+      });
 
       expect(mockPrismaClient.branch.create).toHaveBeenCalledWith({
         data: { password: "hashedpassword" },
@@ -83,7 +87,9 @@ describe("BranchService", () => {
     it("should return Error on database failure", async () => {
       mockPrismaClient.branch.create.mockRejectedValue(new Error("DB Error"));
 
-      const result = await branchService.InsertBranch({ password: "hashedpassword" });
+      const result = await branchService.InsertBranch({
+        password: "hashedpassword",
+      });
 
       expect(result).toBeInstanceOf(Error);
     });

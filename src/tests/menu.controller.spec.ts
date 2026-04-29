@@ -43,7 +43,9 @@ describe("MenuController", () => {
 
   describe("GetHotMenus", () => {
     it("should return hot beverages successfully", async () => {
-      const mockMenus = [{ name: "Hot Latte", price: 50, imagePath: "latte.png" }];
+      const mockMenus = [
+        { name: "Hot Latte", price: 50, imagePath: "latte.png" },
+      ];
       mockMenuService.SelectHotMenus.mockResolvedValue(mockMenus);
 
       const res = mockResponse();
@@ -59,7 +61,9 @@ describe("MenuController", () => {
 
   describe("GetIcedMenus", () => {
     it("should return iced beverages successfully", async () => {
-      const mockMenus = [{ name: "Iced Mocha", price: 60, imagePath: "mocha.png" }];
+      const mockMenus = [
+        { name: "Iced Mocha", price: 60, imagePath: "mocha.png" },
+      ];
       mockMenuService.SelectIcedMenus.mockResolvedValue(mockMenus);
 
       const res = mockResponse();
@@ -75,7 +79,9 @@ describe("MenuController", () => {
 
   describe("GetBakeryMenus", () => {
     it("should return bakery menus successfully", async () => {
-      const mockMenus = [{ name: "Croissant", price: 40, imagePath: "croissant.png" }];
+      const mockMenus = [
+        { name: "Croissant", price: 40, imagePath: "croissant.png" },
+      ];
       mockMenuService.SelectBakeryMenus.mockResolvedValue(mockMenus);
 
       const res = mockResponse();
@@ -97,7 +103,9 @@ describe("MenuController", () => {
       const res = mockResponse();
       await menuController.GetSpecificMenu(res, "Hot Latte");
 
-      expect(mockMenuService.FindSpecificMenu).toHaveBeenCalledWith("Hot Latte");
+      expect(mockMenuService.FindSpecificMenu).toHaveBeenCalledWith(
+        "Hot Latte",
+      );
       expect(res.json).toHaveBeenCalledWith({
         message: "Returned the menu: Hot Latte",
         menu: mockMenu,

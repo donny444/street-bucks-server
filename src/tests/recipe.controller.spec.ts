@@ -23,7 +23,7 @@ describe("RecipeController", () => {
   };
 
   const mockFile = (
-    overrides: Partial<Express.Multer.File> = {}
+    overrides: Partial<Express.Multer.File> = {},
   ): Express.Multer.File => ({
     fieldname: "file",
     originalname: "recipe.png",
@@ -77,7 +77,7 @@ describe("RecipeController", () => {
       await recipeController.AddRecipe(addRecipeDto, file, res);
 
       expect(mockRecipeService.CheckRecipeExists).toHaveBeenCalledWith(
-        "Espresso"
+        "Espresso",
       );
       expect(mockRecipeService.InsertRecipe).toHaveBeenCalledWith({
         name: "Espresso",
@@ -132,7 +132,7 @@ describe("RecipeController", () => {
     it("should return 500 when CheckRecipeExists returns Error", async () => {
       const file = mockFile();
       mockRecipeService.CheckRecipeExists.mockResolvedValue(
-        new Error("DB Error")
+        new Error("DB Error"),
       );
 
       const res = mockResponse();
@@ -148,7 +148,7 @@ describe("RecipeController", () => {
       const file = mockFile();
       mockRecipeService.CheckRecipeExists.mockResolvedValue(false);
       mockRecipeService.InsertRecipe.mockResolvedValue(
-        new Error("Insert failed")
+        new Error("Insert failed"),
       );
 
       const res = mockResponse();
@@ -163,7 +163,7 @@ describe("RecipeController", () => {
     it("should return 500 on unexpected exception", async () => {
       const file = mockFile();
       mockRecipeService.CheckRecipeExists.mockRejectedValue(
-        new Error("Unexpected error")
+        new Error("Unexpected error"),
       );
 
       const res = mockResponse();

@@ -9,7 +9,7 @@ export class StockService {
 
   private toError(tag: string, err: unknown): Error {
     return new Error(
-      `${tag} error: ${err instanceof Error ? err.message : String(err)}`
+      `${tag} error: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
 
@@ -32,7 +32,7 @@ export class StockService {
   }
 
   async SelectStocksByBranch(
-    where: Prisma.StockWhereInput
+    where: Prisma.StockWhereInput,
   ): Promise<recipeQuantityDto[] | Error> {
     try {
       try {

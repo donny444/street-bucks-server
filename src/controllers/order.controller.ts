@@ -24,7 +24,7 @@ export class OrderController {
   async MakeOrder(
     @BranchPayload() { branchId }: BranchPayloadDto,
     @Body() cartItems: OrderedMenuDto[],
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const order = await this.orderService.InsertOrder(cartItems, branchId);
@@ -80,7 +80,7 @@ export class OrderController {
   @Get()
   async GetTodayOrders(
     @BranchPayload() { branchId }: BranchPayloadDto,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const todayOrders = await this.orderService.SelectTodayOrders(branchId);
@@ -103,7 +103,7 @@ export class OrderController {
   async GetOrderDetails(
     @BranchPayload() { branchId }: BranchPayloadDto,
     @Param("uuid") uuid: string,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const order = await this.orderService.FindOrderDetails({
@@ -128,7 +128,7 @@ export class OrderController {
   @Get("find/:uuid")
   async GetOrderByUuid(
     @Param("uuid") uuid: string,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       if (!uuid) {
@@ -162,7 +162,7 @@ export class OrderController {
   @Get("receipt/:uuid")
   GetReceipt(
     @Param("uuid") uuid: string,
-    @Res() res: Response
+    @Res() res: Response,
   ): Response | void {
     try {
       if (!uuid) {
