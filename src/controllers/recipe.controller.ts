@@ -56,12 +56,12 @@ export class RecipeController {
         }
         callback(null, true);
       },
-    }),
+    })
   )
   async AddRecipe(
     @Body() addRecipe: AddRecipeDto,
     @UploadedFile() uploadedFile: Express.Multer.File,
-    @Res() res: Response,
+    @Res() res: Response
   ): Promise<Response> {
     try {
       if (!addRecipe.name || !addRecipe.unit) {
@@ -71,7 +71,7 @@ export class RecipeController {
       }
 
       const recipeExists = await this.recipeService.CheckRecipeExists(
-        addRecipe.name,
+        addRecipe.name
       );
       if (recipeExists instanceof Error) {
         console.error("Error occurred in `CheckRecipeExists`:", recipeExists);
@@ -124,7 +124,7 @@ export class RecipeController {
 
       const buffer = await this.recipeService.CreateRecipeImage(
         uploadedFile,
-        filePath,
+        filePath
       );
       if (buffer instanceof Error) {
         console.error("Error occurred in `CreateRecipeImage`:", buffer);
@@ -144,7 +144,7 @@ export class RecipeController {
   async EditRecipe(
     @Param("name") recipeName: string,
     @Body() editRecipe: EditRecipeDto,
-    @Res() res: Response,
+    @Res() res: Response
   ): Promise<Response> {
     try {
       if (!editRecipe || !recipeName) {
@@ -154,7 +154,7 @@ export class RecipeController {
       }
 
       const recipeExists = await this.recipeService.CheckRecipeExists(
-        editRecipe.name,
+        editRecipe.name
       );
       if (recipeExists instanceof Error) {
         console.error("Error occurred in `CheckRecipeExists`:", recipeExists);
@@ -173,7 +173,7 @@ export class RecipeController {
           name: editRecipe.name,
           unit: editRecipe.unit,
         },
-        { name: recipeName },
+        { name: recipeName }
       );
       if (updatedRecipe instanceof Error) {
         console.error("Error occurred in `UpdateRecipe`:", updatedRecipe);
@@ -192,7 +192,7 @@ export class RecipeController {
   @Delete(":name")
   async RemoveRecipe(
     @Param("name") name: string,
-    @Res() res: Response,
+    @Res() res: Response
   ): Promise<Response> {
     try {
       if (!name) {
@@ -219,7 +219,7 @@ export class RecipeController {
       if (recipeDependencies instanceof Error) {
         console.error(
           "Error occurred in `FindRecipeDependencies`:",
-          recipeDependencies,
+          recipeDependencies
         );
         return res
           .status(500)
@@ -246,7 +246,7 @@ export class RecipeController {
       }
 
       const deletedImage = await this.recipeService.DeleteRecipeImage(
-        recipe.imagePath,
+        recipe.imagePath
       );
       if (deletedImage instanceof Error) {
         console.error("Error occurred in `DeleteRecipeImage`:", deletedImage);

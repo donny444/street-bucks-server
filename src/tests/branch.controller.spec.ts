@@ -58,7 +58,9 @@ describe("BranchController", () => {
       const mockBranch = { id: BigInt(1), password: "hashedpassword" };
       mockBranchService.FindBranch.mockResolvedValue(mockBranch);
       jest.mocked(bcrypt.compare).mockResolvedValue(true as never);
-      jest.mocked(jsonwebtoken.sign).mockReturnValue("mock-jwt-token" as never);
+      jest
+        .mocked(jsonwebtoken.sign)
+        .mockReturnValue("mock-jwt-token" as never);
 
       const res = mockResponse();
       await branchController.SignInBranch(signInData, res);
@@ -66,7 +68,7 @@ describe("BranchController", () => {
       expect(mockBranchService.FindBranch).toHaveBeenCalledWith({ id: 1 });
       expect(bcrypt.compare).toHaveBeenCalledWith(
         "branchpassword",
-        "hashedpassword",
+        "hashedpassword"
       );
       expect(res.json).toHaveBeenCalledWith({
         message: "Branch signed in successfully.",
@@ -195,9 +197,7 @@ describe("BranchController", () => {
     });
 
     it("should return 500 on error", async () => {
-      jest
-        .mocked(bcrypt.hash)
-        .mockRejectedValue(new Error("Hash Error") as never);
+      jest.mocked(bcrypt.hash).mockRejectedValue(new Error("Hash Error") as never);
 
       const res = mockResponse();
       await branchController.CreateBranch(createBranchData, res);

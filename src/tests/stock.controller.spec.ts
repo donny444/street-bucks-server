@@ -119,7 +119,7 @@ describe("StockController", () => {
 
     it("should return 500 when SelectStocksByBranch returns Error", async () => {
       mockStockService.SelectStocksByBranch.mockResolvedValue(
-        new Error("DB Error"),
+        new Error("DB Error")
       );
 
       const res = mockResponse();
@@ -133,7 +133,7 @@ describe("StockController", () => {
 
     it("should return 500 on exception", async () => {
       mockStockService.SelectStocksByBranch.mockRejectedValue(
-        new Error("DB Error"),
+        new Error("DB Error")
       );
 
       const res = mockResponse();

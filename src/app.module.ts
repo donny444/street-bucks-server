@@ -68,7 +68,7 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(AuthenticateUser).forRoutes(
       // User entity
-      { path: "users/:email", method: RequestMethod.POST }, // AttendUser
+      { path: "users/:email", method: RequestMethod.POST } // AttendUser
     );
 
     consumer.apply(AuthorizeManager).forRoutes(
@@ -78,7 +78,7 @@ export class AppModule implements NestModule {
       // User entity
       { path: "users/", method: RequestMethod.POST }, // RegisterUser
       { path: "users/:email", method: RequestMethod.PUT }, // EditUser
-      { path: "users/remove/:email", method: RequestMethod.POST }, // RemoveUser
+      { path: "users/remove/:email", method: RequestMethod.POST } // RemoveUser
     );
 
     consumer.apply(AuthorizeAdministrator).forRoutes(
@@ -101,7 +101,7 @@ export class AppModule implements NestModule {
       { path: "recipes/:name", method: RequestMethod.DELETE }, // RemoveRecipe
 
       // User entity
-      { path: "users/search", method: RequestMethod.GET }, // SearchUsersByName
+      { path: "users/search", method: RequestMethod.GET } // SearchUsersByName
     );
 
     consumer.apply(AuthorizeBranch).forRoutes(
@@ -130,7 +130,7 @@ export class AppModule implements NestModule {
 
       // User entity
       { path: "users/", method: RequestMethod.POST }, // RegisterUser
-      { path: "users/", method: RequestMethod.GET }, // GetBranchUsers
+      { path: "users/", method: RequestMethod.GET } // GetBranchUsers
     );
   }
 }

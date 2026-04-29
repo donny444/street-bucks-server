@@ -12,7 +12,7 @@ export class RecipeService {
 
   private toError(tag: string, err: unknown): Error {
     return new Error(
-      `${tag} error: ${err instanceof Error ? err.message : String(err)}`,
+      `${tag} error: ${err instanceof Error ? err.message : String(err)}`
     );
   }
 
@@ -78,7 +78,7 @@ export class RecipeService {
 
   async CreateRecipeImage(
     fileContent: Express.Multer.File,
-    filePath: string,
+    filePath: string
   ): Promise<void | Error> {
     try {
       try {
@@ -97,7 +97,7 @@ export class RecipeService {
 
   async UpdateRecipe(
     data: Prisma.RecipeUpdateInput,
-    where: Prisma.RecipeWhereUniqueInput,
+    where: Prisma.RecipeWhereUniqueInput
   ): Promise<void | Error> {
     try {
       try {
@@ -114,7 +114,7 @@ export class RecipeService {
   }
 
   async FindRecipeDependencies(
-    where: Prisma.RecipeWhereUniqueInput,
+    where: Prisma.RecipeWhereUniqueInput
   ): Promise<RecipeDependenciesDto | null | Error> {
     try {
       try {
@@ -136,7 +136,7 @@ export class RecipeService {
   }
 
   async DeleteRecipe(
-    where: Prisma.RecipeWhereUniqueInput,
+    where: Prisma.RecipeWhereUniqueInput
   ): Promise<void | Error> {
     try {
       try {

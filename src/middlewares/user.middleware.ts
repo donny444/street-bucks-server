@@ -59,7 +59,7 @@ export class AuthorizeManager implements NestMiddleware {
   async use(
     req: Request<any, any, { editor: CredentialsDto }>,
     res: Response,
-    next: NextFunction,
+    next: NextFunction
   ) {
     const { email, password } = req.body.editor;
 

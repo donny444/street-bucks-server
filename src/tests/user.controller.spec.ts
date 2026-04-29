@@ -77,8 +77,7 @@ describe("UserController", () => {
         email: "john@test.com",
       });
       expect(res.json).toHaveBeenCalledWith({
-        message:
-          "User: john@test.com attendance status for today has been switched",
+        message: "User: john@test.com attendance status for today has been switched",
       });
     });
   });
