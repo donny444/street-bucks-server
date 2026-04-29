@@ -14,12 +14,12 @@ export class BranchService {
 
   private toError(tag: string, err: unknown): Error {
     return new Error(
-      `${tag} error: ${err instanceof Error ? err.message : String(err)}`,
+      `${tag} error: ${err instanceof Error ? err.message : String(err)}`
     );
   }
 
   async FindBranch(
-    where: Prisma.BranchWhereUniqueInput,
+    where: Prisma.BranchWhereUniqueInput
   ): Promise<Branch | null | Error> {
     try {
       try {

@@ -12,7 +12,7 @@ export class IngredientController {
   @Put()
   async EditAmounts(
     @Body() editAmounts: EditAmountDto[],
-    @Res() res: Response,
+    @Res() res: Response
   ): Promise<Response> {
     try {
       const updatedAmounts = await this.ingredientService.UpdateAmounts({
@@ -51,7 +51,7 @@ export class IngredientController {
   @Get(":name")
   async GetMenuIngredients(
     @Param("name") menuId: string,
-    @Res() res: Response,
+    @Res() res: Response
   ): Promise<Response> {
     try {
       const menuIngredients =
@@ -59,7 +59,7 @@ export class IngredientController {
       if (menuIngredients instanceof Error) {
         console.error(
           "Error occurred in `FindMenuIngredients`:",
-          menuIngredients,
+          menuIngredients
         );
         return res
           .status(500)
@@ -87,7 +87,7 @@ export class IngredientController {
       if (ingredientList instanceof Error) {
         console.error(
           "Error occurred in `SelectIngredientList`:",
-          ingredientList,
+          ingredientList
         );
         return res
           .status(500)

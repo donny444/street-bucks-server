@@ -17,7 +17,7 @@ export class UserService {
 
   private toError(tag: string, err: unknown): Error {
     return new Error(
-      `${tag}: ${err instanceof Error ? err.message : String(err)}`,
+      `${tag}: ${err instanceof Error ? err.message : String(err)}`
     );
   }
 
@@ -43,7 +43,7 @@ export class UserService {
   }
 
   async InsertUser(
-    data: Prisma.UserUncheckedCreateInput,
+    data: Prisma.UserUncheckedCreateInput
   ): Promise<void | Error> {
     try {
       const hashedPassword = await bcrypt.hash(data.password, 10);
@@ -66,7 +66,7 @@ export class UserService {
   }
 
   async InsertAttendance(
-    where: Prisma.UserWhereUniqueInput,
+    where: Prisma.UserWhereUniqueInput
   ): Promise<void | AttendaceRecordDto | Error> {
     try {
       const startOfDay = new Date(new Date().setHours(0, 0, 0, 0));
@@ -93,7 +93,7 @@ export class UserService {
           } catch (err) {
             throw this.toError(
               "Failed to create today attendance for the user",
-              err,
+              err
             );
           }
         } else {
@@ -102,7 +102,7 @@ export class UserService {
       } catch (err) {
         throw this.toError(
           "Failed to check if today's attendance of the user exists",
-          err,
+          err
         );
       }
     } catch (err) {
@@ -112,7 +112,7 @@ export class UserService {
   }
 
   async FindUser(
-    where: Prisma.UserWhereUniqueInput,
+    where: Prisma.UserWhereUniqueInput
   ): Promise<FindUserDto | null | Error> {
     try {
       try {
@@ -140,7 +140,7 @@ export class UserService {
   }
 
   async FindUserForm(
-    where: Prisma.UserWhereUniqueInput,
+    where: Prisma.UserWhereUniqueInput
   ): Promise<UserFormDto | null | Error> {
     try {
       try {
@@ -240,7 +240,7 @@ export class UserService {
   }
 
   async SelectUsersByBranch(
-    where: Prisma.UserWhereInput,
+    where: Prisma.UserWhereInput
   ): Promise<BranchUserDto[] | Error> {
     try {
       try {

@@ -15,7 +15,7 @@ export class StockController {
   async EditQuantity(
     @BranchPayload() { branchId }: BranchPayloadDto,
     @Body() editQuantity: EditQuantityDto,
-    @Res() res: Response,
+    @Res() res: Response
   ): Promise<Response> {
     try {
       const updatedQuantity = await this.stockService.UpdateQuantity({
@@ -51,7 +51,7 @@ export class StockController {
   @Get()
   async GetBranchStocks(
     @BranchPayload() { branchId }: BranchPayloadDto,
-    @Res() res: Response,
+    @Res() res: Response
   ): Promise<Response> {
     try {
       const branchStocks = await this.stockService.SelectStocksByBranch({
@@ -60,7 +60,7 @@ export class StockController {
       if (branchStocks instanceof Error) {
         console.error(
           "Error occurred in `SelectStocksByBranch`:",
-          branchStocks,
+          branchStocks
         );
         return res.status(500).json({
           message: "Failed to get the stock information of the branch.",

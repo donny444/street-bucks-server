@@ -13,10 +13,10 @@ export const BranchPayload = createParamDecorator(
 
     if (!branchPayload) {
       throw new UnauthorizedException(
-        "Branch authorization required. Ensure branch-token header is provided.",
+        "Branch authorization required. Ensure branch-token header is provided."
       );
     }
 
     return branchPayload;
-  },
+  }
 );

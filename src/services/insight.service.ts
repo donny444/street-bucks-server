@@ -23,7 +23,7 @@ export class InsightService {
   //   }));
   // }
   private serializeTimestamps(
-    timestamps: SalesInPeriodDto[],
+    timestamps: SalesInPeriodDto[]
   ): SerializedSalesInPeriodDto[] {
     return timestamps.map((t) => ({
       timestamp: Number(t.timestamp),
@@ -32,7 +32,7 @@ export class InsightService {
 
   private toError(tag: string, err: unknown): Error {
     return new Error(
-      `${tag} error: ${err instanceof Error ? err.message : String(err)}`,
+      `${tag} error: ${err instanceof Error ? err.message : String(err)}`
     );
   }
 
@@ -129,7 +129,7 @@ export class InsightService {
   }
 
   async FindTopMenusByQuantity(
-    branchId: number,
+    branchId: number
   ): Promise<TopMenusByQuantityDto[] | Error> {
     try {
       try {
@@ -171,7 +171,7 @@ export class InsightService {
   }
 
   async FindTopMenusByRevenue(
-    branchId: number,
+    branchId: number
   ): Promise<TopMenusByRevenueDto[] | Error> {
     try {
       try {
@@ -228,12 +228,12 @@ export class InsightService {
   }
 
   async SelectSalesInWeek(
-    branchId: number,
+    branchId: number
   ): Promise<SerializedSalesInPeriodDto[] | Error> {
     try {
       const now = new Date();
       const firstDayOfWeek = new Date(
-        now.setDate(now.getDate() - now.getDay()),
+        now.setDate(now.getDate() - now.getDay())
       );
       firstDayOfWeek.setHours(0, 0, 0, 0);
       const startTimestamp = firstDayOfWeek.getTime();
@@ -264,7 +264,7 @@ export class InsightService {
   }
 
   async SelectSalesInMonth(
-    branchId: number,
+    branchId: number
   ): Promise<SerializedSalesInPeriodDto[] | Error> {
     try {
       const now = new Date();
@@ -298,7 +298,7 @@ export class InsightService {
   }
 
   async SelectSalesInYear(
-    branchId: number,
+    branchId: number
   ): Promise<SaleByCategoryDto[] | Error> {
     try {
       const now = new Date();

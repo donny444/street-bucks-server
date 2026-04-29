@@ -30,8 +30,7 @@ describe("IngredientController", () => {
       ],
     }).compile();
 
-    ingredientController =
-      module.get<IngredientController>(IngredientController);
+    ingredientController = module.get<IngredientController>(IngredientController);
     jest.clearAllMocks();
   });
 
@@ -65,7 +64,7 @@ describe("IngredientController", () => {
 
     it("should return 500 when UpdateAmounts returns Error", async () => {
       mockIngredientService.UpdateAmounts.mockResolvedValue(
-        new Error("Transaction failed"),
+        new Error("Transaction failed")
       );
 
       const res = mockResponse();

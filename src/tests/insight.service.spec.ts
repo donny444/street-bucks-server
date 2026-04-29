@@ -115,9 +115,10 @@ describe("InsightService", () => {
             ]),
           },
           menu: {
-            findMany: jest
-              .fn()
-              .mockResolvedValue([{ name: "Latte" }, { name: "Mocha" }]),
+            findMany: jest.fn().mockResolvedValue([
+              { name: "Latte" },
+              { name: "Mocha" },
+            ]),
           },
         };
         return callback(mockPrismaTx);
@@ -187,14 +188,8 @@ describe("InsightService", () => {
   describe("SelectSalesInYear", () => {
     it("should return sales data by category for the year", async () => {
       const mockSales = [
-        {
-          order: { timestamp: BigInt(1704067200000) },
-          menu: { category: "HOT" },
-        },
-        {
-          order: { timestamp: BigInt(1704153600000) },
-          menu: { category: "ICED" },
-        },
+        { order: { timestamp: BigInt(1704067200000) }, menu: { category: "HOT" } },
+        { order: { timestamp: BigInt(1704153600000) }, menu: { category: "ICED" } },
       ];
       mockPrismaClient.entry.findMany.mockResolvedValue(mockSales);
 

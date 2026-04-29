@@ -8,7 +8,7 @@ export class IngredientService {
 
   private toError(tag: string, err: unknown): Error {
     return new Error(
-      `${tag} error: ${err instanceof Error ? err.message : String(err)}`,
+      `${tag} error: ${err instanceof Error ? err.message : String(err)}`
     );
   }
 
@@ -30,7 +30,7 @@ export class IngredientService {
       } catch (err) {
         throw this.toError(
           "The transaction to update ingredients failed:",
-          err,
+          err
         );
       }
     } catch (err) {
@@ -39,7 +39,7 @@ export class IngredientService {
   }
 
   async FindMenuIngredients(
-    menuId: string,
+    menuId: string
   ): Promise<MenuIngredientDto[] | null | Error> {
     try {
       const menuIngredients = await this.prisma.ingredient.findMany({

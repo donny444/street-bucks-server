@@ -12,7 +12,7 @@ export class MenuService {
 
   private toError(tag: string, err: unknown): Error {
     return new Error(
-      `${tag} error: ${err instanceof Error ? err.message : String(err)}`,
+      `${tag} error: ${err instanceof Error ? err.message : String(err)}`
     );
   }
 
@@ -186,7 +186,7 @@ export class MenuService {
 
   async CreateMenuImage(
     fileContent: Express.Multer.File,
-    fileName: string,
+    fileName: string
   ): Promise<void | Error> {
     try {
       try {
