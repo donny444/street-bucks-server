@@ -95,7 +95,9 @@ describe("OrderService", () => {
     });
 
     it("should return Error when transaction fails", async () => {
-      mockPrismaClient.$transaction.mockRejectedValue(new Error("Transaction failed"));
+      mockPrismaClient.$transaction.mockRejectedValue(
+        new Error("Transaction failed"),
+      );
 
       const result = await orderService.InsertOrder(orderedMenus, branchId);
 
@@ -106,19 +108,21 @@ describe("OrderService", () => {
       mockPrismaClient.$transaction.mockImplementation(async (callback) => {
         const mockPrismaTx = {
           menu: {
-            findMany: jest.fn().mockResolvedValue([
-              { name: "Hot Latte", price: 50 },
-            ]),
+            findMany: jest
+              .fn()
+              .mockResolvedValue([{ name: "Hot Latte", price: 50 }]),
           },
           ingredient: {
-            findMany: jest.fn().mockResolvedValue([
-              { menuId: "Hot Latte", recipeId: "coffee", amount: 10 },
-            ]),
+            findMany: jest
+              .fn()
+              .mockResolvedValue([
+                { menuId: "Hot Latte", recipeId: "coffee", amount: 10 },
+              ]),
           },
           stock: {
-            findMany: jest.fn().mockResolvedValue([
-              { recipeId: "coffee", quantity: 5 },
-            ]),
+            findMany: jest
+              .fn()
+              .mockResolvedValue([{ recipeId: "coffee", quantity: 5 }]),
           },
         };
         return callback(mockPrismaTx);
@@ -126,7 +130,7 @@ describe("OrderService", () => {
 
       const result = await orderService.InsertOrder(
         [{ menuId: "Hot Latte", quantity: 2 }],
-        branchId
+        branchId,
       );
 
       expect(result).toBeInstanceOf(Error);
@@ -192,7 +196,9 @@ describe("OrderService", () => {
     });
 
     it("should return Error on database failure", async () => {
-      mockPrismaClient.order.findUnique.mockRejectedValue(new Error("DB Error"));
+      mockPrismaClient.order.findUnique.mockRejectedValue(
+        new Error("DB Error"),
+      );
 
       const result = await orderService.FindOrderDetails({
         uuid: "order-uuid-123",

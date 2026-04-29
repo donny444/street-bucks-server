@@ -14,7 +14,7 @@ export class InsightController {
   @Get("sales-today")
   async GetSalesToday(
     @BranchPayload() { branchId }: BranchPayloadDto,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const salesToday = await this.insightService.CountSalesToday(branchId);
@@ -38,7 +38,7 @@ export class InsightController {
   @Get("sales-this-week")
   async GetSalesThisWeek(
     @BranchPayload() { branchId }: BranchPayloadDto,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const salesThisWeek =
@@ -63,7 +63,7 @@ export class InsightController {
   @Get("sales-this-month")
   async GetSalesThisMonth(
     @BranchPayload() { branchId }: BranchPayloadDto,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const salesThisMonth =
@@ -71,7 +71,7 @@ export class InsightController {
       if (salesThisMonth instanceof Error) {
         console.error(
           "Error occurred in `CountSalesThisMonth`:",
-          salesThisMonth
+          salesThisMonth,
         );
         return res.status(500).json({ error: salesThisMonth.message });
       }
@@ -91,7 +91,7 @@ export class InsightController {
   @Get("top-menus-by-quantity")
   async GetTopMenusByQuantity(
     @BranchPayload() { branchId }: BranchPayloadDto,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const topMenusByQuantity =
@@ -99,7 +99,7 @@ export class InsightController {
       if (topMenusByQuantity instanceof Error) {
         console.error(
           "Error occurred in `FindTopMenusByQuantity`:",
-          topMenusByQuantity
+          topMenusByQuantity,
         );
         return res.status(500).json({ error: topMenusByQuantity.message });
       }
@@ -125,7 +125,7 @@ export class InsightController {
   @Get("top-menus-by-revenue")
   async GetTopMenusByRevenue(
     @BranchPayload() { branchId }: BranchPayloadDto,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const topMenusByRevenue =
@@ -133,7 +133,7 @@ export class InsightController {
       if (topMenusByRevenue instanceof Error) {
         console.error(
           "Error occurred in `FindTopMenusByRevenue`:",
-          topMenusByRevenue
+          topMenusByRevenue,
         );
         return res.status(500).json({ error: topMenusByRevenue.message });
       }
@@ -159,7 +159,7 @@ export class InsightController {
   @Get("sales-in-week")
   async GetSalesInWeek(
     @BranchPayload() { branchId }: BranchPayloadDto,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const salesInWeek = await this.insightService.SelectSalesInWeek(branchId);
@@ -196,7 +196,7 @@ export class InsightController {
             return dayA - dayB;
           }
           return monthA - monthB;
-        })
+        }),
       );
 
       const labels = Array.from(sortedCounts.keys());
@@ -217,7 +217,7 @@ export class InsightController {
   @Get("sales-in-month")
   async GetSalesInMonth(
     @BranchPayload() { branchId }: BranchPayloadDto,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const salesInMonth =
@@ -232,7 +232,7 @@ export class InsightController {
       const daysInMonth = new Date(
         now.getFullYear(),
         now.getMonth() + 1,
-        0
+        0,
       ).getDate();
 
       const countMap: Map<string, number> = new Map();
@@ -258,7 +258,7 @@ export class InsightController {
             return dayA - dayB;
           }
           return monthA - monthB;
-        })
+        }),
       );
 
       const labels = Array.from(sortedCounts.keys());
@@ -279,7 +279,7 @@ export class InsightController {
   @Get("sales-in-year")
   async GetSalesInYear(
     @BranchPayload() { branchId }: BranchPayloadDto,
-    @Res() res: Response
+    @Res() res: Response,
   ): Promise<Response> {
     try {
       const salesInYear = await this.insightService.SelectSalesInYear(branchId);

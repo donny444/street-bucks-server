@@ -103,7 +103,7 @@ describe("StockService", () => {
       await expect(
         stockService.SelectStocksByBranch({
           branchId: BigInt(1),
-        })
+        }),
       ).rejects.toThrow("DB Error");
     });
   });

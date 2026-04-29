@@ -60,7 +60,9 @@ describe("IngredientService", () => {
     });
 
     it("should return Error when transaction fails", async () => {
-      mockPrismaClient.$transaction.mockRejectedValue(new Error("Transaction failed"));
+      mockPrismaClient.$transaction.mockRejectedValue(
+        new Error("Transaction failed"),
+      );
 
       const result = await ingredientService.UpdateAmounts(updateData);
 

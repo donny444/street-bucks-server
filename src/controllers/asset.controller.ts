@@ -10,7 +10,7 @@ export class AssetController {
   @Get("menus/:filename")
   GetMenuImage(
     @Param("filename") filename: string,
-    @Res() res: Response
+    @Res() res: Response,
   ): void {
     try {
       // Sanitize filename to prevent directory traversal
@@ -35,7 +35,7 @@ export class AssetController {
   @Get("recipes/:filename")
   GetRecipeImage(
     @Param("filename") filename: string,
-    @Res() res: Response
+    @Res() res: Response,
   ): void {
     try {
       const sanitizedFilename = filename.replace(/[^a-zA-Z0-9._-]/g, "");
