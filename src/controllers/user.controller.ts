@@ -443,6 +443,11 @@ export class UserController {
           .status(500)
           .json({ message: "Failed to retrieve the users of the branch." });
       }
+      if (branchUsers.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "No users found for the branch." });
+      }
 
       const processedBranchUsers = branchUsers.map((user) => {
         let attended = false;

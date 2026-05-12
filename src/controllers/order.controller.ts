@@ -88,6 +88,11 @@ export class OrderController {
         console.error("Error occurred in `SelectTodayOrders`:", todayOrders);
         return res.status(500).json({ error: todayOrders.message });
       }
+      if (todayOrders.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "No orders in current day found." });
+      }
 
       return res.json({
         message: "Get orders in current day.",
@@ -113,6 +118,9 @@ export class OrderController {
       if (order instanceof Error) {
         console.error("Error occurred in `FindOrderDetails`:", order);
         return res.status(500).json({ error: order.message });
+      }
+      if (!order) {
+        return res.status(404).json({ error: "Order not found." });
       }
 
       return res.json({

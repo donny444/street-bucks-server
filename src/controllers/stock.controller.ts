@@ -66,6 +66,11 @@ export class StockController {
           message: "Failed to get the stock information of the branch.",
         });
       }
+      if (branchStocks.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "No stocks found for the branch." });
+      }
 
       return res.json({
         message: "Get stocks of the branch.",

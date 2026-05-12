@@ -30,6 +30,11 @@ export class RecipeController {
         console.error("Error occurred in `SelectRecipes`:", recipes);
         return res.status(500).json({ message: "Failed to retrieve recipes." });
       }
+      if (recipes.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "No recipes found." });
+      }
 
       return res.status(200).json({ recipes });
     } catch (err) {

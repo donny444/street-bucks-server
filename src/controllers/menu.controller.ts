@@ -32,6 +32,11 @@ export class MenuController {
           .status(500)
           .json({ error: "Failed to retrieve hot beverages." });
       }
+      if (hotMenus.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "No hot beverages found." });
+      }
 
       return res.json({
         message: "Returned all available hot beverages",
@@ -55,6 +60,11 @@ export class MenuController {
           .status(500)
           .json({ error: "Failed to retrieve iced beverages." });
       }
+      if (icedMenus.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "No iced beverages found." });
+      }
 
       return res.json({
         message: "Returned all available iced beverages",
@@ -75,6 +85,11 @@ export class MenuController {
       if (bakeryMenus instanceof Error) {
         console.error("Error occurred in `SelectBakeryMenus`:", bakeryMenus);
         return res.status(500).json({ error: "Failed to retrieve bakery." });
+      }
+      if (bakeryMenus.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "No bakery menus found." });
       }
 
       return res.json({

@@ -93,6 +93,11 @@ export class IngredientController {
           .status(500)
           .json({ error: "Failed to select ingredient list." });
       }
+      if (ingredientList.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "No ingredients found." });
+      }
 
       return res.json({
         message: "Ingredient list has been retrieved.",

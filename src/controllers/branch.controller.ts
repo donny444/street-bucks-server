@@ -108,6 +108,11 @@ export class BranchController {
           .status(500)
           .json({ error: "Failed to find available branches." });
       }
+      if (branchIds.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "No branches found." });
+      }
 
       return res.json({
         message: "Returned array of branch IDs",

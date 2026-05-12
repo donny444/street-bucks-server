@@ -103,6 +103,11 @@ export class InsightController {
         );
         return res.status(500).json({ error: topMenusByQuantity.message });
       }
+      if (topMenusByQuantity.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "No top menus by quantity found." });
+      }
 
       const labels = topMenusByQuantity.map((m) => m.menuName);
       const data = topMenusByQuantity.map((m) => m.totalQuantity);
@@ -137,6 +142,11 @@ export class InsightController {
         );
         return res.status(500).json({ error: topMenusByRevenue.message });
       }
+      if (topMenusByRevenue.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "No top menus by revenue found." });
+      }
 
       const labels = topMenusByRevenue.map((m) => m.menuName);
       const data = topMenusByRevenue.map((m) => m.totalRevenue);
@@ -166,6 +176,11 @@ export class InsightController {
       if (salesInWeek instanceof Error) {
         console.error("Error occurred in `SelectSalesInWeek`:", salesInWeek);
         return res.status(500).json({ error: salesInWeek.message });
+      }
+      if (salesInWeek.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "No sales in this week found." });
       }
 
       const today = new Date();
@@ -225,6 +240,11 @@ export class InsightController {
       if (salesInMonth instanceof Error) {
         console.error("Error occurred in `SelectSalesInMonth`:", salesInMonth);
         return res.status(500).json({ error: salesInMonth.message });
+      }
+      if (salesInMonth.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "No sales in this month found." });
       }
 
       const now = new Date();
@@ -286,6 +306,11 @@ export class InsightController {
       if (salesInYear instanceof Error) {
         console.error("Error occurred in `SelectSalesInYear`:", salesInYear);
         return res.status(500).json({ error: salesInYear.message });
+      }
+      if (salesInYear.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "No sales in this year found." });
       }
 
       const countArr: number[] = new Array(12).fill(0) as number[];
