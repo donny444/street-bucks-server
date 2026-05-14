@@ -1,3 +1,4 @@
+import { MenuIngredientDto } from "./ingredient.dto";
 import { CredentialsDto } from "./user.dto";
 import { Category } from "../../prisma/client";
 
@@ -11,12 +12,7 @@ export class MenuFormDto {
   name!: string;
   price!: number;
   category!: Category;
-}
-
-export class EditMenuDto {
-  name!: string;
-  price!: number;
-  category!: Category;
-  file!: File | null;
-  editor!: CredentialsDto;
+  file?: File | null;
+  ingredient!: MenuIngredientDto[];
+  note?: string | null;
 }

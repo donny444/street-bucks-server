@@ -16,7 +16,8 @@ import { diskStorage } from "multer";
 import { extname } from "path";
 
 import { MenuService } from "../services/menu.service";
-import { EditMenuDto } from "../dtos/menu.dto";
+import { MenuFormDto } from "../dtos/menu.dto";
+import { MenuIngredientDto } from "src/dtos/ingredient.dto";
 
 @Controller("menus")
 export class MenuController {
@@ -187,9 +188,29 @@ export class MenuController {
   }
 
   @Put(":name")
+  @UseInterceptors(
+    FileInterceptor("file", {
+      storage: diskStorage({
+        destination: "../../assets/menus",
+        filename: (req, file, callback) => {
+          const uniqueSuffix =
+            Date.now() + "-" + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          callback(null, `menu-${uniqueSuffix}${ext}`);
+        },
+      }),
+      fileFilter: (req, file, callback) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
+          return callback(new Error("Only image files are allowed!"), false);
+        }
+        callback(null, true);
+      },
+    })
+  )
   async EditMenu(
     @Param("name") name: string,
-    @Body() editMenu: EditMenuDto,
+    @Body() editMenu: MenuFormDto,
+    @UploadedFile() uploadedFile: Express.Multer.File,
     @Res() res: Response
   ): Promise<Response> {
     try {
@@ -212,8 +233,44 @@ export class MenuController {
         });
       }
 
+      let imagePath = specificMenu.imagePath;
+      if (uploadedFile) {
+        const baseName = editMenu.name.trim().toLowerCase().replace(/\s+/g, "_");
+        const extension = (
+          extname(uploadedFile.originalname) ||
+          extname(uploadedFile.filename) ||
+          ""
+        ).toLowerCase();
+        const fileName = `${baseName}${extension}`;
+        imagePath = `assets/menus/${fileName}`;
+
+        const buffer = await this.menuService.CreateMenuImage(
+          uploadedFile,
+          fileName
+        );
+        if (buffer instanceof Error) {
+          console.error("Error occurred in `CreateMenuImage` service:", buffer);
+          return res.status(500).json({ message: buffer.message });
+        }
+      }
+
+      const menuIngredients = editMenu.ingredient;
+
       const updatedMenu = await this.menuService.UpdateMenu({
-        data: editMenu,
+        data: {
+          name: editMenu.name,
+          price: Number(editMenu.price),
+          category: editMenu.category,
+          imagePath,
+          note: editMenu.note,
+          ingredient: {
+            deleteMany: {},
+            create: menuIngredients.map((ing: MenuIngredientDto) => ({
+              recipe: { connect: { name: ing.recipeId } },
+              amount: Number(ing.amount)
+            }))
+          }
+        },
         where: { name },
       });
       if (updatedMenu instanceof Error) {
@@ -255,7 +312,7 @@ export class MenuController {
     })
   )
   async AddMenu(
-    @Body() addMenu: EditMenuDto,
+    @Body() addMenu: MenuFormDto,
     @UploadedFile() uploadedFile: Express.Multer.File,
     @Res() res: Response
   ): Promise<Response> {
@@ -294,11 +351,20 @@ export class MenuController {
       const fileName = `${baseName}${extension}`;
       const imagePath = `assets/menus/${fileName}`;
 
+      const menuIngredients = addMenu.ingredient;
+
       const newMenu = await this.menuService.InsertMenu({
         name: addMenu.name,
-        price: addMenu.price,
+        price: Number(addMenu.price),
         category: addMenu.category,
         imagePath,
+        note: addMenu.note,
+        ingredient: {
+          create: menuIngredients.map((ing: MenuIngredientDto) => ({
+            recipe: { connect: { name: ing.recipeId } },
+            amount: Number(ing.amount)
+          }))
+        }
       });
       if (newMenu instanceof Error) {
         console.error("Error occurred in `InsertMenu` service:", newMenu);
